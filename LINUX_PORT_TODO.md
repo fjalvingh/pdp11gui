@@ -303,10 +303,81 @@ the `Parity` property for API compatibility but are treated the same as
 express mark/space parity (this was already an obscure, rarely-used
 feature; no caller in the app currently sets it).
 
-## Still open / not yet reached
-
 - `FormBusyU.pas` used old XE3-style qualified imports
   (`Winapi.Windows, Winapi.Messages, System.SysUtils, ...`) — fixed, same
   as the plain `Windows` case (import was entirely unused, just removed).
-- Full first successful `lazbuild` compile not yet achieved — this file
-  will be updated as new blockers are found and resolved.
+
+## First successful build + runtime bring-up, 2026-07-22
+
+`lazbuild pdp11GUI.lpi` now compiles and links cleanly end-to-end
+(~90 units). Runtime testing (headless X via Xvfb + screenshots, plus
+`gdb` for crash backtraces) found and fixed a sequence of issues, all
+committed:
+
+**`.dfm` streaming errors** (LCL rejects unknown published properties —
+unlike VCL, it's strict and shows an "Unknown property" dialog rather than
+silently skipping):
+- `FormMain.WindowMenu` — VCL's MDI auto-window-list property, no LCL
+  equivalent. Removed the line (the `Windows1` menu with Cascade/Minimize/
+  Restore items is untouched and still works, it's just not
+  auto-populated with a window list anymore).
+- `Margins` / `AlignWithMargins` — VCL naming; LCL's equivalent is
+  `BorderSpacing` (no `AlignWithMargins` flag needed, it applies
+  automatically). Renamed across 7 `.dfm` files.
+- JVCL `TJvStringGrid` leftovers in `.dfm`s that survived the mechanical
+  `TStringGrid` swap: a top-level `Alignment = taLeftJustify` (LCL's
+  `TStringGrid` has no grid-wide default-alignment property; removed,
+  `taLeftJustify` is the default anyway) and `FixedFont` (renamed to LCL's
+  `TitleFont`).
+
+**Character encoding: converted the whole tree from Windows-1252 to
+UTF-8.** The original Delphi sources were authored in Windows-1252
+(German comments with umlauts, a `µ` sign used as an actual LED-name
+string literal). GTK/LCL on Linux expect UTF-8. Two problems compounded:
+1. Files nobody had touched yet were still raw Windows-1252 on disk.
+2. Files already edited during this migration had — inadvertently, via
+   some earlier Read/Edit round-trip — gotten their high-byte characters
+   replaced with literal U+FFFD (mojibake), silently destroying the
+   original byte.
+
+Fixed by: `iconv -f WINDOWS-1252 -t UTF-8` for untouched files; for the
+~22 already-corrupted files, recovering the lost character by diffing
+each U+FFFD's surrounding ASCII context against the pristine
+pre-migration commit (`c55a43c`) and re-encoding what was found there as
+UTF-8 (a handful of comments reworded during the port, with no pristine
+match, were fixed by hand). Verified zero U+FFFD bytes remain anywhere in
+the tree.
+
+This wasn't just cosmetic: it fixed a real crash. `pdp1170panelU.pas`
+registers an LED named `'µADRS FPP/CPU'` (clean UTF-8 after the fix), but
+`pdp1170panelImplementorFrameU.pas`/`ImplementorPhysicalU.pas` looked it
+up by a **corrupted** copy of the same literal — `getControlByName`
+returned `nil`, and the very next line dereferenced it, segfaulting during
+`TReader.ReadComponent` (i.e. during form/frame streaming at startup).
+Assertions (`assert(ctrl <> nil)`) are compiled out, so this surfaced as a
+raw access violation, not a caught exception — worth remembering if
+another silent-`nil`-from-lookup crash shows up elsewhere.
+
+**Pre-existing off-by-one bug in `FrameMemoryCellGroupGridU.pas`**
+(`ConnectToMemoryCellGroup`, present already in commit `c55a43c`, i.e.
+predates this migration): the address-label loop was
+`for i := 0 to RowCount-1 do Cells[0, i+1] := ...`, writing rows
+`1..RowCount` — but valid row indices are only `0..RowCount-1` (row 0 is
+the fixed header row), so the last iteration wrote one row past the end.
+Delphi/VCL silently tolerated the out-of-range `Cells[]` write; LCL's
+`TStringGrid` raises `EGridException` ("Index Out of range"). Fixed the
+loop bound to `RowCount-2`.
+
+**Current state**: with all of the above fixed, the app now starts up
+fully and reaches its normal "no connection configured" dialog (expected —
+no serial device or SimH instance is attached in the test environment)
+instead of crashing or showing a `.dfm` error. This is the first time the
+app has run to a stable, interactive state on Linux.
+
+**Not yet exercised**: actually opening the tool windows (Terminal,
+MACRO-11 editor, memory views, disk image I/O, etc.) one by one to shake
+out further runtime issues — only the main window + startup path has been
+verified so far. Also still open: everything listed above under "Known
+NOT-yet-ported" and "Still open" (Telnet, real serial hardware, USB panel,
+disassembler engine, macro11.bat/m4.bat Linux equivalents, path-separator
+sweep, `.dfm`->`.lfm` conversion, serial-device-picker UI).
