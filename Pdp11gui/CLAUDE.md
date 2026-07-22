@@ -56,7 +56,7 @@ All inherit from `FormChildU`. Created/shown from `FormMainU` menus:
 - `FormMemoryTestU` — stuck-bit, addressing, and pattern memory tests
 - `FormBitfieldsU` — live bit-field/register inspector
 - `FormMmuU` — MMU virtual→physical translation viewer
-- `FormDisasU` — disassembler (delegates opcode decoding to `pdp11disas.dll`)
+- `FormDisasU` — disassembler (opcode decoding via `../common/Pdp11DisasU.pas`, a native Pascal port replacing the old Windows-only `pdp11disas.dll`)
 - `FormDiscImageU` — disk image read/write (RL02, RX02, RM02, RK06/07, MSCP, etc.)
 - `FormPdp1170PanelU` — simulated PDP-11/70 hardware console panel
 - `FormExecuteU`, `FormExecuteBlinkenlightU` — run/step/reset execution control

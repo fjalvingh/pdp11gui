@@ -102,41 +102,15 @@ implementation
 
 uses
   AuxU,
-  RegistryU
+  RegistryU,
+  Pdp11DisasU
   ;
 
 // disassembler
 // War: external 'PDP11DISAS.DLL' - Windows-only, keine Quelle/kein
-// Linux-Build davon in diesem Repo. Stub, bis eine Linux-Version existiert
-// (Neuimplementierung in Pascal, oder eine .so aus derselben Quelle wie die
-// DLL). Siehe LINUX_PORT_TODO.md.
-procedure Disas11 (
-        srcbuff: PAnsiChar;        // der Rückgabepuffer
-        srcbuff_size: integer ;
-        coremem: PAnsiChar ; // array of byte, 65K
-        coremem_valid: PAnsiChar; // array of flags. 1 for valid memory cells
-        coremem_size: integer
-        ) ;
-  const msg = 'Disassembler (PDP11DISAS) is not yet ported to Linux, see LINUX_PORT_TODO.md' ;
-  begin
-    FillChar(srcbuff^, srcbuff_size, 0) ;
-    if srcbuff_size > length(msg) then
-      Move(msg[1], srcbuff^, length(msg)) ;
-  end;
-
-(** )
-// disable for aqtime analysis
-procedure Disas11 (
-        srcbuff: PChar;        // der Rückgabepuffer
-        srcbuff_size: integer ;
-        coremem: PChar ; // array of byte, 65K
-        coremem_valid: PChar; // array of flags. 1 for valid memory cells
-        coremem_size: integer
-        ) ;
-        begin
-        end ;
-(**)
-
+// Linux-Build davon in diesem Repo. Ersetzt durch eine native Pascal-
+// Neuimplementierung, Pdp11DisasU.Disas11 (gleiche Signatur). Siehe
+// LINUX_PORT_TODO.md.
 
 constructor TFormDisas.Create(AOwner: TComponent) ;
   begin

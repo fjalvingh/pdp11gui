@@ -382,8 +382,56 @@ MACRO-11 editor, memory views, disk image I/O, etc.) one by one to shake
 out further runtime issues — only the main window + startup path has been
 verified so far. Also still open: everything listed above under "Known
 NOT-yet-ported" and "Still open" (Telnet, real serial hardware, USB panel,
-disassembler engine, macro11.bat/m4.bat Linux equivalents, path-separator
-sweep, `.dfm`->`.lfm` conversion).
+macro11.bat/m4.bat Linux equivalents, path-separator sweep, `.dfm`->`.lfm`
+conversion). The disassembler engine itself is done now, see below.
+
+## Disassembler engine: native Pascal port, 2026-07-22
+
+`FormDisasU.pas`'s `Disas11` used to call `PDP11DISAS.DLL` (Windows-only,
+source unavailable). Replaced with `common/Pdp11DisasU.pas`, a from-scratch
+implementation covering the full PDP-11 instruction set: base ISA, EIS
+(MUL/DIV/ASH/ASHC/XOR/SOB), FP11 floating point, and the Commercial
+Instruction Set (CIS). Same `Disas11` call signature, so `FormDisasU.pas`
+only needed a `uses` addition and the stub removed.
+
+The opcode/mask/operand-format table was cross-checked against SimH's
+open-source PDP-11 simulator (`PDP11/pdp11_sys.c`) — pulled programmatically
+(not transcribed by eye) and used as a correctness reference for the
+publicly documented ISA encoding; this caught two real bugs during
+development that are worth flagging in case they matter elsewhere:
+- A naive regex-based class lookup initially mismatched `SOP`/`SOPR`/`SOPA`
+  and `FOP`/`FOPA` (substring collision), which would have given `MUL`,
+  `DIV`, `ASH`, `ASHC`, `LDEXP`, and the float double-operand instructions
+  (`ADDF`/`MULF`/`LDF`/`SUBF`/`CMPF`/`DIVF`/...) the wrong decode mask —
+  fixed before it ever reached the Pascal source.
+- SimH's own `opcode[]` string table has a verified duplicate at opcode
+  `000256` (labelled `"CLN CLZ CLC"`, same as `000255`, instead of the
+  correct `"CLN CLZ CLV"`). Our table derives all 32 condition-code-group
+  mnemonics (`000240`-`000277`) from the documented per-flag bit pattern
+  instead of trusting that string, so this doesn't carry over.
+
+Two known, inherent (not bug) limitations of *static* disassembly:
+- **FP11 F/D and I/L variants are ambiguous from the opcode alone** — e.g.
+  `CLRF`/`CLRD` share identical bits; the real CPU distinguishes them via
+  its live FPS mode register, which a memory-image-only disassembler has
+  no access to. We always print the F/I (single precision, the FP11
+  power-on default) mnemonic. The D/L-variant table entries are kept
+  (currently unreachable, since we never set the corresponding bits) so a
+  future caller with a real FPS value could enable them.
+- **CIS "inline" instructions** (`MOVCI`, `ADDNI`, ... mnemonics ending in
+  "I") embed descriptor operands as data words following the opcode rather
+  than in fixed registers; decoding those would need CIS's variable-length
+  packed/numeric descriptor formats, which isn't attempted (matching SimH's
+  own disassembler) — the mnemonic prints alone, 1 word consumed, and the
+  descriptor words that follow will show up as their own (likely
+  nonsensical) lines. Non-inline CIS instructions are unaffected: their
+  operands are always fixed registers by architectural convention.
+
+Verified via a standalone `fpc`-compiled test harness (14 unit cases plus
+an end-to-end `Disas11` buffer test covering addressing modes, branches,
+SOB, EIS, FP11, CIS, byte-mode, unknown-opcode fallback, and invalid-memory
+fallback) before wiring into the GUI; not yet exercised against a live
+PDP-11 connection (needs hardware/SimH, out of scope for this pass).
 
 ## HiDPI: switched build to the Qt5 widgetset, 2026-07-22
 
