@@ -381,3 +381,70 @@ verified so far. Also still open: everything listed above under "Known
 NOT-yet-ported" and "Still open" (Telnet, real serial hardware, USB panel,
 disassembler engine, macro11.bat/m4.bat Linux equivalents, path-separator
 sweep, `.dfm`->`.lfm` conversion, serial-device-picker UI).
+
+## HiDPI: switched build to the Qt5 widgetset, 2026-07-22
+
+The default `lazbuild` target (GTK2 widgetset) has **no HiDPI support at
+all** on Linux. Verified directly: on a 4K display with the desktop scale
+set to 200% (`Xft.dpi` = 192), the GTK2 build's main window measured
+781x868 physical pixels — identical to an unscaled 96 DPI layout, and
+setting `GDK_SCALE=2` (the usual GTK HiDPI env var) made no difference
+(it's GDK3-only; GTK2 doesn't read it). The project's `.lpi` already has
+`Scaled=True` and a Windows `<XPManifest><DpiAware>` entry, but the latter
+is a Win32 executable-manifest setting with no effect on Linux, and
+`Scaled` (LCL's own design-PPI-to-runtime-PPI rescaling) never triggers
+because the GTK2 widgetset always reports `Screen.PixelsPerInch` as 96
+regardless of the real display.
+
+Tried Lazarus's GTK3 widgetset next (`lazbuild --ws=gtk3`, after
+installing `libgtk-3-dev` for the missing linker symlinks) since its
+runtime lib was already present. **Rejected**: it's marked alpha in this
+Lazarus version (4.8.0) and it showed — a flood of
+`Gtk-CRITICAL **: gtk_widget_queue_draw_area: assertion 'width >= 0'
+failed` / `gtk_distribute_natural_allocation: assertion 'extra_space >= 0'
+failed` errors on startup, and no window was ever actually created.
+
+**Switched to the Qt5 widgetset** (`lazbuild --ws=qt5`), after installing
+`libqt5pas1`/`libqt5pas-dev` (the Qt5-Pascal binding Lazarus links
+against — not installed by default). This does support HiDPI correctly,
+but neither of its two auto-detection paths picked up this display's
+scale automatically during testing:
+- Running with Qt's native Wayland backend (the default here, since the
+  session is `XDG_SESSION_TYPE=wayland`) produces no window visible to
+  X11 introspection tools at all (expected, it's a native Wayland
+  surface) and couldn't be visually verified in this environment.
+- Running with `QT_QPA_PLATFORM=xcb` (XWayland) and
+  `QT_AUTO_SCREEN_SCALE_FACTOR=1` produced an unscaled 781x845 window —
+  Qt's xcb backend doesn't compute its auto-scale from `Xft.dpi` here.
+
+Forcing it explicitly does work: `QT_QPA_PLATFORM=xcb QT_SCALE_FACTOR=2`
+produced a 1562x1690 window — exactly 2x the unscaled size, confirming
+the LCL `Scaled` mechanism and Qt5's rendering both scale correctly (crisp
+vector scaling, not a blurry bitmap stretch) once Qt is told the right
+factor.
+
+**Added `Pdp11gui/run.sh`**: a launcher that reads the desktop's `Xft.dpi`
+via `xrdb -query`, computes `scale = dpi / 96`, and execs the real binary
+with `QT_QPA_PLATFORM=xcb` and `QT_SCALE_FACTOR=$scale` set — so the
+correct factor is picked up automatically from whatever the desktop's
+scale setting actually is, not hardcoded to 2. Use this to launch the app
+instead of running `./pdp11GUI` directly.
+
+**Build command changed**: plain `lazbuild pdp11GUI.lpi` still defaults to
+GTK2 (the primary config's global default widgetset, not overridable from
+inside the `.lpi` in a way that stuck — a `<MacroValues>` entry for
+`LCLWidgetType` was tried and had no effect on which widgetset actually
+gets linked). Must build with:
+```
+lazbuild --ws=qt5 pdp11GUI.lpi
+```
+Requires `libqt5pas1` and `libqt5pas-dev` installed (`apt-get install
+libqt5pas1 libqt5pas-dev`).
+
+**Follow-up**: only the main window + startup dialog were verified this
+way (window geometry via `xwininfo`, no visual screenshot was possible in
+this environment — GNOME's Wayland session blocks both X11 screen capture
+and the `org.gnome.Shell.Screenshot` D-Bus API from this context). Worth
+an eyeball check on real hardware that fonts/icons/dialogs all scale
+consistently across the less-common windows (Terminal, MACRO-11 editor,
+memory views, etc.), not just the main window.
