@@ -47,12 +47,11 @@ object FormExecuteBlinkenlight: TFormExecuteBlinkenlight
       OnClick = NewPgmButtonClick
     end
     object BlinkenLightInstructionMemo: TMemo
-      AlignWithMargins = True
       Left = 4
       Top = 51
       Width = 632
       Height = 547
-      Margins.Top = 50
+      BorderSpacing.Top = 50
       Align = alClient
       Font.Charset = ANSI_CHARSET
       Font.Color = clBlack

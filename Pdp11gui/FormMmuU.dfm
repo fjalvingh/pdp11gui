@@ -32,12 +32,11 @@ object FormMMU: TFormMMU
         Align = alClient
         DefaultRowHeight = 16
         TabOrder = 0
-        Alignment = taLeftJustify
-        FixedFont.Charset = DEFAULT_CHARSET
-        FixedFont.Color = clWindowText
-        FixedFont.Height = -11
-        FixedFont.Name = 'Tahoma'
-        FixedFont.Style = []
+        TitleFont.Charset = DEFAULT_CHARSET
+        TitleFont.Color = clWindowText
+        TitleFont.Height = -11
+        TitleFont.Name = 'Tahoma'
+        TitleFont.Style = []
       end
     end
     object InstructionSpaceTabSheet: TTabSheet
@@ -51,12 +50,11 @@ object FormMMU: TFormMMU
         Align = alClient
         DefaultRowHeight = 16
         TabOrder = 0
-        Alignment = taLeftJustify
-        FixedFont.Charset = DEFAULT_CHARSET
-        FixedFont.Color = clWindowText
-        FixedFont.Height = -11
-        FixedFont.Name = 'Tahoma'
-        FixedFont.Style = []
+        TitleFont.Charset = DEFAULT_CHARSET
+        TitleFont.Color = clWindowText
+        TitleFont.Height = -11
+        TitleFont.Name = 'Tahoma'
+        TitleFont.Style = []
       end
     end
   end

@@ -14,15 +14,14 @@ object FormNoConsolePrompt: TFormNoConsolePrompt
   PixelsPerInch = 96
   TextHeight = 13
   object Memo1: TMemo
-    AlignWithMargins = True
     Left = 10
     Top = 10
     Width = 406
     Height = 362
-    Margins.Left = 10
-    Margins.Top = 10
-    Margins.Right = 10
-    Margins.Bottom = 10
+    BorderSpacing.Left = 10
+    BorderSpacing.Top = 10
+    BorderSpacing.Right = 10
+    BorderSpacing.Bottom = 10
     Align = alTop
     Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET

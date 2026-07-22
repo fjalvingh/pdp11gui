@@ -25,12 +25,11 @@ object FrameMemoryCellGroupGrid: TFrameMemoryCellGroupGrid
     OnMouseDown = AnyControlMouseDown
     OnSelectCell = MemoryCellsStringGridSelectCell
     OnSetEditText = MemoryCellsStringGridSetEditText
-    Alignment = taLeftJustify
-    FixedFont.Charset = DEFAULT_CHARSET
-    FixedFont.Color = clWindowText
-    FixedFont.Height = -11
-    FixedFont.Name = 'Tahoma'
-    FixedFont.Style = []
+    TitleFont.Charset = DEFAULT_CHARSET
+    TitleFont.Color = clWindowText
+    TitleFont.Height = -11
+    TitleFont.Name = 'Tahoma'
+    TitleFont.Style = []
     ColWidths = (
       64
       64

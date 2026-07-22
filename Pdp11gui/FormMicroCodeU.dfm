@@ -91,12 +91,11 @@ object FormMicroCode: TFormMicroCode
     TabOrder = 1
     OnDrawCell = MicroInstructionStringGridDrawCell
     OnMouseUp = MicroInstructionStringGridMouseUp
-    Alignment = taLeftJustify
-    FixedFont.Charset = DEFAULT_CHARSET
-    FixedFont.Color = clWindowText
-    FixedFont.Height = -11
-    FixedFont.Name = 'Tahoma'
-    FixedFont.Style = []
+    TitleFont.Charset = DEFAULT_CHARSET
+    TitleFont.Color = clWindowText
+    TitleFont.Height = -11
+    TitleFont.Name = 'Tahoma'
+    TitleFont.Style = []
   end
   object OpenDialog1: TOpenDialog
     Options = [ofEnableSizing]

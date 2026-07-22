@@ -37,10 +37,10 @@ object BusyForm: TBusyForm
     Top = 43
     Width = 536
     Height = 25
-    Margins.Left = 10
-    Margins.Top = 10
-    Margins.Right = 10
-    Margins.Bottom = 10
+    BorderSpacing.Left = 10
+    BorderSpacing.Top = 10
+    BorderSpacing.Right = 10
+    BorderSpacing.Bottom = 10
     Anchors = []
     Smooth = True
     TabOrder = 0

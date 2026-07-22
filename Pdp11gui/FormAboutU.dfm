@@ -16,22 +16,20 @@ object FormAbout: TFormAbout
   PixelsPerInch = 96
   TextHeight = 13
   object Button1: TButton
-    AlignWithMargins = True
     Left = 30
     Top = 233
     Width = 301
     Height = 25
-    Margins.Left = 30
-    Margins.Top = 9
-    Margins.Right = 30
-    Margins.Bottom = 9
+    BorderSpacing.Left = 30
+    BorderSpacing.Top = 9
+    BorderSpacing.Right = 30
+    BorderSpacing.Bottom = 9
     Align = alBottom
     Caption = 'OK'
     ModalResult = 1
     TabOrder = 0
   end
   object Memo1: TMemo
-    AlignWithMargins = True
     Left = 3
     Top = 3
     Width = 355

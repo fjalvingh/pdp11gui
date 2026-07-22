@@ -96,10 +96,10 @@ object FormDisas: TFormDisas
     Width = 535
     Height = 105
     Cursor = crIBeam
-    Margins.Left = 5
-    Margins.Top = 5
-    Margins.Right = 5
-    Margins.Bottom = 5
+    BorderSpacing.Left = 5
+    BorderSpacing.Top = 5
+    BorderSpacing.Right = 5
+    BorderSpacing.Bottom = 5
     Lines.Strings = (
       'line1'
       'line2'
