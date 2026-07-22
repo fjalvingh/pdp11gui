@@ -13,7 +13,7 @@ object FormMacro11Listing: TFormMacro11Listing
   OldCreateOrder = False
   PixelsPerInch = 96
   TextHeight = 13
-  object Editor: TJvEditor
+  object Editor: TSynEdit
     Left = 0
     Top = 41
     Width = 535
@@ -23,18 +23,8 @@ object FormMacro11Listing: TFormMacro11Listing
     Margins.Top = 5
     Margins.Right = 5
     Margins.Bottom = 5
-    GutterWidth = 36
     ReadOnly = True
-    Completion.ItemHeight = 13
-    Completion.CRLF = '/n'
-    Completion.Separator = '='
-    TabStops = '9 17 25 33 41 49 57 65'
-    SmartTab = False
-    BackSpaceUnindents = False
-    AutoIndent = False
-    BracketHighlighting.StringEscape = #39#39
     OnResize = EditorResize
-    OnPaintGutter = EditorPaintGutter
     Align = alClient
     Font.Charset = ANSI_CHARSET
     Font.Color = clWindowText

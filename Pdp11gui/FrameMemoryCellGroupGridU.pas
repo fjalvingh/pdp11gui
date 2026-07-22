@@ -29,34 +29,34 @@ unit FrameMemoryCellGroupGridU;
 
   Die Anzahl der Spalten wird im Constructor festgelegt ('MemoryColumns').
 
-  Ereignisse für DepositAll, DepoitChanged, ExamineCur, ExamineAll
+  Ereignisse fï¿½r DepositAll, DepoitChanged, ExamineCur, ExamineAll
   sind schon in diesen Frame eingebaut.
 
   Zum sync der memorycells:
-  pdp_values können immer vonanderen events (Disassembyl window)
-  geändert werden. Das darf aber nicht mmer auf die edit_values duchschalgen!
-  Bsp: Mem1 ist komplett "gelb", und fängt mit  Deposit All an
+  pdp_values kï¿½nnen immer vonanderen events (Disassembyl window)
+  geï¿½ndert werden. Das darf aber nicht mmer auf die edit_values duchschalgen!
+  Bsp: Mem1 ist komplett "gelb", und fï¿½ngt mit  Deposit All an
   Dann kann sich Disaselbly updaten.
   Disassembly fragt neue Werte ab, vertielt diese an alle Fenster ...
   auch an Mem1 ! Die Mem1.edit_values werden korrigiert und gelten als "aktuell,
   der USer verliert Werte!
   PdpOverwritesEdit steuert, ob aktualisierte PDp11-Werte IMMER in den Edit
-  übernommen werden. default ist true
+  ï¿½bernommen werden. default ist true
 
 }
 
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Grids, StdCtrls, ExtCtrls, Menus,
+  SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, Grids, StdCtrls, ExtCtrls, Menus, Types,
   JH_Utilities,
   AddressU,
-  MemoryCellU, JvExGrids, JvStringGrid ;
+  MemoryCellU ;
 
 type
   TFrameMemoryCellGroupGrid = class(TFrame)
-      MemoryCellsStringGrid: TJvStringGrid;
+      MemoryCellsStringGrid: TStringGrid;
       PopupMenu1: TPopupMenu;
       Filldatawithaddr1: TMenuItem;
       Cleardata1: TMenuItem;
@@ -87,7 +87,7 @@ type
     private
       { Private-Deklarationen }
       cur_row, cur_col : integer ;
-      // wird von der memorycellgroup aufgerufen, wenn sich eine Zelle spontan ändert
+      // wird von der memorycellgroup aufgerufen, wenn sich eine Zelle spontan ï¿½ndert
       procedure memoryCellChange(Sender { = memorycellgroup}: TObject; memorycell: TMemoryCell) ;
       procedure syncBitfieldForm(aCol, aRow: integer) ;
     public
@@ -95,9 +95,9 @@ type
       memorycellgroup: TMemoryCellGroup ;
       MemoryColumns: integer ;
 
-      optimal_width, optimal_height: integer ; // Info an die Form, wie gross das grid werden möchte.
+      optimal_width, optimal_height: integer ; // Info an die Form, wie gross das grid werden mï¿½chte.
 
-      OnUpdate: TNotifyEvent ; // Eine xternes Ereignis änderte die Darstellung oder Inhalt des Grid
+      OnUpdate: TNotifyEvent ; // Eine xternes Ereignis ï¿½nderte die Darstellung oder Inhalt des Grid
       constructor Create(AOwner: TComponent) ; override ;
       destructor Destroy ; override ;
 
@@ -146,7 +146,7 @@ procedure TFrameMemoryCellGroupGrid.UpdateDisplay;
       ShowMemoryCell(mc) ;
     end;
 
-// parent form möcht auch updaten.
+// parent form mï¿½cht auch updaten.
     if assigned(OnUpdate) then
       OnUpdate(self) ;
   end{ "procedure TFrameMemoryCellGroupGrid.UpdateDisplay" } ;
@@ -154,13 +154,13 @@ procedure TFrameMemoryCellGroupGrid.UpdateDisplay;
 
 procedure TFrameMemoryCellGroupGrid.ClipboardCopy;
   begin
-    ClipBoard.Astext := MemoryCellsStringGrid.InplaceEditor.SelText ;
+    ClipBoard.Astext := (MemoryCellsStringGrid.InplaceEditor as TCustomEdit).SelText ;
   end;
 
 procedure TFrameMemoryCellGroupGrid.ClipboardPaste;
   begin
     if ClipBoard <> nil then // passiert, wenn die cell nicht im editmdoe ist
-      MemoryCellsStringGrid.InplaceEditor.SelText := ClipBoard.Astext ;
+      (MemoryCellsStringGrid.InplaceEditor as TCustomEdit).SelText := ClipBoard.Astext ;
   end;
 
 
@@ -235,7 +235,7 @@ procedure TFrameMemoryCellGroupGrid.ExamineAllButtonClick(Sender: TObject);
 
 
 // readonly-spalten nicht weiss,
-// geänderte Werte rosa
+// geï¿½nderte Werte rosa
 procedure TFrameMemoryCellGroupGrid.MemoryCellsStringGridDrawCell(Sender: TObject;
         aCol, aRow: integer; Rect: TRect; State: TGridDrawState);
   var
@@ -246,7 +246,7 @@ procedure TFrameMemoryCellGroupGrid.MemoryCellsStringGridDrawCell(Sender: TObjec
     with MemoryCellsStringGrid do begin
 
       if gdFocused in State then begin
-        // hat sich die Fokuszelle geändert?
+        // hat sich die Fokuszelle geï¿½ndert?
         // Wenn ja: neue Position merken, und nochmal alles neu malen
         // keine Rekursion: da beim zweiten Malen die Fokuszelle gleich bleibt
         if (cur_row <> aRow) or (cur_col <> aCol) then begin
@@ -347,7 +347,7 @@ procedure TFrameMemoryCellGroupGrid.MemoryCellsStringGridSelectCell(Sender: TObj
         aCol, aRow: integer; var CanSelect: Boolean);
   begin
     with MemoryCellsStringGrid do begin
-      // falls eine neue Zelle gewählt wird,
+      // falls eine neue Zelle gewï¿½hlt wird,
       // wird eine editierte verlassen: alles neu malen!
       UpdateDisplay ;
       syncBitfieldForm(aCol, aRow);
@@ -362,8 +362,8 @@ procedure TFrameMemoryCellGroupGrid.MemoryCellsStringGridSetEditText(Sender: TOb
     i: integer ;
   begin
     // eingegebenen Value an die memorycell weiterleiten
-    // nur gültige Octalziffern durchlassen
-    // '?' erlauben, als ungültige Zahl (macht das Grid intern)
+    // nur gï¿½ltige Octalziffern durchlassen
+    // '?' erlauben, als ungï¿½ltige Zahl (macht das Grid intern)
     s := '' ;
     for i := 1 to Length(Value) do
       if CharInSet(Value[i], ['0'..'7']) then
@@ -376,7 +376,7 @@ procedure TFrameMemoryCellGroupGrid.MemoryCellsStringGridSetEditText(Sender: TOb
     mc := MemoryCellsStringGrid.Objects[aCol, aRow] as TMemoryCell ;
     if mc <> nil then
       if s = '' then
-        mc.edit_value := MEMORYCELL_ILLEGALVAL // kann während EEdit vorkommen
+        mc.edit_value := MEMORYCELL_ILLEGALVAL // kann wï¿½hrend EEdit vorkommen
       else
         mc.edit_value := OctalStr2Dword(s, 16) ;
   end{ "procedure TFrameMemoryCellGroupGrid.MemoryCellsStringGridSetEditText" } ;
@@ -390,7 +390,7 @@ procedure TFrameMemoryCellGroupGrid.ShowMemoryCell(mc: TMemoryCell) ;
 
 
 // Die MemoryCells laden und im Grid anzeigen
-// Achtung: adressen der memorycellgroup können Löcher haben,
+// Achtung: adressen der memorycellgroup kï¿½nnen Lï¿½cher haben,
 //(wenn sie von MACRO11 erzeugt wurden)
 procedure TFrameMemoryCellGroupGrid.ConnectToMemoryCellGroup(mcg: TMemoryCellGroup) ;
 
@@ -418,7 +418,7 @@ end;
       FixedRows := 1 ;
       FixedCols := 1 ;
 
-      // Zellen löschen
+      // Zellen lï¿½schen
       for c:= 0 to ColCount-1 do
         for r := 0 to RowCount - 1 do begin
           Cells[c, r] := '' ;
@@ -448,7 +448,7 @@ end;
       end { "if mcg.Count > 0" } ;
     end{ "with MemoryCellsStringGrid" } ;
 
-    // Zellen auf GridPlätze verteilen. Lücken in adressen beachten!
+    // Zellen auf GridPlï¿½tze verteilen. Lï¿½cken in adressen beachten!
     for i := 0 to mcg.Count-1 do begin
       mc := mcg.Cell(i) ;
       mc.grid := MemoryCellsStringGrid ;
@@ -460,11 +460,11 @@ end;
       ShowMemoryCell(mc) ;
     end ;
 
-    // callback bei Zellenänderung
+    // callback bei Zellenï¿½nderung
     mcg.OnMemoryCellChange := memoryCellChange ;
 
     // optimal_width, optimal_height:
-    // Info an die Form, wie gross das grid werden möchte.
+    // Info an die Form, wie gross das grid werden mï¿½chte.
     // Formhoehe/breite so einstellen, dass Grid genau alle Zeilen anzeigt
     with MemoryCellsStringGrid do begin
       optimal_height := RowCount * (1+DefaultRowHeight) + 3 ;
@@ -476,7 +476,7 @@ end;
   end{ "procedure TFrameMemoryCellGroupGrid.ConnectToMemoryCellGroup" } ;
 
 
-// wird von der memorycellgroup aufgerufen, wenn sich eine Zelle spontan ändert
+// wird von der memorycellgroup aufgerufen, wenn sich eine Zelle spontan ï¿½ndert
 procedure TFrameMemoryCellGroupGrid.memoryCellChange(Sender { = memorycellgroup}: TObject; memorycell: TMemoryCell) ;
   begin
     memorycell.edit_value := memorycell.pdp_value ;
@@ -489,7 +489,7 @@ procedure TFrameMemoryCellGroupGrid.Cleardata1Click(Sender: TObject);
     i: integer ;
     mc: TMemoryCell ;
   begin
-    // Alle Zellen löschen
+    // Alle Zellen lï¿½schen
     for i:= 0 to memorycellgroup.Count - 1 do begin
       mc := memorycellgroup.Cell(i) ;
       mc.edit_value := 0 ;
@@ -498,12 +498,12 @@ procedure TFrameMemoryCellGroupGrid.Cleardata1Click(Sender: TObject);
   end;
 
 procedure TFrameMemoryCellGroupGrid.Filldatawithaddr1Click(Sender: TObject);
-// Jede Zelle mit ihrer WORD(!)-Adresse füllen
+// Jede Zelle mit ihrer WORD(!)-Adresse fï¿½llen
   var
     i: integer ;
     mc: TMemoryCell ;
   begin
-    // Alle Zellen löschen
+    // Alle Zellen lï¿½schen
     for i:= 0 to memorycellgroup.Count - 1 do begin
       mc := memorycellgroup.Cell(i) ;
       mc.edit_value := (mc.addr.val shr 1) and  $ffff ;
@@ -520,7 +520,7 @@ procedure TFrameMemoryCellGroupGrid.Verify1Click(Sender: TObject);
     UpdateDisplay ;
   end;
 
-// Erzeuge die Deposit-Commandos für SimH
+// Erzeuge die Deposit-Commandos fï¿½r SimH
 procedure TFrameMemoryCellGroupGrid.WriteCodeAsSimHScript(fname:string);
   var i: integer ;
     sl: TStringList ;

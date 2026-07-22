@@ -22,19 +22,19 @@ unit FormBitfieldsU;
 }
 
 {
-Ein Bitfeldeditor für eine MemoryCell
+Ein Bitfeldeditor fï¿½r eine MemoryCell
 }
 
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls,
+  SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, ExtCtrls, Types, LCLIntf, LCLType,
   JH_Utilities,
   FormChildU,
   MemoryCellU,
-  JvExGrids, JvStringGrid,
-  BitFieldU, Grids ;
+  Grids,
+  BitFieldU ;
 
 type
   TFormBitfields = class(TFormChild)
@@ -44,7 +44,7 @@ type
       InfoLabel: TLabel;
       AddrEdit: TEdit;
       ValueEdit: TEdit;
-      BitfieldsStringGrid: TJvStringGrid;
+      BitfieldsStringGrid: TStringGrid;
       DepositButton: TButton;
       ExamineButton: TButton;
       PanelBackground: TPanel;
@@ -84,7 +84,7 @@ type
       procedure ConnectToMemoryCell(mcg: TMemoryCellGroup) ;
 
       procedure UpdateDisplay ;
-      // wird von der memorycellgroup aufgerufen, wenn sich eine zelle spontan ändert
+      // wird von der memorycellgroup aufgerufen, wenn sich eine zelle spontan ï¿½ndert
       procedure MemoryCellChange(Sender { = memorycellgroup}: TObject; memorycell: TMemoryCell) ;
       procedure ShowNewAddr(mc: TMemoryCell) ;
     end{ "TYPE TFormBitfields = class(TFormChild)" } ;
@@ -171,7 +171,7 @@ procedure TFormBitfields.ExamineButtonClick(Sender: TObject);
 
 
 // readonly-Spalten nicht weiss,
-// geänderte Werte gelb
+// geï¿½nderte Werte gelb
 procedure TFormBitfields.BitfieldsStringGridDrawCell(Sender: TObject; ACol,
         ARow: integer; Rect: TRect; State: TGridDrawState);
   var
@@ -192,7 +192,7 @@ procedure TFormBitfields.BitfieldsStringGridDrawCell(Sender: TObject; ACol,
           pdp_fieldvalue := getBitFieldValueForRow(ARow, memorycell.pdp_value) ;
           edit_fieldvalue := getBitFieldValueForRow(ARow, memorycell.edit_value) ;
           if pdp_fieldvalue <> edit_fieldvalue then begin
-            newcolor := true ; // geänderte Felder mit gelbem Hintergrund
+            newcolor := true ; // geï¿½nderte Felder mit gelbem Hintergrund
             Canvas.Brush.Color := ColorGridCellChangedBkGnd ;
             Canvas.Font.Color := ColorGridCellChangedText ;
           end;
@@ -229,7 +229,7 @@ procedure TFormBitfields.BitfieldsStringGridSelectCell(Sender: TObject; ACol,
       if (ARow < 1) or (ACol in [0,1,2,4]) then
         options := options - [goEditing]
       else begin
-        // falls eine neue Zelle gewählt wird,
+        // falls eine neue Zelle gewï¿½hlt wird,
         // wird eine editierte verlassen: alles neu malen!
         UpdateDisplay ;
         options := options + [goEditing] ;
@@ -237,7 +237,7 @@ procedure TFormBitfields.BitfieldsStringGridSelectCell(Sender: TObject; ACol,
     end;
   end;
 
-// wird während des Tippens in den bitfield-values aufgerufen
+// wird wï¿½hrend des Tippens in den bitfield-values aufgerufen
 procedure TFormBitfields.BitfieldsStringGridSetEditText(Sender: TObject; ACol,
         ARow: integer; const Value: string);
   begin
@@ -252,7 +252,7 @@ procedure TFormBitfields.BitfieldsStringGridSetEditText(Sender: TObject; ACol,
     end;
   end;
 
-// Wird während des Eintippens aufgerufen
+// Wird wï¿½hrend des Eintippens aufgerufen
 procedure TFormBitfields.ValueEditChange(Sender: TObject);
   var
     Value, s: string ;
@@ -261,8 +261,8 @@ procedure TFormBitfields.ValueEditChange(Sender: TObject);
     if editChangeEventsEnabled then begin
 
       // eingegebenen Value an die memorycell weiterleiten
-      // nur gültige Octalziffern durchlassen
-      // '?' erlauben, als ungültige Zahl (macht das Grid intern)
+      // nur gï¿½ltige Octalziffern durchlassen
+      // '?' erlauben, als ungï¿½ltige Zahl (macht das Grid intern)
       Value := ValueEdit.Text ;
       s := '' ;
       for i := 1 to Length(Value) do
@@ -274,11 +274,11 @@ procedure TFormBitfields.ValueEditChange(Sender: TObject);
         end;
 
       if s = '' then
-        memorycell.edit_value := MEMORYCELL_ILLEGALVAL // kann während EEdit vorkommen
+        memorycell.edit_value := MEMORYCELL_ILLEGALVAL // kann wï¿½hrend EEdit vorkommen
       else
         memorycell.edit_value := OctalStr2Dword(s, 16) ;
 
-      // Wertänderung durch gelbes Fenster
+      // Wertï¿½nderung durch gelbes Fenster
       if memorycell.edit_value <> memorycell.pdp_value then
         ValueEdit.Color := ColorGridCellChangedBkGnd
       else
@@ -298,7 +298,7 @@ procedure TFormBitfields.ValueEditKeyPress(Sender: TObject; var Key: char);
   end;
 
 
-// wird von der memorycellgroup aufgerufen, wenn sich eine zelle spontan ändert
+// wird von der memorycellgroup aufgerufen, wenn sich eine zelle spontan ï¿½ndert
 procedure TFormBitfields.MemoryCellChange(Sender { = memorycellgroup}: TObject; memorycell: TMemoryCell) ;
   begin
     memorycell.edit_value := memorycell.pdp_value ;
@@ -314,7 +314,7 @@ procedure TFormBitfields.UpdateBitfieldsText ;
     editChangeEventsEnabled := false ; // keine Rekursion ValueEdit->BitfieldEdits->ValueEdit ...
 
     if bitfieldsdef <> nil then begin
-      // Definitionen da: Grid füllen
+      // Definitionen da: Grid fï¿½llen
       for i := 0 to bitfieldsdef.bitfields.Count - 1 do begin
         bfd := bitfieldsdef.bitfields.Items[i] as TBitFieldDef ;
         BitfieldsStringGrid.Cells[0, i+1] := ' ' + bfd.name ;
@@ -344,7 +344,7 @@ procedure TFormBitfields.UpdateValueEditText ;
   begin
     editChangeEventsEnabled := false ; // keine Rekursion ValueEdit->BitfieldEdits->ValueEdit ...
 
-    // Wertänderung durch gelbes Fenster
+    // Wertï¿½nderung durch gelbes Fenster
     if memorycell.edit_value <> memorycell.pdp_value then
       ValueEdit.Color := ColorGridCellChangedBkGnd
     else
@@ -371,10 +371,10 @@ procedure TFormBitfields.ConnectToMemoryCell(mcg: TMemoryCellGroup) ;
   begin
     memorycellgroup := mcg ;
     memorycell := mcg.Cell(0) ;
-    // callback bei Zellenänderung
+    // callback bei Zellenï¿½nderung
     mcg.OnMemoryCellChange := MemoryCellChange ;
 
-    // angezeigte Bits sind ungültig, grid weg.
+    // angezeigte Bits sind ungï¿½ltig, grid weg.
     // durch "ShowNewAddr()" kommt das Display wieder
     bitfieldsdef := nil ;
     BitfieldsStringGrid.Hide ;
@@ -423,7 +423,7 @@ end;
       // keine Definitionen da: Hide Grid
       BitfieldsStringGrid.Hide ;
       // jetzt ist der Hintergrund sichtbar: "no bit field definitions loaded"
-      ClientHeight := PanelT.Height + 50 ; // etwas Platz für Background
+      ClientHeight := PanelT.Height + 50 ; // etwas Platz fï¿½r Background
     end else begin
       // hat die cell keine Infom wird der bitdef-name genommen
       if memorycell.info = '' then

@@ -23,16 +23,15 @@ unit AuxU;
 
 interface 
 
-uses 
-  Windows, 
-  Classes, 
-  SysUtils, 
-  Graphics, 
-  Forms, 
-  JvExGrids, JvStringGrid, 
-  ShellApi, 
-  JH_Utilities 
-  ; 
+uses
+  Classes,
+  SysUtils,
+  Graphics,
+  Forms,
+  Grids,
+  LCLIntf,
+  JH_Utilities
+  ;
 
 
 const 
@@ -54,7 +53,7 @@ const
   // reaod-only Grid-Zellen
   ColorGridCellReadOnlyBkGnd = TColor($E0E0E0) ; // grauer Hintergrund
   ColorGridCellReadOnlyText = clBlack ; 
-  // geänderte Grid-Zellen
+  // geï¿½nderte Grid-Zellen
   ColorGridCellChangedBkGnd = TColor($80FFFF) ; // helles gelb
   ColorGridCellChangedText = clBlack ; 
 
@@ -92,16 +91,16 @@ function String2ID(caption: string): string ; // einheitliche Schreibweise
 
 function StripQuotes(s: string): string ; 
 
-// Ändert in einer Caption der Form "Fenster title - irgend was"
+// ï¿½ndert in einer Caption der Form "Fenster title - irgend was"
 // den Teil hinter dem "-"
 function setFormCaptionInfoField(orgCaption:string ; newInfo: string):string ; 
 function getFormCaptionFixedField(aCaption:string ):string ; 
 
 
 // speichert die colwidths als Kommaliste im key "<formname>.ColWidhts"
-procedure FormGridSaveColWidths(formname:string ; grid: TJvStringGrid) ; 
-// lädt ColWidths für ein grid aus dem Key "<formname>.ColWidhts"
-procedure FormGridLoadColWidths(formname:string ; grid: TJvStringGrid) ; 
+procedure FormGridSaveColWidths(formname:string ; grid: TStringGrid) ; 
+// lï¿½dt ColWidths fï¿½r ein grid aus dem Key "<formname>.ColWidhts"
+procedure FormGridLoadColWidths(formname:string ; grid: TStringGrid) ; 
 
 function Character2PrintableText(c:char; showcontrolchars: boolean): string ; inline ; 
 function String2PrintableText(s:string; showcontrolchars: boolean): string ; 
@@ -184,7 +183,7 @@ function Dword2OctalStr(val: dword; fixbitwidth: integer = 0): string ;
     if result = '' then 
       result := '0' ; 
 
-    // Soll-länge erzeugen
+    // Soll-lï¿½nge erzeugen
     while length(result) < fixdigitwidth do 
       result := '0' + result ; 
   end{ "function Dword2OctalStr" } ; 
@@ -197,11 +196,11 @@ function String2ID(caption: string): string ; // einheitliche Schreibweise
     caption := AnsiUppercase(caption) ; 
     for i := 1 to length(caption) do 
       case caption[i] of 
-        'A'..'Z', '0'..'9', '_': 
-          result := result + caption[i] ; 
-        'µ': 
-          result := result + 'MIKRO' ; 
-      end; 
+        'A'..'Z', '0'..'9', '_':
+          result := result + caption[i] ;
+        #$B5: // 'Âµ' (MICRO SIGN, Latin-1/CP1252 0xB5)
+          result := result + 'MIKRO' ;
+      end;
   end; 
 
 
@@ -233,7 +232,7 @@ function getFormCaptionFixedField(aCaption:string ):string ;
   begin 
     // Annahme: alles vor dem " - " ist die originale Caption, dahinter kommen info Angaben
     // Also: "Macro Source - test.mac" => "Macro Source"
-    // "PDP-11/44 µCode" => "PDP-11/44 µCode"
+    // "PDP-11/44 ï¿½Code" => "PDP-11/44 ï¿½Code"
     i := pos(' - ', aCaption) ; 
     if i > 0 then 
       result := Trim(Copy(aCaption, 1, i-1)) 
@@ -241,7 +240,7 @@ function getFormCaptionFixedField(aCaption:string ):string ;
   end; 
 
 // speichert die colwidths als Kommaliste im key "<formname>.ColWidhts"
-procedure FormGridSaveColWidths(formname:string ; grid: TJvStringGrid) ; 
+procedure FormGridSaveColWidths(formname:string ; grid: TStringGrid) ; 
   var i: integer ; 
     sl: TStringList ; 
   begin 
@@ -257,8 +256,8 @@ procedure FormGridSaveColWidths(formname:string ; grid: TJvStringGrid) ;
   end{ "procedure FormGridSaveColWidths" } ; 
 
 
-// lädt ColWidths für ein grid aus dem Key "<formname>.ColWidhts"
-procedure FormGridLoadColWidths(formname:string ; grid: TJvStringGrid) ; 
+// lï¿½dt ColWidths fï¿½r ein grid aus dem Key "<formname>.ColWidhts"
+procedure FormGridLoadColWidths(formname:string ; grid: TStringGrid) ; 
   var i: integer ; 
     sl: TStringList ; 
   begin 
@@ -275,7 +274,7 @@ procedure FormGridLoadColWidths(formname:string ; grid: TJvStringGrid) ;
   end{ "procedure FormGridLoadColWidths" } ; 
 
 
-// Zeichen als sichtbaren string: "\xhh" für Steuerzeichen
+// Zeichen als sichtbaren string: "\xhh" fï¿½r Steuerzeichen
 function Character2PrintableText(c:char; showcontrolchars: boolean): string ; inline ; 
   begin 
     result := '' ; 
@@ -298,7 +297,7 @@ function Character2PrintableText(c:char; showcontrolchars: boolean): string ; in
   end{ "function Character2PrintableText" } ; 
 
 
-// Zeichen als sichtbaren string: "\xhh" für Steuerzeichen
+// Zeichen als sichtbaren string: "\xhh" fï¿½r Steuerzeichen
 function String2PrintableText(s:string; showcontrolchars: boolean): string ; 
   var i: integer ; 
   begin 
@@ -384,7 +383,7 @@ procedure TRestZeit.setCur(curvalue: integer) ;
     if anteil = 0 then 
       restTicks := 0 // es hat noch nicht angefangen: gesamtzeit kann nicht berechnet werden
     else if anteil > 1 then 
-      restTicks := 1000 // dauert länger als erwartet: immer 1 sek anzeigen
+      restTicks := 1000 // dauert lï¿½nger als erwartet: immer 1 sek anzeigen
     else begin 
       totalticks := round(curticks / anteil) ; 
       restTicks := totalticks - curticks ; 
@@ -415,32 +414,12 @@ function TRestZeit.getRestZeit: string ; // hh:mm:ss
       result := Format('%d s', [s]) ; // nur sekunden
   end{ "function TRestZeit.getRestZeit" } ; 
 
-procedure OpenTextFileInNotepad(fname:string) ; 
-  var 
-//    programs_path: string ;
-    windows_path: string ; 
-    search_paths: string ; 
-    notepad_path: string ; 
-    buff1, buff2: array[0..1023] of char ; 
-  begin 
-    if not FileExists(fname) then 
-      raise Exception.CreateFmt('File to display "%s" does not exist', [fname]) ; 
-
-//    if not getEnv('PROGRAMFILES', programs_path) then
-//      raise Exception.Create('System folder for programs in "%PROGRAMFILES%" not found') ;
-    if not getEnv('WINDIR', windows_path) then 
-      raise Exception.Create('System folder for Windows in "%WINDIR%" not found') ; 
-//      search_paths := Format('"%s";"%s"', [windows_path,programs_path]) ;
-    search_paths := Format('"%s"', [windows_path]) ; 
-
-    notepad_path := FileSearchRecursive('notepad.exe', search_paths) ; 
-    if notepad_path = '' then 
-      raise Exception.CreateFmt('file"notepad.exe" not found in folder %s', [search_paths]) ; 
-    ShellExecute(Application.Handle, 'open', 
-            strpcopy(buff1, notepad_path), 
-            strpcopy(buff2, fname), 
-            nil, SW_SHOWNORMAL) ; 
-  end{ "procedure OpenTextFileInNotepad" } ; 
+procedure OpenTextFileInNotepad(fname:string) ;
+  begin
+    if not FileExists(fname) then
+      raise Exception.CreateFmt('File to display "%s" does not exist', [fname]) ;
+    OpenDocument(fname) ;
+  end{ "procedure OpenTextFileInNotepad" } ;
 
 procedure WaitAndProcessMessages(ms:dword) ; 
   var starticks: dword ; 

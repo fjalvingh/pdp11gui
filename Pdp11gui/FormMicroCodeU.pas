@@ -24,17 +24,17 @@ unit FormMicroCodeU;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls,
+  SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, ExtCtrls, Types, LCLIntf, LCLType,
   FormChildU,
-  JvExGrids, JvStringGrid,
+  Grids,
   JH_Utilities,
-  PDP1144MicroCodeU, Grids;
+  PDP1144MicroCodeU;
 
 type
   TFormMicroCode = class(TFormChild)
       Panel1: TPanel;
-      MicroInstructionStringGrid: TJvStringGrid;
+      MicroInstructionStringGrid: TStringGrid;
       MicroCodeSearchComboBox: TComboBox;
       Label1: TLabel;
       NextMicroInstructionButton: TButton;
@@ -183,7 +183,7 @@ end;
       NextMicroInstructionButton.Enabled := false ;
     end ;
 
-    // Zeilen ausfüllen
+    // Zeilen ausfï¿½llen
     if not Loaded or (CurMicroInstruction = nil) then Exit ; // es gibt noch nix anzuzeigen
 
     // ComboBox update
@@ -260,7 +260,7 @@ end;
     end { "with MicroInstructionStringGrid" } ;
 
     if Loaded then
-      Caption := setFormCaptionInfoField(Caption, 'µPC = ' + Dword2Octalstr(CurMicroInstruction.addr, 12))
+      Caption := setFormCaptionInfoField(Caption, 'ï¿½PC = ' + Dword2Octalstr(CurMicroInstruction.addr, 12))
     else
       Caption := setFormCaptionInfoField(Caption, 'code not loaded') ;
   end{ "procedure TFormMicroCode.UpdateDisplay" } ;
@@ -268,7 +268,7 @@ end;
 
 procedure TFormMicroCode.Load(filepattern:string) ;
   begin
-    CurMicroInstruction := nil ; // ist jetzt ungültig
+    CurMicroInstruction := nil ; // ist jetzt ungï¿½ltig
     Loaded := false ;
     Pdp1144MicroCode.LoadListingPages(filepattern);
     // Code geladen: Combobox neu aufbauen. Force change!
@@ -376,7 +376,7 @@ procedure TFormMicroCode.MicroInstructionStringGridDrawCell(Sender: TObject;
               and (Cells[0,aRow] = ' Source code') ;
 
       if bitfield_changed or specialfield then begin
-        newcolor := true ; // geänderte Felder mit gelbem Hintergrund
+        newcolor := true ; // geï¿½nderte Felder mit gelbem Hintergrund
         Canvas.Brush.Color := ColorGridCellChangedBkGnd ;
         Canvas.Font.Color := ColorGridCellChangedText ;
       end;
@@ -388,7 +388,7 @@ procedure TFormMicroCode.MicroInstructionStringGridDrawCell(Sender: TObject;
   end{ "procedure TFormMicroCode.MicroInstructionStringGridDrawCell" } ;
 
 
-// Geänderte Spaltenbreiten sichern
+// Geï¿½nderte Spaltenbreiten sichern
 procedure TFormMicroCode.MicroInstructionStringGridMouseUp(Sender: TObject;
         Button: TMouseButton; Shift: TShiftState; X, Y: integer);
   begin

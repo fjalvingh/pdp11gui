@@ -27,12 +27,12 @@ unit FormMmuU;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, ComCtrls,
+  SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, ExtCtrls, ComCtrls, Types,
   FormChildU,
-  JvExGrids, JvStringGrid,
+  Grids,
   MemoryCellU,
-  Pdp11MMuU, Grids ;
+  Pdp11MMuU ;
 
 type
   TFormMMU = class(TFormChild)
@@ -44,8 +44,8 @@ type
       Label1: TLabel;
       CpuModeEdit: TEdit;
       SpecialInfoLabel: TLabel;
-      DataSpaceStringGrid: TJvStringGrid;
-      InstructionSpaceStringGrid: TJvStringGrid;
+      DataSpaceStringGrid: TStringGrid;
+      InstructionSpaceStringGrid: TStringGrid;
       procedure RefreshButtonClick(Sender: TObject);
     private
       { Private-Deklarationen }
@@ -71,7 +71,7 @@ uses
 constructor TFormMMU.Create(AOwner: TComponent) ;
   begin
     inherited ;
-    MMU := nil ; // muss durch Anwender gefüllt werden
+    MMU := nil ; // muss durch Anwender gefï¿½llt werden
   end;
 
 
@@ -83,7 +83,7 @@ destructor TFormMMU.Destroy ;
 
 procedure TFormMMU.UpdateDisplay ;
 
-  procedure UpdateMemoryMapGrid(grid: TJvStringGrid; idmode: TPdp11MmuIDMode) ;
+  procedure UpdateMemoryMapGrid(grid: TStringGrid; idmode: TPdp11MmuIDMode) ;
   function textextent(s:string): TSize ;
 begin
 grid.Canvas.Font.Assign(grid.Font) ;
@@ -114,7 +114,7 @@ end;
         n := n + 1 + grid.ColWidths[i] ;
       grid.ColWidths[3] := grid.Clientwidth - n ;
 
-      // Addressmap ausfüllen:
+      // Addressmap ausfï¿½llen:
       // durch alle virtuellen 16-Bit addressen iterieren
       addr_v.mat := matVirtual ; addr_v.val := 0 ;
       blocknr := 0 ; // 1. ergebnis = 1-> zur Adressierung der Gridrows geeignet
@@ -191,7 +191,7 @@ procedure TFormMMU.RefreshButtonClick(Sender: TObject);
 
 procedure TFormMMU.MMUChanged(Sender: TObject) ;
   begin
-    // hat sich was an den Einstellungen meiner MMU geändert?
+    // hat sich was an den Einstellungen meiner MMU geï¿½ndert?
     if (Sender as TPDP11MMU) = MMU then
       UpdateDisplay ;
   end;

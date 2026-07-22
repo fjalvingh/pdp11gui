@@ -43,7 +43,7 @@ unit ConsolePDP11M9312U;
 interface
 
 uses
-  Classes, Windows, Sysutils,
+  Classes, Sysutils,
   JH_Utilities,
   FormSettingsU,
   ConsoleGenericU,

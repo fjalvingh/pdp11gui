@@ -47,7 +47,7 @@ unit Pdp11MMUU ;
 interface
 
 uses
-  Windows, Classes, SysUtils,
+  Classes, SysUtils,
   AddressU,
   MemoryCellU ;
 

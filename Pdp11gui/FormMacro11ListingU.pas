@@ -22,8 +22,8 @@ unit FormMacro11ListingU;
 }
 
 {
-  Zeigt den output einer MACRO-11 Übersetzung an,
-  analysiert ihn und erzeugt eine MemoryCellgroup für den Code.
+  Zeigt den output einer MACRO-11 ï¿½bersetzung an,
+  analysiert ihn und erzeugt eine MemoryCellgroup fï¿½r den Code.
 
   Findet auch MACRO-11 Fehler-meldungen,
   sowie ungebundene globale Symbole (Postfix 'G' und ')
@@ -33,7 +33,7 @@ unit FormMacro11ListingU;
   Sourcezeile 1:n ListingZeile 1:n memorycell
 
   "memorycell.listinglinenr" ist der foreign key auf listing
-  "formlisting.sourcelinenr[i]" enthält die Nr der Sourcezeile,
+  "formlisting.sourcelinenr[i]" enthï¿½lt die Nr der Sourcezeile,
   die listingzeile i fabriziert hat
 
   Der aktuelle PC kann im Gutter mit eienr Marke versehen werden.
@@ -43,16 +43,16 @@ unit FormMacro11ListingU;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  SysUtils, Variants, Classes, Graphics, Controls, Forms,
   FormChildU,
-  Dialogs, StdCtrls, ExtCtrls, JvExControls, JvEditorCommon, JvEditor,
+  Dialogs, StdCtrls, ExtCtrls, SynEdit,
   JH_Utilities,
   AddressU,
   MemoryCellU;
 
 type
   TFormMacro11Listing = class(TFormChild)
-      Editor: TJvEditor;
+      Editor: TSynEdit;
       PanelT: TPanel;
       LoadButton: TButton;
       OpenDialog1: TOpenDialog;
@@ -61,12 +61,20 @@ type
       procedure LoadButtonClick(Sender: TObject);
       procedure ShowCodeMemFormButtonClick(Sender: TObject);
       procedure DepositAllButtonClick(Sender: TObject);
-      procedure EditorPaintGutter(Sender: TObject; Canvas: TCanvas);
       procedure EditorResize(Sender: TObject);
     private
       { Private-Deklarationen }
 
-      CodeParsed: boolean ; // keine doppelten Läufe von "ParseCode()"
+      CodeParsed: boolean ; // keine doppelten Lï¿½ufe von "ParseCode()"
+
+      // Ersatz fuer JvEditor.LineInformations: JvEditor/JVCL ist unter
+      // Lazarus nicht verfuegbar, Editor ist jetzt ein TSynEdit.
+      // Siehe LINUX_PORT_TODO.md.
+      HighlightLines: array of integer ; // 0-based Zeilenindizes, aktuell markiert
+      HighlightBG, HighlightFG: TColor ;
+      function IsHighlighted(line0: integer): boolean ;
+      procedure EditorSpecialLineColors(Sender: TObject; Line: integer;
+              var Special: boolean; var FG, BG: TColor) ;
 
       procedure FormAfterShow(Sender: TObject);
       procedure FormBeforeHide(Sender: TObject);
@@ -79,8 +87,8 @@ type
 
       DepositSuccess: boolean ; // true, wenn erfolgriech in memory geschrieben
 
-      FirstErrorMsg : string ; // Fehlermeldung bei Übersetzung. '' = kein Fehler
-      FirstErrorFilename : string ; // Fehlerfile bei Übersetzung
+      FirstErrorMsg : string ; // Fehlermeldung bei ï¿½bersetzung. '' = kein Fehler
+      FirstErrorFilename : string ; // Fehlerfile bei ï¿½bersetzung
       FirstErrorLineNr : integer ; // Zeile der Fehlermeldung in der Source
 
       PCMarkerRow: integer ; // Zeilennumer mit dem PC
@@ -115,15 +123,10 @@ constructor TFormMacro11Listing.Create(aOwner: TComponent) ;
     // private events
     // die MDI-Show/Hide logik in TFormChild verursacht Windowsgehler,
     // wenn JVEditor eine lange Source geladen hat.
-    OnAfterShow := FormAfterShow ; // lädt den letzten File
+    OnAfterShow := FormAfterShow ; // lï¿½dt den letzten File
     OnBeforeHide := FormBeforeHide ;
 
-    // Farbe für Ausführungsposition
-    Editor.LineInformations.DebugPointColor := ColorCodeExecutionPositionBkGnd ;
-    Editor.LineInformations.DebugPointTextColor:= ColorCodeExecutionPositionText ;
-
-    Editor.LineInformations.ErrorPointColor:= ColorCodeErrorBkGnd ;
-    Editor.LineInformations.ErrorPointTextColor:= ColorCodeErrorText ;
+    Editor.OnSpecialLineColors := EditorSpecialLineColors ;
 
     // muss den anderen memorygroups beigeordnet sein
     memorycellgroup := TMemoryCellGroup.Create(FormMain.MemoryCellGroups) ;
@@ -157,32 +160,32 @@ procedure TFormMacro11Listing.DepositAllButtonClick(Sender: TObject);
     Deposit ;
   end;
 
-// Gutter malen:
-// die Zeile mit der Asuführungsporition mitenem Roten Pfel markieren
-procedure TFormMacro11Listing.EditorPaintGutter(Sender: TObject;
-        Canvas: TCanvas);
-  var
-    i: integer;
-    Rect: TRect;
-    oldFont: TFont;
+function TFormMacro11Listing.IsHighlighted(line0: integer): boolean ;
+  var i: integer ;
   begin
-    oldFont := TFont.Create;
-    try
-      oldFont.Assign(Canvas.Font);
-      Canvas.Font := oldFont ; // GutterFont.Font;
-      Canvas.Font.Color := ColorCodeExecutionPositionText ;
-      with Editor do
-        for i := TopRow to TopRow + VisibleRowCount do
-          if PCMarkerRow = i then begin
-            Rect := Bounds(2, (i - TopRow) * CellRect.Height, GutterWidth - 2 - 5, CellRect.Height);
-            // Zelennr =PChar(IntToStr(i + 1))
-            DrawText(Canvas.Handle, 'PC>' , -1, Rect, DT_RIGHT or DT_VCENTER or DT_SINGLELINE);
-          end;
-    finally
-      Canvas.Font := oldFont;
-      oldFont.Free;
-    end{ "try" } ;
-  end{ "procedure TFormMacro11Listing.EditorPaintGutter" } ;
+    result := false ;
+    for i := 0 to High(HighlightLines) do
+      if HighlightLines[i] = line0 then begin
+        result := true ;
+        Exit ;
+      end ;
+  end{ "function TFormMacro11Listing.IsHighlighted" } ;
+
+// Ersatz fuer JvEditor.LineInformations.SelectStyle[]: markiert die in
+// "HighlightLines" gesammelten Zeilen mit "HighlightBG"/"HighlightFG".
+// (Das alte EditorPaintGutter() zeichnete zusaetzlich "PC>" im Gutter an
+// der PCMarkerRow-Zeile - das JvEditor-Gutter-Zeichnen (TopRow/CellRect/
+// GutterWidth) gibt es unter SynEdit nicht mehr; die Zeile bleibt aber
+// weiterhin farblich markiert. Siehe LINUX_PORT_TODO.md.)
+procedure TFormMacro11Listing.EditorSpecialLineColors(Sender: TObject; Line: integer;
+        var Special: boolean; var FG, BG: TColor) ;
+  begin
+    if IsHighlighted(Line - 1) then begin
+      Special := true ;
+      FG := HighlightFG ;
+      BG := HighlightBG ;
+    end ;
+  end{ "procedure TFormMacro11Listing.EditorSpecialLineColors" } ;
 
 
 procedure TFormMacro11Listing.EditorResize(Sender: TObject);
@@ -192,7 +195,7 @@ procedure TFormMacro11Listing.EditorResize(Sender: TObject);
 
 procedure TFormMacro11Listing.FormBeforeHide(Sender: TObject);
   begin
-    // source aus editor löschen, sonst
+    // source aus editor lï¿½schen, sonst
     // gibt es einen Fehler beim Load, wenn formstyle auf fsMDICild geht
     Editor.Lines.Clear ;
   end;
@@ -212,7 +215,7 @@ procedure TFormMacro11Listing.LoadFile(fname: string) ;
     tmpLines: TStringList ;
     i: integer ;
   begin
-    CodeParsed := false ; // letztes Parsing wird ungültig
+    CodeParsed := false ; // letztes Parsing wird ungï¿½ltig
     PCMarkerRow := -1 ;
     FirstErrorFilename := '' ;
     FirstErrorMsg := '' ;
@@ -226,11 +229,11 @@ procedure TFormMacro11Listing.LoadFile(fname: string) ;
     try
       memorycellgroup.Clear ;
       Editor.Lines.Clear ;
-      Editor.LineInformations.Clear ;
+      SetLength(HighlightLines, 0) ;
       // diese bescheuerte MDI-Child-visiblity-Problematik:
-      // bei geladenen (grossem) File kann der Übergang visible->invisible nicht stattfinden
-      // LoadFromFile darf nur ausgeführt werden, wenn "Visible = true'
-      // Wenn invisible: das Laden wird dann verzögert im OnAfterShow() durchgeführt.
+      // bei geladenen (grossem) File kann der ï¿½bergang visible->invisible nicht stattfinden
+      // LoadFromFile darf nur ausgefï¿½hrt werden, wenn "Visible = true'
+      // Wenn invisible: das Laden wird dann verzï¿½gert im OnAfterShow() durchgefï¿½hrt.
       if visible then begin
         Editor.BeginUpdate ;
         Log('LoadFromFile(%s)', [fname]) ;
@@ -250,7 +253,7 @@ procedure TFormMacro11Listing.LoadFile(fname: string) ;
       end { "if visible" } ;
       Caption := setFormCaptionInfoField(Caption, fname) ;
 
-      // Filename merken, auch für OnAfterShow
+      // Filename merken, auch fï¿½r OnAfterShow
       TheRegistry.Save('ListingFilename', fname);
     finally
       tmpLines.Free ;
@@ -288,14 +291,14 @@ D:\pdp11\pdp 11-44\progs\memoryaddress.mac:11: ***ERROR Illegal addressing mode
 procedure TFormMacro11Listing.ParseCode;
 
 
-// einen byte oder word-Value in die aktuelel/näcshte
-// adresse füllen. addr inc
+// einen byte oder word-Value in die aktuelel/nï¿½cshte
+// adresse fï¿½llen. addr inc
 // result: false, wenn format-fehler
 
-// an manchen Values hängen hinten noch das Suffixe
+// an manchen Values hï¿½ngen hinten noch das Suffixe
 //  '
-//  G: Ungebundenes Global (sehr häufig!), Zeichen für Tippfehler,
-//      oder unvollständige Source
+//  G: Ungebundenes Global (sehr hï¿½ufig!), Zeichen fï¿½r Tippfehler,
+//      oder unvollstï¿½ndige Source
 //  C: ?
 // manche values sind 8 bit = 3 zeichen lang.
 // dann kombiniere ZWEI zu einer memorycell
@@ -358,7 +361,7 @@ procedure TFormMacro11Listing.ParseCode;
       end;
       if mc = nil then
         mc := memorycellgroup.Add(addr.val and $fffffffe) ; // neue Cell immer mit gerader adresse            // weiteren 16 bit wert in der Zeile gefunden
-      // b) wert in memorycell füllen
+      // b) wert in memorycell fï¿½llen
       case value_byte_count of
         1: if not odd(addr.val) then
             mc.edit_value := value
@@ -425,12 +428,12 @@ procedure TFormMacro11Listing.ParseCode;
         // das erste Wort muss eine dezimalzahl sein.
         // danach kommt optional eine octal-adresse
         // danach optional Werte.
-        // Nur die Werte zählen
+        // Nur die Werte zï¿½hlen
 
         // Spalten: 1..8: Zeilennummer (optional)
         //            10-16 adresse
         // Ansatz: Zeilennummer weg, dann frei Format parsen, keine festen Spalten
-        // (ich bin zu faul zum auszählen)
+        // (ich bin zu faul zum auszï¿½hlen)
         s_lineno := Trim(Copy(line, 1, 8)) ;
         s_addr := Trim(Copy(line, 10,6)) ;
         line1 := Copy(line, 17, maxint) ;
@@ -449,10 +452,10 @@ procedure TFormMacro11Listing.ParseCode;
         except
           code_field_ready := true ;
         end;
-        if code_field_ready then Continue ; // nächste Zeile
+        if code_field_ready then Continue ; // nï¿½chste Zeile
 
         // line1: Sourcezeile ohne Zeilennummer und addresse
-        // values sind jetzt das 1, 2., 3. , ... Wort in der verkürzten Zeile
+        // values sind jetzt das 1, 2., 3. , ... Wort in der verkï¿½rzten Zeile
         // read all octal data words bnehind address, until label or opcode
         j := 1 ;
         code_field_ready := false ;
@@ -505,7 +508,7 @@ procedure TFormMacro11Listing.ShowCodeForm;
 
 // zeige die zeile einer Maschinen-addresse markiert an.
 procedure TFormMacro11Listing.setPCMark(addr: TMemoryAddress);
-  var i, idx: integer ;
+  var idx: integer ;
   begin
     ParseCode ;
     // finde die Memorycell mit der angebenen Adresse
@@ -513,35 +516,44 @@ procedure TFormMacro11Listing.setPCMark(addr: TMemoryAddress);
     if idx >= 0 then begin
       // die Zeilennumer in der Source zu dieser Adresse wurde schon in ParseCode() berechent
       PCMarkerRow := memorycellgroup.Cell(idx).listinglinenr ;
-      Editor.MakeRowVisible(PCMarkerRow);  // scrolle sichtbar
+      Editor.CaretX := 1 ;
+      Editor.CaretY := PCMarkerRow + 1 ;
+      Editor.EnsureCursorPosVisible ; // scrolle sichtbar
     end else
       PCMarkerRow := -1 ;
 
     // Marker-Zeile neu setzen
-    with Editor do
-      for i := 0 to Lines.Count-1 do
-        if i = PCMarkerRow then
-          LineInformations.SelectStyle[i] := lssDebugPoint
-        else LineInformations.SelectStyle[i] := lssUnselected ;
+    SetLength(HighlightLines, 0) ;
+    if PCMarkerRow >= 0 then begin
+      SetLength(HighlightLines, 1) ;
+      HighlightLines[0] := PCMarkerRow ;
+    end ;
+    HighlightBG := ColorCodeExecutionPositionBkGnd ;
+    HighlightFG := ColorCodeExecutionPositionText ;
 
-    Editor.Invalidate ; // repaint, insbesondere Gutter
+    Editor.Invalidate ; // repaint
   end{ "procedure TFormMacro11Listing.setPCMark" } ;
 
 
 // Fehler marke auf die Ziele mit der angegebenen SourceLineNr
 procedure TFormMacro11Listing.setErrorMark(aSourcelinenr: integer);
-  var i: integer ;
+  var i, n: integer ;
   begin
-    with Editor do begin
-      for i := Lines.Count-1 downto 0 do
-//      for i := 0 to Lines.Count-1 do
-        if sourcelinenr[i] = aSourcelinenr then begin
-          LineInformations.SelectStyle[i] := lssErrorPoint ;
-          MakeRowVisible(i);
-        end else
-          LineInformations.SelectStyle[i] := lssUnselected ;
-    end;
-  end;
+    SetLength(HighlightLines, 0) ;
+    n := 0 ;
+    for i := Editor.Lines.Count-1 downto 0 do
+      if sourcelinenr[i] = aSourcelinenr then begin
+        SetLength(HighlightLines, n+1) ;
+        HighlightLines[n] := i ;
+        inc(n) ;
+        Editor.CaretX := 1 ;
+        Editor.CaretY := i + 1 ;
+        Editor.EnsureCursorPosVisible ; // scrolle sichtbar
+      end ;
+    HighlightBG := ColorCodeErrorBkGnd ;
+    HighlightFG := ColorCodeErrorText ;
+    Editor.Invalidate ;
+  end{ "procedure TFormMacro11Listing.setErrorMark" } ;
 
 
 procedure TFormMacro11Listing.ShowCodeMemFormButtonClick(Sender: TObject);

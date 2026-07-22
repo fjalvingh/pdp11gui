@@ -22,9 +22,9 @@ unit FormDisasU;
 }
 
 {
-In der Maske: Start und len frei wählbar
+In der Maske: Start und len frei wï¿½hlbar
 
-Wenn Aufruf durch Form Execution  über showExecutionLine():
+Wenn Aufruf durch Form Execution  ï¿½ber showExecutionLine():
 len auf 10, Start so setzen, dass PC mittig im listing
 
 }
@@ -32,10 +32,10 @@ len auf 10, Start so setzen, dass PC mittig im listing
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs,
   FormChildU,
-  JvExControls, JvEditorCommon, JvEditor, ExtCtrls, StdCtrls,
+  SynEdit, ExtCtrls, StdCtrls,
   JH_Utilities,
   AddressU,
   MemoryCellU ;
@@ -43,7 +43,7 @@ uses
 type
   TFormDisas = class(TFormChild)
       Panel1: TPanel;
-      DisasSourceEditor: TJvEditor;
+      DisasSourceEditor: TSynEdit;
       SetAddressButton: TButton;
       StartAddrEdit: TEdit;
       Label1: TLabel;
@@ -62,6 +62,12 @@ type
     private
       { Private-Deklarationen }
       disas_pcaddr_window_size: dword ; // soviele adressen vor und nach dem PC anzeigen
+      // Ersatz fuer JvEditor.LineInformations: JvEditor/JVCL ist unter
+      // Lazarus nicht verfuegbar, DisasSourceEditor ist jetzt ein TSynEdit.
+      // Siehe LINUX_PORT_TODO.md.
+      HighlightLine: integer ; // 0-based Zeilenindex, -1 = keine
+      procedure DisasSourceEditorSpecialLineColors(Sender: TObject; Line: integer;
+              var Special: boolean; var FG, BG: TColor) ;
       procedure Disassemble(aStartaddr, aEndaddr, aPcaddr: TMemoryAddress ;
               useCodeCache: boolean ;
               var sourcelines: TStringList ; var pcline: integer) ;
@@ -100,23 +106,28 @@ uses
   ;
 
 // disassembler
-(**)
+// War: external 'PDP11DISAS.DLL' - Windows-only, keine Quelle/kein
+// Linux-Build davon in diesem Repo. Stub, bis eine Linux-Version existiert
+// (Neuimplementierung in Pascal, oder eine .so aus derselben Quelle wie die
+// DLL). Siehe LINUX_PORT_TODO.md.
 procedure Disas11 (
-        srcbuff: PAnsiChar;        // der Rückgabepuffer
+        srcbuff: PAnsiChar;        // der Rï¿½ckgabepuffer
         srcbuff_size: integer ;
         coremem: PAnsiChar ; // array of byte, 65K
         coremem_valid: PAnsiChar; // array of flags. 1 for valid memory cells
         coremem_size: integer
-        )
-        cdecl ; // if dll function uses "stdcall", it gets a decoreated name
-//        stdcall ;
-        external 'PDP11DISAS.DLL' ;
-(**)
+        ) ;
+  const msg = 'Disassembler (PDP11DISAS) is not yet ported to Linux, see LINUX_PORT_TODO.md' ;
+  begin
+    FillChar(srcbuff^, srcbuff_size, 0) ;
+    if srcbuff_size > length(msg) then
+      Move(msg[1], srcbuff^, length(msg)) ;
+  end;
 
 (** )
 // disable for aqtime analysis
 procedure Disas11 (
-        srcbuff: PChar;        // der Rückgabepuffer
+        srcbuff: PChar;        // der Rï¿½ckgabepuffer
         srcbuff_size: integer ;
         coremem: PChar ; // array of byte, 65K
         coremem_valid: PChar; // array of flags. 1 for valid memory cells
@@ -153,9 +164,8 @@ constructor TFormDisas.Create(AOwner: TComponent) ;
     end;
     CheckInput ;
 
-    // Farben für die markierten Zeilen
-    DisasSourceEditor.LineInformations.DebugPointColor := ColorCodeExecutionPositionBkGnd ;
-    DisasSourceEditor.LineInformations.DebugPointTextColor:= ColorCodeExecutionPositionText ;
+    HighlightLine := -1 ;
+    DisasSourceEditor.OnSpecialLineColors := DisasSourceEditorSpecialLineColors ;
   end{ "constructor TFormDisas.Create" } ;
 
 
@@ -181,26 +191,33 @@ procedure TFormDisas.AnyAddrEditKeyPress(Sender: TObject; var Key: Char);
   end;
 
 
-// Die gerade ausgeführte Zeile markieren
+// Ersatz fuer JvEditor.LineInformations.SelectStyle[]: markiert "HighlightLine".
+procedure TFormDisas.DisasSourceEditorSpecialLineColors(Sender: TObject; Line: integer;
+        var Special: boolean; var FG, BG: TColor) ;
+  begin
+    if (Line - 1) = HighlightLine then begin
+      Special := true ;
+      FG := ColorCodeExecutionPositionText ;
+      BG := ColorCodeExecutionPositionBkGnd ;
+    end ;
+  end{ "procedure TFormDisas.DisasSourceEditorSpecialLineColors" } ;
+
+// Die gerade ausgefï¿½hrte Zeile markieren
 procedure TFormDisas.showExecutionLine(n:integer) ;
-  var i: integer ;
   begin
     dec(n) ; // Lines[] ab 0 !
-    with DisasSourceEditor do
-      for i := 0 to Lines.Count-1 do
-        if i = n then
-          LineInformations.SelectStyle[i] := lssDebugPoint
-        else LineInformations.SelectStyle[i] := lssUnselected ;
+    HighlightLine := n ;
+    DisasSourceEditor.Invalidate ;
   end;
 
 
 // Speicherbereich in Source umwandeln
 // input: startaddr: Anfang  des zu disassemblenden Speicherbereich.
-//    Länge wird durch MemoryCellgroup.Count vorgegeben
-// useCodeCache: wenn möglich, schon bekannten code nicht neu aus maschine in die memortycellgroup laden.
-// aStartAddr, aEndAddr: Einschränkung des disassembierten Bereichs (fine tuning)
+//    Lï¿½nge wird durch MemoryCellgroup.Count vorgegeben
+// useCodeCache: wenn mï¿½glich, schon bekannten code nicht neu aus maschine in die memortycellgroup laden.
+// aStartAddr, aEndAddr: Einschrï¿½nkung des disassembierten Bereichs (fine tuning)
 // aPcaddr: Position des Program counters
-// Rückgabe: in sourcelines: assembler code
+// Rï¿½ckgabe: in sourcelines: assembler code
 // pcline: zeile mit program counter in sourcelines
 //    -1, wenn not found
 procedure TFormDisas.Disassemble(aStartaddr, aEndaddr, aPcaddr: TMemoryAddress ;
@@ -222,7 +239,7 @@ procedure TFormDisas.Disassemble(aStartaddr, aEndaddr, aPcaddr: TMemoryAddress ;
     assert(aPcaddr.mat = matVirtual) ;
 
     // Memoryzellen in Coremem-Array schreiben
-    for i := 0 to coremem_size - 1 do // erstmal allen Speicher als ungültig markieren
+    for i := 0 to coremem_size - 1 do // erstmal allen Speicher als ungï¿½ltig markieren
       coremem_valid[i] := #0 ;
 
     for i := 0 to Memorycellgroup.Count - 1 do begin
@@ -239,7 +256,7 @@ procedure TFormDisas.Disassemble(aStartaddr, aEndaddr, aPcaddr: TMemoryAddress ;
     end;
 
     // Umwandlung aufrufen
-    ZeroMemory(@srcbuff, srcbuff_size);
+    FillChar(srcbuff, srcbuff_size, 0);
 
     Disas11 (srcbuff, srcbuff_size, coremem, coremem_valid, coremem_size) ;
     sourcelines.Text := srcbuff ;
@@ -278,7 +295,7 @@ procedure TFormDisas.CheckInput ;
 procedure TFormDisas.UpdateDisplay ;
   var
     sourcelines: TStringList ;
-    codeline: integer ; // Zeile im Listing, das "codeaddr" enthält. -1, wenn not found
+    codeline: integer ; // Zeile im Listing, das "codeaddr" enthï¿½lt. -1, wenn not found
     visibleStartAddr: TMemoryAddress ; // Startadresse des sichtabren Listings
   begin
     sourcelines := TStringList.Create ;
@@ -292,8 +309,8 @@ procedure TFormDisas.UpdateDisplay ;
       visibleStartAddr := StartAddr ;
       Disassemble(visibleStartAddr, EndAddr, CodeAddr, UseCacheCheckBox.Checked, sourcelines, codeline) ;
       // wenn der PC (CodeAddr) im Listing nicht aufzufinden ist:
-      // (zB weil Binärdaten davor als langer Befehl interpretiert werden)
-      // start adresse schrittweise um zwei erhöhen, nochmal probieren
+      // (zB weil Binï¿½rdaten davor als langer Befehl interpretiert werden)
+      // start adresse schrittweise um zwei erhï¿½hen, nochmal probieren
       if CodeAddr.val <> MEMORYCELL_ILLEGALVAL then
         while (codeline < 0) and (visibleStartAddr.val < CodeAddr.val) do begin
           visibleStartAddr.val := visibleStartAddr.val+2 ;
@@ -306,7 +323,7 @@ procedure TFormDisas.UpdateDisplay ;
       showExecutionLine(codeline);
 
       StartAddrEdit.Text := Addr2OctalStr(StartAddr) ;
-      TheRegistry.Save(StartAddrEdit); // hier geprüfte Werte
+      TheRegistry.Save(StartAddrEdit); // hier geprï¿½fte Werte
       EndAddrEdit.Text := Addr2OctalStr(EndAddr) ;
       TheRegistry.Save(EndAddrEdit);
 
@@ -327,7 +344,7 @@ procedure TFormDisas.ExamineAll(useCodeCache: boolean) ;
     assert(EndAddr.mat = matVirtual) ;
 
     // hier optimierung: memorycellgroup verschieben,
-    // un überlappende Addesse nicht neu laden
+    // un ï¿½berlappende Addesse nicht neu laden
     // ODER: alles neu laden
 
     n := (EndAddr.val - StartAddr.val) div 2 + 1 ; // calc new address count
@@ -343,7 +360,7 @@ procedure TFormDisas.UseCacheCheckBoxClick(Sender: TObject);
   end;
 
 
-// für externen Zugriff: Anzeige für bestimmte Zieladresse aufbauen
+// fï¿½r externen Zugriff: Anzeige fï¿½r bestimmte Zieladresse aufbauen
 // newaddr: virtuelle Adresse
 procedure TFormDisas.ShowNewPcAddr(newaddr_v: TMemoryAddress) ;
   begin
@@ -351,7 +368,7 @@ procedure TFormDisas.ShowNewPcAddr(newaddr_v: TMemoryAddress) ;
     CodeAddr := newaddr_v ;
     if CodeAddr.val = MEMORYCELL_ILLEGALVAL then
       Exit ;  // zB M9312 console emulator kennt den PC nicht: dann zeige ihn auch nicht an,
-    // und verändere den angezeigten Adressbereich nicht
+    // und verï¿½ndere den angezeigten Adressbereich nicht
 
     // Dargestellten Bereich an Fenster um PC herum anpassen
 
@@ -363,7 +380,7 @@ procedure TFormDisas.ShowNewPcAddr(newaddr_v: TMemoryAddress) ;
       StartAddr.val := CodeAddr.val - (2 * disas_pcaddr_window_size) div 2 ;
     EndAddr.val := StartAddr.val + (2 * disas_pcaddr_window_size) ;
 
-    // Fenster wird bei jedem Stop aktualisiert. Man muss es aber abschalten können
+    // Fenster wird bei jedem Stop aktualisiert. Man muss es aber abschalten kï¿½nnen
     if Visible then begin
       ExamineAll(UseCacheCheckBox.Checked) ;
       UpdateDisplay ;
@@ -420,20 +437,20 @@ procedure TFormDisas.ConnectToMemoryCells(mcg: TMemoryCellGroup) ;
     while Memorycellgroup.Count < n do
       Memorycellgroup.Add(0) ; // adressen werden erst nach PC-Stop festgelegt
 
-    // callback bei Zellenänderung
+    // callback bei Zellenï¿½nderung
     mcg.OnMemoryCellChange := memoryCellChange ;
 
   end{ "procedure TFormDisas.ConnectToMemoryCells" } ;
 
 
-// wird von der memorycellgroup aufgerufen, wenn sich eine Zelle spontan ändert
+// wird von der memorycellgroup aufgerufen, wenn sich eine Zelle spontan ï¿½ndert
 procedure TFormDisas.memoryCellChange(Sender { = memorycellgroup}: TObject; memorycell: TMemoryCell) ;
   begin
     memorycell.edit_value := memorycell.pdp_value ;
     if Visible then
       // Achtung: wenn von einem anderen Fenster ein ganzer programblock geladen wird
-      // wird dieses callback für jede einzelne Zelle aufgerufen.
-      // daher nicht "UpdateDisplay" (was wiederum alle Zellen abfragen würde).
+      // wird dieses callback fï¿½r jede einzelne Zelle aufgerufen.
+      // daher nicht "UpdateDisplay" (was wiederum alle Zellen abfragen wï¿½rde).
       // Aber: neues Disassembly!
       UpdateDisplay ;
   end ;

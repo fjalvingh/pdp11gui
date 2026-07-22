@@ -24,16 +24,16 @@ unit FrameMemoryCellGroupListU;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Grids, ExtCtrls,
+  SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, Grids, ExtCtrls, Types,
   StdCtrls,
   JH_Utilities,
   AddressU,
-  MemoryCellU, JvExGrids, JvStringGrid;
+  MemoryCellU ;
 
 type
   TFrameMemoryCellGroupList = class(TFrame)
-      MemoryCellsStringGrid: TJvStringGrid;
+      MemoryCellsStringGrid: TStringGrid;
       procedure MemoryCellsStringGridSetEditText(Sender: TObject; aCol,
               aRow: integer; const Value: string);
       procedure MemoryCellsStringGridDrawCell(Sender: TObject; aCol,
@@ -48,7 +48,7 @@ type
     private
       { Private-Deklarationen }
       memorycellgroup: TMemoryCellGroup ;
-      // wird von der memorycellgroup aufgerufen, wenn sich eine zelle spontan ändert
+      // wird von der memorycellgroup aufgerufen, wenn sich eine zelle spontan ï¿½ndert
       procedure MemoryCellChange(Sender { = memorycellgroup}: TObject; memorycell: TMemoryCell) ;
       procedure SyncBitfieldForm(aRow: integer) ;
 
@@ -96,13 +96,13 @@ procedure TFrameMemoryCellGroupList.UpdateDisplay;
 
 procedure TFrameMemoryCellGroupList.ClipboardCopy;
   begin
-    ClipBoard.Astext := MemoryCellsStringGrid.InplaceEditor.SelText ;
+    ClipBoard.Astext := (MemoryCellsStringGrid.InplaceEditor as TCustomEdit).SelText ;
   end;
 
 procedure TFrameMemoryCellGroupList.ClipboardPaste;
   begin
     if ClipBoard <> nil then // passiert, wenn die cell nicht im editmdoe ist
-      MemoryCellsStringGrid.InplaceEditor.SelText := ClipBoard.Astext ;
+      (MemoryCellsStringGrid.InplaceEditor as TCustomEdit).SelText := ClipBoard.Astext ;
   end;
 
 procedure TFrameMemoryCellGroupList.SyncBitfieldForm(aRow: integer) ;
@@ -126,7 +126,7 @@ procedure TFrameMemoryCellGroupList.FrameResize(Sender: TObject);
 
 
 // readonly-Spalten nicht weiss,
-// geänderte Werte gelb
+// geï¿½nderte Werte gelb
 procedure TFrameMemoryCellGroupList.MemoryCellsStringGridDrawCell(Sender: TObject;
         aCol, aRow: integer; Rect: TRect; State: TGridDrawState);
   var
@@ -146,7 +146,7 @@ procedure TFrameMemoryCellGroupList.MemoryCellsStringGridDrawCell(Sender: TObjec
         if aCol = 2 then begin // editierbarer Wert
           mc := Objects[aCol,aRow] as TMemoryCell ;
           if (mc <> nil) and (mc.edit_value <> mc.pdp_value) then begin
-            newcolor := true ; // geänderte Felder mit gelbem Hintergrund
+            newcolor := true ; // geï¿½nderte Felder mit gelbem Hintergrund
             Canvas.Brush.Color := ColorGridCellChangedBkGnd ;
             Canvas.Font.Color := ColorGridCellChangedText ;
           end;
@@ -204,7 +204,7 @@ procedure TFrameMemoryCellGroupList.MemoryCellsStringGridSelectCell(Sender: TObj
       if (aRow < 1) or ((aCol=0) or (aCol = 1) or (aCol=3)) then
         options := options - [goEditing]
       else begin
-        // falls eine neue Zelle gewählt wird,
+        // falls eine neue Zelle gewï¿½hlt wird,
         // wird eine editierte verlassen: alles neu malen!
         UpdateDisplay ;
         options := options + [goEditing] ;
@@ -222,9 +222,9 @@ procedure TFrameMemoryCellGroupList.MemoryCellsStringGridSetEditText(Sender: TOb
     i: integer ;
   begin
     // eingegebenen Value an die memorycell weiterleiten
-    // nur gültige Octalziffern durchlassen
+    // nur gï¿½ltige Octalziffern durchlassen
 
-    // '?' erlauben, als ungültige Zahl (macht das Grid intern)
+    // '?' erlauben, als ungï¿½ltige Zahl (macht das Grid intern)
     s := '' ;
     for i := 1 to Length(Value) do
       if isOctalDigit(Value[i]) then
@@ -237,7 +237,7 @@ procedure TFrameMemoryCellGroupList.MemoryCellsStringGridSetEditText(Sender: TOb
     mc := MemoryCellsStringGrid.Objects[aCol, aRow] as TMemoryCell ;
     if mc <> nil then
       if s = '' then
-        mc.edit_value := MEMORYCELL_ILLEGALVAL // kann während EEdit vorkommen
+        mc.edit_value := MEMORYCELL_ILLEGALVAL // kann wï¿½hrend EEdit vorkommen
       else
         mc.edit_value := OctalStr2Dword(s, 16) ;
   end{ "procedure TFrameMemoryCellGroupList.MemoryCellsStringGridSetEditText" } ;
@@ -282,7 +282,7 @@ end;
     // die letzte Spalte geht bis ans Formende
     FrameResize(nil) ;
 
-    // callback bei Zellenänderung
+    // callback bei Zellenï¿½nderung
     mcg.OnMemoryCellChange := MemoryCellChange ;
 
     // Alle Zellen anzeigen
@@ -303,7 +303,7 @@ end;
   end{ "procedure TFrameMemoryCellGroupList.ConnectToMemoryCellGroup" } ;
 
 
-// wird von der memorycellgroup aufgerufen, wenn sich eine zelle spontan ändert
+// wird von der memorycellgroup aufgerufen, wenn sich eine zelle spontan ï¿½ndert
 procedure TFrameMemoryCellGroupList.MemoryCellChange(Sender { = memorycellgroup}: TObject; memorycell: TMemoryCell) ;
   begin
     memorycell.edit_value := memorycell.pdp_value ;

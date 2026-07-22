@@ -38,7 +38,7 @@ unit ConsolePDP11SimHU;
 interface
 
 uses
-  Classes, Windows, SysUtils,
+  Classes, SysUtils,
   ConsoleGenericU,
   FormSettingsU,
   FormTerminalU,

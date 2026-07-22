@@ -173,7 +173,7 @@ don't think it really matters at start-up.
 interface
 
 uses
-  Windows, Classes, SysUtils,
+  Classes, SysUtils,
   JH_Utilities,
   FakePDP11GenericU,
   AddressU,

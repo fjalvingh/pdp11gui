@@ -33,8 +33,7 @@ unit FakePDP11GenericU;
 interface
 
 uses
-  Windows,
-  SysUtils,
+    SysUtils,
   ExtCtrls,
   AddressU,
   MemoryCellU ;

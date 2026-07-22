@@ -55,8 +55,7 @@ unit pdp1170panelU;
 interface
 
 uses
-  Windows,
-  Classes,
+    Classes,
   SysUtils,
   ExtCtrls ;
 

@@ -29,7 +29,6 @@ unit AddressU;
 interface
 
 uses
-  Windows,
   SysUtils,
   OctalConst ;
 
@@ -70,7 +69,7 @@ function OctalStr2Addr(s: string; mat: TMemoryAddressType): TMemoryAddress ; inl
 // "Constructor"
 // function MemoryAddress(mat: TMemoryAddressType ; val: dword) : TMemoryAddress ;
 
-// Adresse in ein anderes Längenmodell umrechnen
+// Adresse in ein anderes Lï¿½ngenmodell umrechnen
 function ChangePhysicalAddressBitWidth(
         addr: TMemoryAddress ; newMat:TMemoryAddressType): TMemoryAddress ;
 
@@ -78,9 +77,9 @@ function ChangePhysicalAddressBitWidth(
 function PhysicalIopageBaseAddr(mat: TMemoryAddressType): dword ; // Startadresse der I/O-page, abh von ThePhysicalAddressWidth
 
 //var
-// globale Einstellung der physikalischen Adressbreite für die
+// globale Einstellung der physikalischen Adressbreite fï¿½r die
 // aktuelle Maschine.
-// Wird von Conosle.getÜhysicalAddressWidth definiert,
+// Wird von Conosle.getï¿½hysicalAddressWidth definiert,
 // und wird von allen Forms in PDP11GUI benutzt.
 
 //  ThePhysicalAddressWidth: byte ;
@@ -126,9 +125,9 @@ function OctalStr2Addr(s: string; mat: TMemoryAddressType): TMemoryAddress ; inl
   end;
 
 
-// Adresse in ein anderes Längenmodell umrechnen
+// Adresse in ein anderes Lï¿½ngenmodell umrechnen
 // Adressen kleiner als die IpgeBase bleiben erhalten.
-// Adresse in ein anderes Längenmodell umrechnen
+// Adresse in ein anderes Lï¿½ngenmodell umrechnen
 function ChangePhysicalAddressBitWidth(
         addr: TMemoryAddress ; newMat:TMemoryAddressType): TMemoryAddress ;
   begin

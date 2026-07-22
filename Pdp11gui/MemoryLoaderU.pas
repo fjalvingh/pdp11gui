@@ -27,8 +27,7 @@ unit MemoryLoaderU;
 interface
 
 uses
-  Windows,
-  Classes,
+    Classes,
   Sysutils,
   StdCtrls,
   JH_Utilities,

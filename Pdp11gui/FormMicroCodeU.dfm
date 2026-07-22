@@ -78,7 +78,7 @@ object FormMicroCode: TFormMicroCode
       OnClick = MicroCodeLoadButtonClick
     end
   end
-  object MicroInstructionStringGrid: TJvStringGrid
+  object MicroInstructionStringGrid: TStringGrid
     Left = 0
     Top = 41
     Width = 524

@@ -30,8 +30,7 @@ TBitfieldsDefs - Liste von allen dword-Definitionen
 
 interface
 uses
-  Windows,
-  Classes,
+    Classes,
   SysUtils,
   JH_Utilities,
   AddressU,

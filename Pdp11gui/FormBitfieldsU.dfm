@@ -91,7 +91,7 @@ object FormBitfields: TFormBitfields
       OnClick = ExamineButtonClick
     end
   end
-  object BitfieldsStringGrid: TJvStringGrid
+  object BitfieldsStringGrid: TStringGrid
     Left = 0
     Top = 55
     Width = 507

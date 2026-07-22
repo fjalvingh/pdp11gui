@@ -29,8 +29,7 @@ unit BlinkenlightInstructionsU;
 interface
 
 uses
-  Windows,
-  Classes,
+    Classes,
   SysUtils,
   AuxU,
   MemoryCellU,

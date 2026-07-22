@@ -34,7 +34,7 @@ unit ConsolePDP11ODTU;
 interface
 
 uses
-  Classes, Windows, Sysutils,
+  Classes, Sysutils,
   JH_Utilities,
   FormSettingsU,
   ConsoleGenericU,

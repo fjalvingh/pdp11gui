@@ -34,7 +34,7 @@ unit FormPdp1170PanelU;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls,
   FormChildU,
   MemoryCellU,

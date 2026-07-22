@@ -68,7 +68,7 @@ object FormMacro11Source: TFormMacro11Source
       OnClick = NewButtonClick
     end
   end
-  object Editor: TJvEditor
+  object Editor: TSynEdit
     Left = 0
     Top = 41
     Width = 489
@@ -78,18 +78,8 @@ object FormMacro11Source: TFormMacro11Source
     Margins.Top = 5
     Margins.Right = 5
     Margins.Bottom = 5
-    GutterWidth = 36
-    Completion.ItemHeight = 13
-    Completion.CRLF = '/n'
-    Completion.Separator = '='
-    TabStops = '9 17 25 33 41 49 57 65'
-    SmartTab = False
-    BackSpaceUnindents = False
-    AutoIndent = False
-    BracketHighlighting.StringEscape = #39#39
     OnResize = EditorResize
     OnChange = EditorChange
-    OnPaintGutter = EditorPaintGutter
     Align = alClient
     Font.Charset = ANSI_CHARSET
     Font.Color = clWindowText

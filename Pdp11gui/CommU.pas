@@ -21,12 +21,18 @@ unit CommU;
    CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
-// Einfachst moegliche Ansteuerung des COM-Ports
+// Einfachst moegliche Ansteuerung des seriellen Ports.
+//
+// Linux port: reimplemented on termios (BaseUnix/termio) instead of the
+// Win32 COM-port API (CreateFile/ReadFile/WriteFile/SetCommState/...).
+// See LINUX_PORT_TODO.md for the device-naming caveat: "Port" is still a
+// 1-based integer for compatibility with the rest of the app (which still
+// presents a Windows-style "COM1".."COMn" picker), and gets mapped to a
+// Linux device path heuristically - see DeviceName() below.
 
 interface
 
 uses
-  Windows,
   Classes,
   ExtCtrls,
   SysUtils,
@@ -35,14 +41,28 @@ uses
   Graphics,
   Controls,
   Buttons,
-  StdCtrls;
+  StdCtrls,
+  BaseUnix,
+  termio;
+
+const
+  // Kompatibel zu den bisher aus der Windows-Unit verwendeten Werten.
+  NOPARITY    = 0;
+  ODDPARITY   = 1;
+  EVENPARITY  = 2;
+  MARKPARITY  = 3;
+  SPACEPARITY = 4;
+
+  ONESTOPBIT   = 0;
+  ONE5STOPBITS = 1;
+  TWOSTOPBITS  = 2;
 
 type
   TComm = class(TComponent)
 
     private
       { Private declarations }
-      fHandle: THandle; {handle from OpenComm }
+      fFd: cint; { Unix file descriptor, -1 = geschlossen }
       fPort: Integer; { port #, 1-based }
       fBaud: LongInt; { baud rate }
       fDataBits: Byte ; { one of 5,6,7,8 }
@@ -62,6 +82,10 @@ type
       procedure setDtrOn(OnOff: boolean);
       function getInCount: LongInt;
       function getOutCount: LongInt;
+
+      function DeviceName: string;
+      procedure ApplyTermios;
+      procedure setModemLine(bit: cint; OnOff: boolean);
 
     protected
       { Protected declarations }
@@ -129,7 +153,7 @@ constructor TComm.Create(AOwner: TComponent);
   begin
     inherited Create(AOwner);
     // set default property values
-    fHandle := INVALID_HANDLE_VALUE;
+    fFd := -1;
     fPort := 1;
     fBaud := 9600;
     fDataBits := 8 ;
@@ -150,7 +174,24 @@ destructor TComm.Destroy;
 // Return True if port is open
 function TComm.isOpen: boolean;
   begin
-    Result := (fHandle <> INVALID_HANDLE_VALUE);
+    Result := (fFd >= 0);
+  end;
+
+// Windows kennt "COM1".."COMn"; Linux hat stattdessen Geraetepfade wie
+// /dev/ttyUSB0 (USB-Serial-Adapter, der �bliche Weg an echte PDP-11
+// Hardware) oder /dev/ttyS0 (klassischer eingebauter serieller Port).
+// Bis die Settings-UI eine echte Geraetepfad-Auswahl hat (siehe
+// LINUX_PORT_TODO.md), wird die bisherige 1-basierte Portnummer heuristisch
+// auf einen dieser Pfade abgebildet.
+function TComm.DeviceName: string;
+  var
+    usbdev: string;
+  begin
+    usbdev := Format('/dev/ttyUSB%d', [fPort - 1]);
+    if FileExists(usbdev) then
+      result := usbdev
+    else
+      result := Format('/dev/ttyS%d', [fPort - 1]);
   end;
 
 // Set the baud rate property
@@ -223,60 +264,117 @@ procedure TComm.setPort(PortToSet: Integer);
     end;
   end;
 
+procedure TComm.setModemLine(bit: cint; OnOff: boolean);
+  var
+    status: cint;
+  begin
+    if not isOpen then Exit ;
+    status := 0 ;
+    fpIOCtl(fFd, TIOCMGET, @status) ;
+    if OnOff then
+      status := status or bit
+    else
+      status := status and not bit ;
+    fpIOCtl(fFd, TIOCMSET, @status) ;
+  end;
+
 procedure TComm.setRtsOn(OnOff: boolean);
   begin
     fRtsOn := OnOff;
-    if isOpen then begin
-        if OnOff then
-          EscapeCommFunction(fHandle, SETRTS)
-        else EscapeCommFunction(fHandle, CLRRTS);
-      end;
+    setModemLine(TIOCM_RTS, OnOff) ;
   end;
 
 procedure TComm.setDtrOn(OnOff: boolean);
   begin
     fDtrOn := OnOff;
-    if isOpen then begin
-      if OnOff then
-        EscapeCommFunction(fHandle, SETDTR)
-      else EscapeCommFunction(fHandle, CLRDTR);
+    setModemLine(TIOCM_DTR, OnOff) ;
+  end;
+
+function BaudToSpeedConst(baud: LongInt): cardinal;
+  begin
+    // termios kennt nur eine feste Menge Standard-Baudraten (B###-Konstanten).
+    case baud of
+      50: result := B50;
+      75: result := B75;
+      110: result := B110;
+      134: result := B134;
+      150: result := B150;
+      200: result := B200;
+      300: result := B300;
+      600: result := B600;
+      1200: result := B1200;
+      1800: result := B1800;
+      2400: result := B2400;
+      4800: result := B4800;
+      9600: result := B9600;
+      19200: result := B19200;
+      38400: result := B38400;
+      57600: result := B57600;
+      115200: result := B115200;
+      230400: result := B230400;
+      else result := B9600; // unbekannt: sinnvoller Default statt Fehler
     end;
   end;
 
+// Termios-Attribute (Baudrate, Databits, Parity, Stopbits, "raw mode")
+// gemaess der aktuellen Property-Werte auf den offenen fd anwenden.
+procedure TComm.ApplyTermios;
+  var
+    tios: Termios;
+    cs: cardinal;
+  begin
+    if not isOpen then Exit ;
+    if TCGetAttr(fFd, tios) <> 0 then Exit ;
+
+    cfmakeraw(tios) ; // keine Zeilenpufferung/Echo/Signalverarbeitung
+
+    case fDataBits of
+      5: cs := CS5;
+      6: cs := CS6;
+      7: cs := CS7;
+      else cs := CS8;
+    end;
+    tios.c_cflag := (tios.c_cflag and not cardinal(CSIZE)) or cs ;
+
+    case fParity of
+      ODDPARITY:  tios.c_cflag := tios.c_cflag or PARENB or PARODD ;
+      EVENPARITY: tios.c_cflag := (tios.c_cflag or PARENB) and not cardinal(PARODD) ;
+      else        tios.c_cflag := tios.c_cflag and not cardinal(PARENB or PARODD) ;
+      // MARKPARITY/SPACEPARITY: unter Linux nicht standardisiert ueber
+      // termios abbildbar, werden wie NOPARITY behandelt.
+    end;
+
+    if fStopBits = TWOSTOPBITS then
+      tios.c_cflag := tios.c_cflag or CSTOPB
+    else
+      tios.c_cflag := tios.c_cflag and not cardinal(CSTOPB) ;
+
+    tios.c_cflag := tios.c_cflag or CREAD or CLOCAL ;
+
+    // nicht-blockierendes Lesen: wir fragen InCount ab, bevor wir lesen
+    tios.c_cc[VMIN] := 0 ;
+    tios.c_cc[VTIME] := 0 ;
+
+    CFSetISpeed(tios, BaudToSpeedConst(fBaud)) ;
+    CFSetOSpeed(tios, BaudToSpeedConst(fBaud)) ;
+
+    TCSetAttr(fFd, TCSANOW, tios) ;
+  end{ "procedure TComm.ApplyTermios" } ;
+
 // Opens the COM port, returns True if ok
 function TComm.Open: boolean;
-  var
-    sCom: String;
-    dcbPort: TDCB;  // device control block
   begin
-
     // close port if open already
     if isOpen then Close;
 
     // try to open the port
-    sCom := '\\.\COM' + IntToStr(fPort);
-    fHandle := CreateFile(PChar(sCom), GENERIC_READ or GENERIC_WRITE, 0,
-            nil,
-            OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, LongInt(0));
+    fFd := fpOpen(DeviceName, O_RDWR or O_NOCTTY or O_NONBLOCK) ;
 
-    // set the baud rate and other parameters
-    if fHandle <> INVALID_HANDLE_VALUE then begin
-      if GetCommState(fHandle, dcbPort) then begin
-        // fill in the fields of the structure
-        dcbPort.BaudRate := fBaud;
-        dcbPort.ByteSize := fDataBits;
-        dcbPort.Parity := fParity;
-        dcbPort.StopBits := fStopBits;
-        dcbPort.Flags := 0;
-        { flag bit fields:
-        dcb_Binary, dcb_Parity, dcb_OutxCtsFlow, dcb_fOutxDsrFlow,
-        dcb_fOutX, dcb_fInX, dcb_DtrFlow, dcb_RtsFlow
-        }
-        SetCommState(fHandle, dcbPort);
-      end{ "if GetCommState(fHandle, dcbPort)" } ;
+    if fFd >= 0 then begin
+      ApplyTermios ;
       setRtsOn(fRtsOn);
       setDtrOn(fDtrOn);
-    end{ "if fHandle <> INVALID_HANDLE_VALUE" } ;
+    end{ "if fFd >= 0" } ;
 
     // return True if port opened
     Result := isOpen;
@@ -286,115 +384,80 @@ function TComm.Open: boolean;
 procedure TComm.Close;
   begin
     if isOpen then begin
-      CloseHandle(fHandle);
-      fHandle := INVALID_HANDLE_VALUE;
+      fpClose(fFd);
+      fFd := -1;
     end;
   end;
 
 // Write a char out the COM port
 function TComm.WriteByte(ch: byte): boolean;
-  var
-    dwCharsWritten: DWord;
   begin
-    dwCharsWritten := 0;
-    if isOpen then begin
-      WriteFile(fHandle, ch, sizeof(ch), dwCharsWritten, nil);
-    end;
-    Result := dwCharsWritten = sizeof(ch);
+    Result := isOpen and (fpWrite(fFd, ch, sizeof(ch)) = sizeof(ch)) ;
   end;
 
 function TComm.WriteData(var data; size: Integer): boolean;
-  var
-    dwCharsWritten: DWord;
   begin
-    dwCharsWritten := 0;
-    if isOpen then begin
-      WriteFile(fHandle, data, size, dwCharsWritten, nil);
-    end;
-    Result := dwCharsWritten = size;
+    Result := isOpen and (fpWrite(fFd, data, size) = size) ;
   end;
 
-  (*
-// Reads a character from the port
-function TComm.ReadByte: byte;
-  var
-    cbCharsAvailable, cbCharsRead: DWord;
-    ch: byte;
-  begin
-    ch := Ord(' ');
-    if isOpen then begin
-      cbCharsAvailable := getInCount;
-      if cbCharsAvailable > 0 then begin
-        ReadFile(fHandle, ch, sizeof(ch), cbCharsRead, nil);
-      end;
-    end;
-    Result := ch;
-  end{ "function TComm.ReadByte" } ;
-*)
 // Reads a character from the port
 function TComm.ReadByte(var b: byte): boolean ;
-  var
-    cbCharsAvailable, cbCharsRead: DWord;
   begin
-  result := false ;
-    if isOpen then begin
-      cbCharsAvailable := getInCount;
-      if cbCharsAvailable > 0 then begin
-        ReadFile(fHandle, b, 1, cbCharsRead, nil);
-        result := true ;
-      end;
-    end;
+    result := false ;
+    if isOpen then
+      if getInCount > 0 then
+        result := fpRead(fFd, b, 1) = 1 ;
   end{ "function TComm.ReadByte" } ;
 
 function TComm.ReadData(var data; size: Integer): Integer;
   var
-    cbCharsAvailable, cbCharsRead: DWord;
+    cbCharsAvailable: LongInt;
+    n: Int64;
   begin
-    cbCharsRead := 0;
+    Result := 0;
     if isOpen then begin
       cbCharsAvailable := getInCount;
       if cbCharsAvailable > 0 then begin
         if cbCharsAvailable < size then
           size := cbCharsAvailable;
-        ReadFile(fHandle, data, size, cbCharsRead, nil);
+        n := fpRead(fFd, data, size) ;
+        if n > 0 then
+          Result := n ;
       end;
     end;
-    Result := cbCharsRead;
   end{ "function TComm.ReadData" } ;
 
 // Return the number of bytes waiting in the input queue
 function TComm.getInCount: LongInt;
   var
-    statPort: TCOMSTAT;
-    dwErrorCode: DWord;
+    n: cint;
   begin
     Result := 0;
     if isOpen then begin
-      ClearCommError(fHandle, dwErrorCode, @statPort);
-      Result := statPort.cbInQue;
+      n := 0 ;
+      if fpIOCtl(fFd, FIONREAD, @n) = 0 then
+        Result := n ;
     end;
   end;
 
 // Return the number of bytes waiting in the output queue
 function TComm.getOutCount: LongInt;
   var
-    statPort: TCOMSTAT;
-    dwErrorCode: DWord;
+    n: cint;
   begin
     Result := 0;
     if isOpen then begin
-      ClearCommError(fHandle, dwErrorCode, @statPort);
-      Result := statPort.cbOutQue;
+      n := 0 ;
+      if fpIOCtl(fFd, TIOCOUTQ, @n) = 0 then
+        Result := n ;
     end;
   end;
 
 // Flush the port by reading any characters in the queue
 procedure TComm.Flush;
   begin
-    if fHandle <> INVALID_HANDLE_VALUE then begin
-      FlushFileBuffers(fHandle);
-      //PurgeComm(FHandle, PURGE_TXABORT or PURGE_RXABORT or PURGE_TXCLEAR or PURGE_RXCLEAR);
-    end;
+    if isOpen then
+      fpIOCtl(fFd, TCFLSH, pointer(PtrInt(TCIOFLUSH))) ;
   end;
 
 end{ "unit CommU" } .

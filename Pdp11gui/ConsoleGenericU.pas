@@ -38,7 +38,7 @@ unit ConsoleGenericU;
 interface
 
 uses
-  Classes, Windows, Sysutils,
+  Classes, Sysutils,
   ExtCtrls,
   FormTerminalU,
   SerialIoHubU,

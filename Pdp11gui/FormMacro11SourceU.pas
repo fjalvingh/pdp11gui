@@ -24,8 +24,8 @@ unit FormMacro11SourceU;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, JvExControls, JvEditorCommon, JvEditor, ExtCtrls,
+  SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, SynEdit, ExtCtrls,
   FormChildU,
   AppControlU,
   JH_Utilities;
@@ -33,7 +33,7 @@ uses
 type
   TFormMacro11Source = class(TFormChild)
       PanelT: TPanel;
-      Editor: TJvEditor;
+      Editor: TSynEdit;
       LoadButton: TButton;
       SaveAsButton: TButton;
       CompileButton: TButton;
@@ -44,7 +44,6 @@ type
       procedure LoadButtonClick(Sender: TObject);
       procedure SaveAsButtonClick(Sender: TObject);
       procedure CompileButtonClick(Sender: TObject);
-      procedure EditorPaintGutter(Sender: TObject; Canvas: TCanvas);
       procedure SaveButtonClick(Sender: TObject);
       procedure EditorResize(Sender: TObject);
       procedure EditorChange(Sender: TObject);
@@ -53,13 +52,23 @@ type
     private
       { Private-Deklarationen }
       originalFileContent: TStringList ; // disk mirror to calculate "Changed()"
+      // Ersatz fuer JvEditor.LineInformations: JvEditor/JVCL ist unter
+      // Lazarus nicht verfuegbar, Editor ist jetzt ein TSynEdit.
+      // Es kann jeweils nur 1 Zeile markiert sein (Fehler- oder
+      // Ausfuehrungszeile) - genau wie im alten Code, der bei jedem Aufruf
+      // erst alle anderen Zeilen auf "unselected" zuruecksetzte.
+      // Siehe LINUX_PORT_TODO.md.
+      HighlightLine: integer ; // 0-based Zeilenindex, -1 = keine
+      HighlightBG, HighlightFG: TColor ;
+      procedure EditorSpecialLineColors(Sender: TObject; Line: integer;
+              var Special: boolean; var FG, BG: TColor) ;
       procedure FormAfterShow(Sender: TObject);
       procedure FormBeforeHide(Sender: TObject);
     public
       { Public-Deklarationen }
       macro11_appcontrol: TAppControl ;
       SourceFilename: string ;
-      CanTranslate: boolean ; // true, wenn gültiger File geladen
+      CanTranslate: boolean ; // true, wenn gï¿½ltiger File geladen
       Translated: boolean ; // true, wenn MACRO-11 Lauf erfolgreich
       constructor Create(aOwner: TComponent) ; override ;
       destructor Destroy ; override ;
@@ -92,22 +101,20 @@ constructor TFormMacro11Source.Create(aOwner: TComponent) ;
     // private events
     // die MDI-Show/Hide logik in TFormChild verursacht Windowsgehler,
     // wenn JVEditor eine lange Source geladen hat.
-    OnAfterShow := FormAfterShow ; // lädt den letzten File
+    OnAfterShow := FormAfterShow ; // lï¿½dt den letzten File
     OnBeforeHide := FormBeforeHide ;
 
     CanTranslate := false ;
     Translated := false ;
 
-    // Farben für die markierten zeilen
-    Editor.LineInformations.DebugPointColor := ColorCodeExecutionPositionBkGnd ;
-    Editor.LineInformations.DebugPointTextColor:= ColorCodeExecutionPositionText ;
-    (*
-      property BreakpointColor: TColor read FBreakpointColor write SetBreakpointColor;
-      property BreakpointTextColor: TColor read FBreakpointTextColor write SetBreakpointTextColor;
-      *)
-    Editor.LineInformations.ErrorPointColor:= ColorCodeErrorBkGnd ;
-    Editor.LineInformations.ErrorPointTextColor:= ColorCodeErrorText ;
-
+    // Farbe fuer die markierte Zeile (Fehler- oder Ausfuehrungszeile;
+    // das alte JvEditor-basierte setErrorLine()/setExecutionLine() nutzten
+    // beide "lssErrorPoint", die ErrorPoint-Farben werden daher fuer beide
+    // Faelle verwendet - siehe EditorSpecialLineColors())
+    HighlightLine := -1 ;
+    HighlightBG := ColorCodeErrorBkGnd ;
+    HighlightFG := ColorCodeErrorText ;
+    Editor.OnSpecialLineColors := EditorSpecialLineColors ;
 
     macro11_appcontrol := TAppControl.Create ;
   end{ "constructor TFormMacro11Source.Create" } ;
@@ -123,7 +130,7 @@ destructor TFormMacro11Source.Destroy ;
 procedure TFormMacro11Source.UpdateDisplay ;
   var i: integer ;
   begin
-    // bei Änderung:
+    // bei ï¿½nderung:
     if Changed then
       Caption := setFormCaptionInfoField(Caption, ' * ' + SourceFilename)
     else
@@ -139,7 +146,7 @@ procedure TFormMacro11Source.UpdateDisplay ;
       if Trim(Editor.Lines[i]) <> '' then
         CanTranslate := true ;
 
-    // noch ein Check: gültige Datei da?
+    // noch ein Check: gï¿½ltige Datei da?
     if not FileExists(SourceFilename) then
       CanTranslate := false ;
 
@@ -147,7 +154,7 @@ procedure TFormMacro11Source.UpdateDisplay ;
 
     // Der CompileButton ist auch disabled, wenn neue Source eingeben wurde,
     // aber noch kein filenamen bekannt ist!
-    // (Da dann nicht fürs compilieren gespeichert werden kann)
+    // (Da dann nicht fï¿½rs compilieren gespeichert werden kann)
 
   end{ "procedure TFormMacro11Source.UpdateDisplay" } ;
 
@@ -157,31 +164,17 @@ procedure TFormMacro11Source.EditorChange(Sender: TObject);
     UpdateDisplay ;
   end;
 
-procedure TFormMacro11Source.EditorPaintGutter(Sender: TObject;
-        Canvas: TCanvas);
-  var
-    i: integer;
-    Rect: TRect;
-    oldFont: TFont;
-    s: string ;
+// Ersatz fuer JvEditor.LineInformations.SelectStyle[]: markiert
+// "HighlightLine" (falls gesetzt) mit "HighlightBG"/"HighlightFG".
+procedure TFormMacro11Source.EditorSpecialLineColors(Sender: TObject; Line: integer;
+        var Special: boolean; var FG, BG: TColor) ;
   begin
-    oldFont := TFont.Create;
-    try
-      oldFont.Assign(Canvas.Font);
-      Canvas.Font := oldFont ; // GutterFont.Font;
-//      Canvas.Font.Size := oldFont.Size-1 ;
-      Canvas.Font.Color := TColor($808080) ; // grau
-      with Editor do
-        for i := TopRow to TopRow + VisibleRowCount do begin
-          Rect := Bounds(2, (i - TopRow) * CellRect.Height, GutterWidth - 2 - 5, CellRect.Height);
-          s := Format('%3d', [i+1]) ; // die Zeilennummer
-          DrawText(Canvas.Handle, PChar(s), -1, Rect, DT_RIGHT or DT_VCENTER or DT_SINGLELINE);
-        end;
-    finally
-      Canvas.Font := oldFont;
-      oldFont.Free;
-    end{ "try" } ;
-  end{ "procedure TFormMacro11Source.EditorPaintGutter" } ;
+    if (Line - 1) = HighlightLine then begin
+      Special := true ;
+      FG := HighlightFG ;
+      BG := HighlightBG ;
+    end ;
+  end{ "procedure TFormMacro11Source.EditorSpecialLineColors" } ;
 
 
 procedure TFormMacro11Source.EditorResize(Sender: TObject);
@@ -191,7 +184,7 @@ procedure TFormMacro11Source.EditorResize(Sender: TObject);
 
 procedure TFormMacro11Source.FormBeforeHide(Sender: TObject);
   begin
-    // source aus editor löschen
+    // source aus editor lï¿½schen
     Editor.Lines.Clear ;
     originalFileContent.Clear ; // supress "Changed = true"
   end;
@@ -213,28 +206,20 @@ procedure TFormMacro11Source.FormAfterShow(Sender: TObject);
 
 // Die Zeile mit einem Fehler drin markieren
 procedure TFormMacro11Source.setErrorLine(n:integer) ;
-  var i: integer ;
   begin
     dec(n) ; // Lines[] ab 0 !
-    with Editor do
-      for i := 0 to Lines.Count-1 do
-        if i = n then
-          LineInformations.SelectStyle[i] := lssErrorPoint
-                  // langsam bei grossen Files!!
-        else LineInformations.SelectStyle[i] := lssUnselected ;
-    Editor.MakeRowVisible(n);  // scrolle sichtbar
-    Editor.SetCaret(1,n); // Zeile anfahren
+    HighlightLine := n ;
+    Editor.Invalidate ;
+    Editor.CaretX := 1 ;
+    Editor.CaretY := n+1 ; // scrolle sichtbar, Zeile anfahren
+    Editor.EnsureCursorPosVisible ;
   end;
 
-// Die gerade ausgeführte Zeile markieren
+// Die gerade ausgefï¿½hrte Zeile markieren
 procedure TFormMacro11Source.setExecutionLine(n:integer) ;
-  var i: integer ;
   begin
-    with Editor do
-      for i := 0 to Lines.Count-1 do
-        if i = n then
-          LineInformations.SelectStyle[i] := lssErrorPoint
-        else LineInformations.SelectStyle[i] := lssUnselected ;
+    HighlightLine := n ;
+    Editor.Invalidate ;
   end;
 
 
@@ -254,7 +239,7 @@ procedure TFormMacro11Source.LoadFile(fname:string);
 
     // 1. clear editor
 
-    setErrorLine(-1); // marker löschen
+    setErrorLine(-1); // marker lï¿½schen
     setExecutionLine(-1);
     Editor.Clear ;
 
@@ -306,7 +291,7 @@ procedure TFormMacro11Source.SaveFile(fname:string);
         Rewrite(f) ;
         for i := 0 to Editor.Lines.Count - 1 do begin
           s := Editor.Lines[i] ;
-          s := entab(s, 8) ; // unnötig, und kaputt?
+          s := entab(s, 8) ; // unnï¿½tig, und kaputt?
           writeln(f, s) ;
         end;
         originalFileContent.Assign(Editor.Lines) ;
@@ -330,7 +315,7 @@ function TFormMacro11Source.Changed: boolean ;
     result := not Editor.Lines.Equals(originalFileContent) ;
   end;
 
-// Source Im Editor mit MACRO11 übersetzten
+// Source Im Editor mit MACRO11 ï¿½bersetzten
 // Listing automatisch ins Listingfenster laden
 //
 procedure TFormMacro11Source.Compile;
@@ -344,27 +329,26 @@ procedure TFormMacro11Source.Compile;
     timeout: boolean ;
     errormsg: string ;
     errorline: integer ;
-    buff: array[0..1023] of AnsiChar ;
   begin
-    // Marken löschen
+    // Marken lï¿½schen
     setExecutionLine(-1) ;
     setErrorLine(-1);
     errormsg := '' ;
     errorline := -1 ;
     Translated := false ;
 
-    // MACRO11.BAT ausführen
+    // MACRO11.BAT ausfï¿½hren
     // macro11.bat <sourcefilename> <listingfilename>
 
     // macro11 im Verzeichnis der GUI finden
-    macro11_path := ExtractFilePath(Application.ExeName) + '\macro11.bat' ;
+    macro11_path := ExtractFilePath(Application.ExeName) + 'macro11.bat' ;
     if not FileExists(macro11_path) then
       raise Exception.CreateFmt('MACRO11.bat not found, must be "%s"', [macro11_path]) ;
 
     // Variable PDP11GUIEXEDIR setzen, damit in MACRO11.BAT der
     // Installationspath bekannt ist.
-    SetEnvironmentVariableA('PDP11GUIEXEDIR', strpcopy(buff, ExtractFileDir(Application.ExeName))) ;
-    SetEnvironmentVariableA('PDP11GUIAPPDATADIR', strpcopy(buff, FormMain.DefaultDataDirectory)) ;
+    SetEnvironmentVariable('PDP11GUIEXEDIR', ExtractFileDir(Application.ExeName)) ;
+    SetEnvironmentVariable('PDP11GUIAPPDATADIR', FormMain.DefaultDataDirectory) ;
 
     if not IsDirectoryWriteable(FormMain.DefaultDataDirectory) then
       raise Exception.CreateFmt('Can not write to directory "%s". Perhaps it''s read-only flag or you must "Run as Admin".',
@@ -404,15 +388,15 @@ procedure TFormMacro11Source.Compile;
         raise Exception.CreateFmt('MACRO11 timeout: running longer then %d secs', [timeout_millis div 1000]) ;
     end{ "with macro11_appcontrol" } ;
 
-    ///// Mögliche Fehlermeldungen erkennen
+    ///// Mï¿½gliche Fehlermeldungen erkennen
     ///   in der Source und im Listing rot markieren,
     ///   und im Logfenster anzeigen
     if not FileExists(listfilename) then begin
       errormsg := Format('MACRO11 failure: list file %s not found', [listfilename]) ;
     end else begin
-      // Codeform füllen und anzeigen. Fehler im Listing finden und anzeigen
+      // Codeform fï¿½llen und anzeigen. Fehler im Listing finden und anzeigen
       with FormMain do begin
-        // listingform füllen und anzeigen
+        // listingform fï¿½llen und anzeigen
 
         TheRegistry.Save(FormMacro11Listing) ; // jetzige position sichern
         setChildFormVisibility(FormMacro11Listing, true);

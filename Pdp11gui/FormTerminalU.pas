@@ -24,8 +24,8 @@ unit FormTerminalU;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ComCtrls, ExtCtrls, Menus,
+  SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, ComCtrls, ExtCtrls, Menus, LCLType,
   FormChildU ;
 
 type
@@ -55,7 +55,7 @@ type
 
   TFormTerminal = class(TFormChild)
       StatusBar1: TStatusBar;
-      RichEdit1: TRichEdit;
+      RichEdit1: TMemo; // was TRichEdit; no LCL rich-text widget, see LINUX_PORT_TODO.md
       TerminalPopupMenu: TPopupMenu;
       Cut1: TMenuItem;
       Paste1: TMenuItem;
@@ -101,7 +101,7 @@ type
       procedure Hello ;
 
       procedure AppendText(outputstyle: TTerminalOutputStyle ; chars:string) ;
-      // wird von aussen aufgerufen, wenn das Terminal was empfängt
+      // wird von aussen aufgerufen, wenn das Terminal was empfï¿½ngt
       procedure OnSerialRcvData(curdata: string) ;
 
     end{ "TYPE TFormTerminal = class(TFormChild)" } ;
@@ -193,18 +193,9 @@ procedure TFormTerminal.Selectfont1Click(Sender: TObject);
 
 procedure TFormTerminal.SetStyle(outputstyle: TTerminalOutputStyle) ;
   begin
-    with RichEdit1 do
-      case outputstyle of
-        tosPDP:  begin
-          SelAttributes.Color := TerminalFont.Color ;
-        end;
-        tosUser: begin
-          SelAttributes.Color := clWhite ;
-        end;
-        tosSystem: begin // automatische Ausgabe etwas gedämpfter
-          SelAttributes.Color := clGray ;
-        end;
-      end;
+    // RichEdit1 is a plain TMemo now (LCL has no TRichEdit), so per-run
+    // text color (PDP output/user input/system message) is not available
+    // any more. See LINUX_PORT_TODO.md.
   end{ "procedure TFormTerminal.SetStyle" } ;
 
 
@@ -231,7 +222,7 @@ procedure TFormTerminal.Clear1Click(Sender: TObject);
     RichEdit1.Lines.Clear ;
   end;
 
-// Text an die ausgabe in einem bestimmten Stil anhängen
+// Text an die ausgabe in einem bestimmten Stil anhï¿½ngen
 // #13 als EOLN benutzen!
 // unsichtbare Zeichen ausser #13 in \x.. Notation wandeln
 
@@ -288,9 +279,10 @@ procedure TFormTerminal.AppendText(outputstyle: TTerminalOutputStyle ; chars: st
           Lines.Add('') ;
       end{ "for i" } ;
 
-      // Scrolle Caret in View. (Gefummel am VertScrollbar hat nicht funktioniert)
-      Perform(EM_LINESCROLL, 0, 1);
-      // Perform(EM_ScrollCaret, 0, 0);
+      // Scrolle Caret in View.
+      // (was Perform(EM_LINESCROLL, 0, 1) - Win32 edit-control message,
+      // not available under LCL; SelStart:=maxint above already moves the
+      // caret to the end, which LCL's TMemo scrolls into view on its own.)
 
     end{ "with RichEdit1" } ;
   end{ "procedure TFormTerminal.AppendText" } ;
@@ -300,7 +292,7 @@ procedure TFormTerminal.Hello ;
   begin
     with RichEdit1 do begin
       // SelStart ist der cursor
-//      AppendText(tosPDP, '*** Terminal für PDP-11/44 console***'
+//      AppendText(tosPDP, '*** Terminal fï¿½r PDP-11/44 console***'
 //              +#13 + '>>> So wird Ausgabe der PDP-11 angezeigt!' + #13
 //              + '>>>') ;
 
@@ -319,7 +311,7 @@ procedure TFormTerminal.Hello ;
   end{ "procedure TFormTerminal.Hello" } ;
 
 
-// Tastendrücke gehen direkt an die Konsole
+// Tastendrï¿½cke gehen direkt an die Konsole
 procedure TFormTerminal.RichEdit1KeyDown(Sender: TObject; var Key: Word;
         Shift: TShiftState);
   begin
@@ -359,7 +351,7 @@ procedure TFormTerminal.RichEdit1MouseUp(Sender: TObject; Button: TMouseButton;
 
 
 
-// wird von aussen aufgerufen, wenn das Terminal was empfängt
+// wird von aussen aufgerufen, wenn das Terminal was empfï¿½ngt
 procedure TFormTerminal.OnSerialRcvData(curdata: string) ;
   begin
     Log('TFormTerminal.OnSerialRcvData: "%s"', [String2PrintableText(curdata, true)]);

@@ -10,7 +10,7 @@ object FrameMemoryCellGroupGrid: TFrameMemoryCellGroupGrid
   Font.Style = []
   ParentFont = False
   TabOrder = 0
-  object MemoryCellsStringGrid: TJvStringGrid
+  object MemoryCellsStringGrid: TStringGrid
     Left = 0
     Top = 0
     Width = 320

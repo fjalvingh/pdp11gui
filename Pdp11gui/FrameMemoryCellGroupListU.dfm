@@ -5,7 +5,7 @@ object FrameMemoryCellGroupList: TFrameMemoryCellGroupList
   Height = 240
   TabOrder = 0
   OnResize = FrameResize
-  object MemoryCellsStringGrid: TJvStringGrid
+  object MemoryCellsStringGrid: TStringGrid
     Left = 0
     Top = 0
     Width = 320

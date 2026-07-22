@@ -103,8 +103,7 @@ interface
 
 uses
   Classes,
-  Windows,
-  SysUtils,
+    SysUtils,
   StdCtrls,
   Grids,
   MediaImageDevicesU,

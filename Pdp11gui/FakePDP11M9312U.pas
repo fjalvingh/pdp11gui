@@ -81,7 +81,7 @@ globals:
 interface
 
 uses
-  Windows, Classes, SysUtils,
+  Classes, SysUtils,
   JH_Utilities,
   FakePDP11GenericU,
   AddressU,

@@ -35,7 +35,7 @@ unit FakePDP1144v340cU;
 interface
 
 uses
-  Windows, Classes, SysUtils,
+  Classes, SysUtils,
   JH_Utilities,
   AddressU,
   FakePDP11GenericU ;

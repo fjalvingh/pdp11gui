@@ -24,7 +24,7 @@ unit FormTerminalU;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ComCtrls, ExtCtrls, Menus,
   FormChildU, OverbyteIcsEmulVT ;
 

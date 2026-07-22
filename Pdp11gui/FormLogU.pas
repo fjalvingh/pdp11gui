@@ -24,7 +24,7 @@ unit FormLogU;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  SysUtils, Variants, Classes, Graphics, Controls, Forms,
   TypInfo, // GetEnumName
   Dialogs, StdCtrls, Menus,
   FormChildU ;

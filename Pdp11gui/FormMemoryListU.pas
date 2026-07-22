@@ -28,7 +28,7 @@ unit FormMemoryListU;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Grids, ExtCtrls, StdCtrls,
   FormChildU,
   MemoryCellU, FrameMemoryCellGroupListU;

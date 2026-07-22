@@ -24,7 +24,7 @@ object FormMMU: TFormMMU
     TabOrder = 0
     object DataSpaceTabSheet: TTabSheet
       Caption = 'Data space'
-      object DataSpaceStringGrid: TJvStringGrid
+      object DataSpaceStringGrid: TStringGrid
         Left = 0
         Top = 0
         Width = 388
@@ -43,7 +43,7 @@ object FormMMU: TFormMMU
     object InstructionSpaceTabSheet: TTabSheet
       Caption = 'Instruction space'
       ImageIndex = 1
-      object InstructionSpaceStringGrid: TJvStringGrid
+      object InstructionSpaceStringGrid: TStringGrid
         Left = 0
         Top = 0
         Width = 388

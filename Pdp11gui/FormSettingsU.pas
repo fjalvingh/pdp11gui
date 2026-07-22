@@ -29,7 +29,7 @@ sich pdp11gui anschliessen kann.
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls,
   FormChildU,
   AddressU,

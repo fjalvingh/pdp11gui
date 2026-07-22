@@ -1,16 +1,19 @@
 //
 // IO-Warrior kit library V1.5 include file
 //
+// Linux/Lazarus port: iowkit.dll is a Windows-only USB-HID driver DLL, no
+// Linux equivalent exists (would need a libusb/hidraw-based reimplementation
+// - see LINUX_PORT_TODO.md). LoadIowKitAPI() always returns false here,
+// exactly like on Windows when the DLL/dongle isn't present - the app
+// already has to handle that case gracefully (most users don't have the
+// IO-Warrior USB dongle for the physical PDP-11/70 panel attached either).
 
 unit iowkit;
-
-// activate this if you want to explicitly load the DLL
-{$DEFINE LINK_ON_REQUEST}
 
 interface
 
 uses
-  Windows;
+  SysUtils;
 
 const
   // IoWarrior vendor & product IDs
@@ -104,32 +107,33 @@ const
   IOWKIT56_SPECIAL_REPORT_SIZE = SizeOf(IOWKIT56_SPECIAL_REPORT);
 
 type
+  // waren Windows-Unit-Typen
+  ULONG = Cardinal;
+  BOOL = LongBool;
+
   // Opaque IO-Warrior handle
   IOWKIT_HANDLE = Pointer;
 
-{$IFDEF LINK_ON_REQUEST}
-
-type
-  TIowKitOpenDevice = function: IOWKIT_HANDLE; stdcall;
-  TIowKitCloseDevice = procedure(devHandle: IOWKIT_HANDLE); stdcall;
+  TIowKitOpenDevice = function: IOWKIT_HANDLE;
+  TIowKitCloseDevice = procedure(devHandle: IOWKIT_HANDLE);
   TIowKitWrite = function(devHandle: IOWKIT_HANDLE; numPipe: ULONG;
-    buffer: PChar; length: ULONG): ULONG; stdcall;
+    buffer: PChar; length: ULONG): ULONG;
   TIowKitRead = function(devHandle: IOWKIT_HANDLE; numPipe: ULONG;
-    buffer: PChar; length: ULONG): ULONG; stdcall;
+    buffer: PChar; length: ULONG): ULONG;
   TIowKitReadNonBlocking = function(devHandle: IOWKIT_HANDLE; numPipe: ULONG;
-    buffer: PChar; length: ULONG): ULONG; stdcall;
-  TIowKitReadImmediate = function(devHandle: IOWKIT_HANDLE; var value: DWORD): BOOL; stdcall;
-  TIowKitGetNumDevs = function: ULONG; stdcall;
-  TIowKitGetDeviceHandle = function(numDevice: ULONG): IOWKIT_HANDLE; stdcall;
-  TIowKitSetLegacyOpenMode = function(legacyOpenMode: ULONG): BOOL; stdcall;
-  TIowKitGetProductId = function(devHandle: IOWKIT_HANDLE): ULONG; stdcall;
-  TIowKitGetRevision = function(devHandle: IOWKIT_HANDLE): ULONG; stdcall;
-  TIowKitGetThreadHandle = function(devHandle: IOWKIT_HANDLE): THandle; stdcall;
-  TIowKitGetSerialNumber = function(devHandle: IOWKIT_HANDLE; serialNumber: PWideChar): BOOL; stdcall;
-  TIowKitSetTimeout = function(devHandle: IOWKIT_HANDLE; timeout: ULONG): BOOL; stdcall;
-  TIowKitSetWriteTimeout = function(devHandle: IOWKIT_HANDLE; timeout: ULONG): BOOL; stdcall;
-  TIowKitCancelIo = function(devHandle: IOWKIT_HANDLE; numPipe: ULONG): BOOL; stdcall;
-  TIowKitVersion = function: PChar; stdcall;
+    buffer: PChar; length: ULONG): ULONG;
+  TIowKitReadImmediate = function(devHandle: IOWKIT_HANDLE; var value: DWORD): BOOL;
+  TIowKitGetNumDevs = function: ULONG;
+  TIowKitGetDeviceHandle = function(numDevice: ULONG): IOWKIT_HANDLE;
+  TIowKitSetLegacyOpenMode = function(legacyOpenMode: ULONG): BOOL;
+  TIowKitGetProductId = function(devHandle: IOWKIT_HANDLE): ULONG;
+  TIowKitGetRevision = function(devHandle: IOWKIT_HANDLE): ULONG;
+  TIowKitGetThreadHandle = function(devHandle: IOWKIT_HANDLE): THandle;
+  TIowKitGetSerialNumber = function(devHandle: IOWKIT_HANDLE; serialNumber: PWideChar): BOOL;
+  TIowKitSetTimeout = function(devHandle: IOWKIT_HANDLE; timeout: ULONG): BOOL;
+  TIowKitSetWriteTimeout = function(devHandle: IOWKIT_HANDLE; timeout: ULONG): BOOL;
+  TIowKitCancelIo = function(devHandle: IOWKIT_HANDLE; numPipe: ULONG): BOOL;
+  TIowKitVersion = function: PChar;
 
 var
   IowKitOpenDevice: TIowKitOpenDevice;
@@ -150,130 +154,19 @@ var
   IowKitCancelIo: TIowKitCancelIo;
   IowKitVersion: TIowKitVersion;
 
-{$ELSE}
-
-function IowKitOpenDevice: IOWKIT_HANDLE; stdcall;
-procedure IowKitCloseDevice(devHandle: IOWKIT_HANDLE); stdcall;
-function IowKitWrite(devHandle: IOWKIT_HANDLE; numPipe: ULONG;
-  buffer: PChar; length: ULONG): ULONG; stdcall;
-function IowKitRead(devHandle: IOWKIT_HANDLE; numPipe: ULONG;
-  buffer: PChar; length: ULONG): ULONG; stdcall;
-function IowKitReadNonBlocking(devHandle: IOWKIT_HANDLE; numPipe: ULONG;
-  buffer: PChar; length: ULONG): ULONG; stdcall;
-function IowKitReadImmediate(devHandle: IOWKIT_HANDLE; var value: DWORD): BOOL; stdcall;
-function IowKitGetNumDevs: ULONG; stdcall;
-function IowKitGetDeviceHandle(numDevice: ULONG): IOWKIT_HANDLE; stdcall;
-function IowKitSetLegacyOpenMode(legacyOpenMode: ULONG): BOOL; stdcall;
-function IowKitGetProductId(devHandle: IOWKIT_HANDLE): ULONG; stdcall;
-function IowKitGetRevision(devHandle: IOWKIT_HANDLE): ULONG; stdcall;
-function IowKitGetThreadHandle(devHandle: IOWKIT_HANDLE): THandle; stdcall;
-function IowKitGetSerialNumber(devHandle: IOWKIT_HANDLE; serialNumber: PWideChar): BOOL; stdcall;
-function IowKitSetTimeout(devHandle: IOWKIT_HANDLE; timeout: ULONG): BOOL; stdcall;
-function IowKitSetWriteTimeout(devHandle: IOWKIT_HANDLE; timeout: ULONG): BOOL; stdcall;
-function IowKitCancelIo(devHandle: IOWKIT_HANDLE; numPipe: ULONG): BOOL; stdcall;
-function IowKitVersion: PChar; stdcall;
-
-{$ENDIF LINK_ON_REQUEST}
-
+// Immer "false": es gibt unter Linux keinen iowkit-Treiber (siehe oben).
 function LoadIowKitAPI: Boolean;
 procedure UnloadIowKitAPI;
 
 implementation
 
-const
-  IOWKITDllName = 'iowkit.dll';
-
-{$IFDEF LINK_ON_REQUEST}
-
-var
-  IowKitDLLHandle: THandle = 0;
-
 function LoadIowKitAPI: Boolean;
-begin
-  if IowKitDLLHandle = 0 then
   begin
-    IowKitDLLHandle := LoadLibrary(IOWKITDllName);
-    Result := IowKitDLLHandle <> 0;
-    if Result then
-    begin
-      IowKitOpenDevice := GetProcAddress(IowKitDllHandle, 'IowKitOpenDevice');
-      IowKitCloseDevice := GetProcAddress(IowKitDllHandle, 'IowKitCloseDevice');
-      IowKitWrite := GetProcAddress(IowKitDllHandle, 'IowKitWrite');
-      IowKitRead := GetProcAddress(IowKitDllHandle, 'IowKitRead');
-      IowKitReadNonBlocking := GetProcAddress(IowKitDllHandle, 'IowKitReadNonBlocking');
-      IowKitReadImmediate := GetProcAddress(IowKitDllHandle, 'IowKitReadImmediate');
-      IowKitGetNumDevs := GetProcAddress(IowKitDllHandle, 'IowKitGetNumDevs');
-      IowKitGetDeviceHandle := GetProcAddress(IowKitDllHandle, 'IowKitGetDeviceHandle');
-      IowKitSetLegacyOpenMode := GetProcAddress(IowKitDllHandle, 'IowKitSetLegacyOpenMode');
-      IowKitGetProductId := GetProcAddress(IowKitDllHandle, 'IowKitGetProductId');
-      IowKitGetRevision := GetProcAddress(IowKitDllHandle, 'IowKitGetRevision');
-      IowKitGetThreadHandle := GetProcAddress(IowKitDllHandle, 'IowKitGetThreadHandle');
-      IowKitGetSerialNumber := GetProcAddress(IowKitDllHandle, 'IowKitGetSerialNumber');
-      IowKitSetTimeout := GetProcAddress(IowKitDllHandle, 'IowKitSetTimeout');
-      IowKitSetWriteTimeout := GetProcAddress(IowKitDllHandle, 'IowKitSetWriteTimeout');
-      IowKitCancelIo := GetProcAddress(IowKitDllHandle, 'IowKitCancelIo');
-      IowKitVersion := GetProcAddress(IowKitDllHandle, 'IowKitVersion');
-    end;
-  end
-  else
-    Result := True;
-end;
-
-procedure UnloadIowKitAPI;
-begin
-  if IowKitDLLHandle <> 0 then
-  begin
-    FreeLibrary(IowKitDLLHandle);
-    IowKitDLLHandle := 0;
-    IowKitOpenDevice := nil;
-    IowKitCloseDevice := nil;
-    IowKitWrite := nil;
-    IowKitRead := nil;
-    IowKitReadNonBlocking := nil;
-    IowKitReadImmediate := nil;
-    IowKitGetNumDevs := nil;
-    IowKitGetDeviceHandle := nil;
-    IowKitSetLegacyOpenMode := nil;
-    IowKitGetProductId := nil;
-    IowKitGetRevision := nil;
-    IowKitGetThreadHandle := nil;
-    IowKitGetSerialNumber := nil;
-    IowKitSetTimeout := nil;
-    IowKitSetWriteTimeout := nil;
-    IowKitCancelIo := nil;
-    IowKitVersion := nil;
+    result := false;
   end;
-end;
-
-{$ELSE}
-
-function LoadIowKitAPI: Boolean;
-begin
-  Result := True;
-end;
 
 procedure UnloadIowKitAPI;
-begin
-end;
-
-function IowKitOpenDevice; external IOWKITDllName name 'IowKitOpenDevice';
-procedure IowKitCloseDevice; external IOWKITDllName name 'IowKitCloseDevice';
-function IowKitWrite; external IOWKITDllName name 'IowKitWrite';
-function IowKitRead; external IOWKITDllName name 'IowKitRead';
-function IowKitReadNonBlocking; external IOWKITDllName name 'IowKitReadNonBlocking';
-function IowKitReadImmediate; external IOWKITDllName name 'IowKitReadImmediate';
-function IowKitGetNumDevs; external IOWKITDllName name 'IowKitGetNumDevs';
-function IowKitGetDeviceHandle; external IOWKITDllName name 'IowKitGetDeviceHandle';
-function IowKitSetLegacyOpenMode; external IOWKITDllName name 'IowKitSetLegacyOpenMode';
-function IowKitGetProductId; external IOWKITDllName name 'IowKitGetProductId';
-function IowKitGetRevision; external IOWKITDllName name 'IowKitGetRevision';
-function IowKitGetThreadHandle; external IOWKITDllName name 'IowKitGetThreadHandle';
-function IowKitGetSerialNumber; external IOWKITDllName name 'IowKitGetSerialNumber';
-function IowKitSetTimeout; external IOWKITDllName name 'IowKitSetTimeout';
-function IowKitSetWriteTimeout; external IOWKITDllName name 'IowKitSetWriteTimeout';
-function IowKitCancelIo; external IOWKITDllName name 'IowKitCancelIo';
-function IowKitVersion; external IOWKITDllName name 'IowKitVersion';
-
-{$ENDIF LINK_ON_REQUEST}
+  begin
+  end;
 
 end.

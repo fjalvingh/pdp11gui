@@ -73,8 +73,7 @@ interface
 
 uses
   Classes,
-  Windows,
-  SysUtils,
+    SysUtils,
   AuxU,
   SerialXferU ;
 

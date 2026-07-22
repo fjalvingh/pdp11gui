@@ -14,7 +14,6 @@ object FormMain: TFormMain
   Menu = MainMenu1
   OldCreateOrder = False
   Scaled = False
-  WindowMenu = Windows1
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnShow = FormShow

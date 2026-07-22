@@ -23,7 +23,7 @@ object FormTerminal: TFormTerminal
     Height = 29
     Panels = <>
   end
-  object RichEdit1: TRichEdit
+  object RichEdit1: TMemo
     Left = 0
     Top = 0
     Width = 629
@@ -35,7 +35,6 @@ object FormTerminal: TFormTerminal
     Font.Height = -12
     Font.Name = 'Courier New'
     Font.Style = []
-    HideScrollBars = False
     ParentFont = False
     ScrollBars = ssVertical
     TabOrder = 1

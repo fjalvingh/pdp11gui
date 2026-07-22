@@ -34,7 +34,7 @@ Die Anzahl der Spalten wird im Constructor festgelegt ('MemoryColumns').
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Grids, StdCtrls, ExtCtrls,
   FormChildU,
   JH_Utilities,

@@ -1,0 +1,19 @@
+# Lazarus/FPC build output
+lib/
+*.o
+*.ppu
+*.or
+*.rst
+*.rsj
+*.compiled
+link*.res
+
+# Lazarus IDE session state (window layout, breakpoints, ...)
+*.lps
+
+# Lazarus auto-backup of files it converted/touched
+backup/
+
+# Built executables
+/Pdp11gui/pdp11GUI
+/Pdp11gui/pdp11GUI.res

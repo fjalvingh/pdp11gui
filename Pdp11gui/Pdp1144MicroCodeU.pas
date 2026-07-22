@@ -51,7 +51,7 @@ U 0732, 0043,6005,0104,0140,3740,3033,4000,0422,017     ;1064   732:    2-J:    
 interface
 
 uses
-  Windows, Classes,
+  Classes,
   SysUtils,
   JH_Utilities,
   Contnrs,

@@ -3,7 +3,7 @@ program PDP11GUI;
 
 
 uses
-  Forms,
+  Forms, Interfaces,
   FormMainU in 'FormMainU.pas' {FormMain},
   FormSettingsU in 'FormSettingsU.pas' {FormSettings},
   ConsolePDP1144U in 'ConsolePDP1144U.pas',

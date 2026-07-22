@@ -90,7 +90,7 @@ object FormDisas: TFormDisas
       OnKeyPress = AnyAddrEditKeyPress
     end
   end
-  object DisasSourceEditor: TJvEditor
+  object DisasSourceEditor: TSynEdit
     Left = 0
     Top = 45
     Width = 535
@@ -107,16 +107,7 @@ object FormDisas: TFormDisas
       'line4'
       'line5'
       'line6')
-    GutterWidth = 32
     ReadOnly = True
-    Completion.ItemHeight = 13
-    Completion.CRLF = '/n'
-    Completion.Separator = '='
-    TabStops = '9 17 25 33 41 49 57 65'
-    SmartTab = False
-    BackSpaceUnindents = False
-    AutoIndent = False
-    BracketHighlighting.StringEscape = #39#39
     OnResize = DisasSourceEditorResize
     Align = alClient
     Font.Charset = ANSI_CHARSET

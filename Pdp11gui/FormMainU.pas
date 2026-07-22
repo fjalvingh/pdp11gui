@@ -43,10 +43,10 @@ Panel mit internen "Machine" registern, auch auto update
 
 - eigenes "Execution" Fenster
   - editbox, wo man das "start" label definiert
-  - Knöpfe
+  - Knï¿½pfe
    reset - pc auf start
   start - "s value" an pdp11/44,   "ru adress" auf SimH
-  single step: ab pc einen schritt ausführen
+  single step: ab pc einen schritt ausfï¿½hren
   show current instruction
   Editbox: Anzeige des PC
   Status: "Running/Halted"
@@ -59,24 +59,24 @@ Panel mit internen "Machine" registern, auch auto update
 
  Listing : die Suffixe' G C sind Fehler!
 
- PDP-11/44-Console: schneller ZUgriff auf Register über "E/G n" befehle
+ PDP-11/44-Console: schneller ZUgriff auf Register ï¿½ber "E/G n" befehle
  Machine registers: oberhalb 2^22 ansiedeln, in E/G n umsetzen
 
 
  Neue "SimH"-Console:
- Steuert SimH über einen Telnet-Clienten an.
- benutzt die SimH-COmmandos für examine/deposit
+ Steuert SimH ï¿½ber einen Telnet-Clienten an.
+ benutzt die SimH-COmmandos fï¿½r examine/deposit
 
- Basisklasse für COnsole abspalten!
+ Basisklasse fï¿½r COnsole abspalten!
 
 
 
 
   Child-Forms:
 
-  Sind mit MenuItems verknüpft:
+  Sind mit MenuItems verknï¿½pft:
   - MenuItems werden mit derselben Caption angelegt.
-  - MenuItems und Forms können über Caption gesucht werden.
+  - MenuItems und Forms kï¿½nnen ï¿½ber Caption gesucht werden.
 
   ChildForms sind MDIChilds.
   Besonderheit: "Hide" musste ich selber bauen
@@ -86,10 +86,10 @@ Panel mit internen "Machine" registern, auch auto update
   FormClose-> Style = normale, Hide
 
   Eine Speicherzelle kann in verschiednen ChildForms angezeigt werden.
-  Damit nicht zu oft "Examine" gemacht werden muss, wird bei Änderung
+  Damit nicht zu oft "Examine" gemacht werden muss, wird bei ï¿½nderung
   einer Zelle die Adresse in allen Formularen aktualisiert
   MemoryCellgroups.SyncMemoryCells() macht das update,
-  Anzeige in den Forms über ein "OnmemoryCellChanged" callback.
+  Anzeige in den Forms ï¿½ber ein "OnmemoryCellChanged" callback.
 
   Revisionhistory:
   ----------------
@@ -101,7 +101,7 @@ Panel mit internen "Machine" registern, auch auto update
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, Buttons, ExtCtrls, Menus, CheckLst, ComCtrls,
   FormChildU,
   RegistryU,
@@ -284,8 +284,7 @@ implementation
 uses
   AuxU,
   OCtalConst,
-  ShellAPI, // fuer URL-Start
-  ShFolder,
+  LCLIntf, // fuer URL-Start (OpenURL)
   JH_Utilities,
   ConsolePDP11M9312FakeU,
   ConsolePDP11M9312U,
@@ -348,7 +347,7 @@ procedure TFormMain.FormCreate(Sender: TObject);
     UpdateTimer.Enabled := false ; // erst nach Startup feuern
 
     // CSIDL_LOCAL_APPDATA: Vista UAC comaptible
-    // Siehe “Designed for Microsoft Windows XP” Application Specification.
+    // Siehe ï¿½Designed for Microsoft Windows XPï¿½ Application Specification.
     // data is "per-user, not-roaming"
     // zB: "C:\Dokumente und Einstellungen\Joerg\PDP11GUI\"
     // DefaultDataPath := SHGetFolderPath(CSIDL_PERSONAL) + '\PDP11GUI' ;
@@ -359,7 +358,9 @@ procedure TFormMain.FormCreate(Sender: TObject);
     MessageDlg('PDP11GUI Debug version: datadir= ' + DefaultDataDirectory,
             mtInformation, [mbOk], 0) ;
     {$else}
-    DefaultDataDirectory := SHGetFolderPath(CSIDL_COMMON_APPDATA) + '\PDP11GUI' ;
+    // SHGetFolderPath() ist unter Linux auf GetAppConfigDir(false) umgestellt
+    // (JH_Utilities.pas) und ignoriert den CSIDL-Parameter - siehe LINUX_PORT_TODO.md
+    DefaultDataDirectory := IncludeTrailingPathDelimiter(SHGetFolderPath(0)) + 'PDP11GUI' ;
     {$endif}
 
     ForceDirectories(DefaultDataDirectory) ;
@@ -367,7 +368,7 @@ procedure TFormMain.FormCreate(Sender: TObject);
     // alle Speicherzellen
     MemoryCellGroups := TMemoryCellGroups.Create ;
 
-    // Console, mit der kommuniziert wird. wird später nach Einstellung
+    // Console, mit der kommuniziert wird. wird spï¿½ter nach Einstellung
     // auf FormSettings erzeugt.
     SerialIoHub := TSerialIoHub.Create ;
 
@@ -413,7 +414,7 @@ procedure TFormMain.FormCreate(Sender: TObject);
     FormMMU.Caption := 'MMU' ;
 
     FormMicroCode := TFormMicroCode.Create(self) ;
-    FormMicroCode.Caption := 'µ Code' ;
+    FormMicroCode.Caption := 'ï¿½ Code' ;
 
     FormMacro11Source := TFormMacro11Source.Create(self) ;
     FormMacro11Listing := TFormMacro11Listing.Create(self) ;
@@ -435,8 +436,8 @@ procedure TFormMain.FormCreate(Sender: TObject);
     FormPdp1170Panel := TFormPdp1170Panel.Create(self) ;
     FormPdp1170Panel.Caption := 'PDP-11/70 panel' ;
 
-    // 21.b) für die beiden Memoryfenster CellGroups anlegen
-    // zwei 64 byte lange Speicherblöcke anlegen
+    // 21.b) fï¿½r die beiden Memoryfenster CellGroups anlegen
+    // zwei 64 byte lange Speicherblï¿½cke anlegen
     // Startadresse wird vom User in der TableForm gesetzt
     // feste Memorytables Mem1 bis Mem4 erzeugen
     mcg := MemoryCellGroups.AddSequentialMemoryCellsAsGroup(matPhysical22, 'memtable', 'Mem1',{startaddr}0, 64) ;
@@ -448,43 +449,43 @@ procedure TFormMain.FormCreate(Sender: TObject);
     mcg := MemoryCellGroups.AddSequentialMemoryCellsAsGroup(matPhysical22, 'memtable', 'Mem4',{startaddr}0, 64) ;
     FormMem4.MemoryGrid.ConnectToMemoryCellGroup(mcg) ;
 
-    // für den Memory loader eine leere memorycellgroup
+    // fï¿½r den Memory loader eine leere memorycellgroup
     mcg := MemoryCellGroups.AddSequentialMemoryCellsAsGroup(matPhysical22, 'memloader', 'Memory Loader',{startaddr}0, 1) ;
     FormMemoryLoader.MemoryGrid.ConnectToMemoryCellGroup(mcg) ;
 
-    // für den Memory Dumper eine leere memorycellgroup
+    // fï¿½r den Memory Dumper eine leere memorycellgroup
     mcg := MemoryCellGroups.AddSequentialMemoryCellsAsGroup(matPhysical22, 'memdumper', 'Memory Dumper',{startaddr}0, 1) ;
     FormMemoryDumper.MemoryGrid.ConnectToMemoryCellGroup(mcg) ;
 
-    // für den Memory test eine leere memorycellgroup
+    // fï¿½r den Memory test eine leere memorycellgroup
     mcg := MemoryCellGroups.AddSequentialMemoryCellsAsGroup(matPhysical22, 'memtest', 'Memory Test',{startaddr}0, 1) ;
     FormMemoryTest.MemoryGrid.ConnectToMemoryCellGroup(mcg) ;
 
-    // für alle Disc image loader dieselbe leere memorycellgroup
+    // fï¿½r alle Disc image loader dieselbe leere memorycellgroup
     mcg := MemoryCellGroups.AddSequentialMemoryCellsAsGroup(matPhysical22, 'discloader', 'Disc Loader',{startaddr}0, 1) ;
     //FormMemoryLoader.MemoryGrid.ConnectToMemoryCellGroup(mcg) ;
 
-    // für die Bitfield-Form eine Group, die nur aus einer Zelle besteht
+    // fï¿½r die Bitfield-Form eine Group, die nur aus einer Zelle besteht
     mcg := MemoryCellGroups.AddSequentialMemoryCellsAsGroup(matPhysical22, 'bitfield', 'Bitfields',{startaddr}0, 1) ;
     FormBitfields.ConnectToMemoryCell(mcg) ;
     FormBitfields.ShowNewAddr(mcg.Cell(0));
 
-    // für die Execute-Form eine Gruppe, die nur den PC enthält
+    // fï¿½r die Execute-Form eine Gruppe, die nur den PC enthï¿½lt
     // wert egal, wid in FormExecute neu gesetzt
     mcg := MemoryCellGroups.AddSequentialMemoryCellsAsGroup(matPhysical22, 'ExcutePC', 'Execute',{startaddr}_17777707, 1) ;
     FormExecute.ConnectToMemoryCells(mcg) ;
 
 
-    // für die Disassembly-Form eine Gruppe, die vorerst nur eine Zelle enthält
+    // fï¿½r die Disassembly-Form eine Gruppe, die vorerst nur eine Zelle enthï¿½lt
     // virtuelle adresse!
     mcg := MemoryCellGroups.AddSequentialMemoryCellsAsGroup(matVirtual, 'ExcuteDisas', 'Disassembly',{startaddr}0, 1) ;
     FormDisas.ConnectToMemoryCells(mcg) ;
 
-    // für die IoPageScanner-Form eine Gruppe, die vorerst nur eine Zelle enthält
+    // fï¿½r die IoPageScanner-Form eine Gruppe, die vorerst nur eine Zelle enthï¿½lt
     mcg := MemoryCellGroups.AddSequentialMemoryCellsAsGroup(matPhysical22, 'IoPageScanner', 'I/O page scanner',{startaddr}0, 1) ;
     FormIoPageScanner.ConnectToMemoryCells(mcg) ;
 
-    // für das PDP1170panel eine Gruppe, die vorerst nur zwei Zellen enthält
+    // fï¿½r das PDP1170panel eine Gruppe, die vorerst nur zwei Zellen enthï¿½lt
     mcg := MemoryCellGroups.AddSequentialMemoryCellsAsGroup(matPhysical22, 'Pdp1170Panel', 'PDP-11/70 console',{startaddr}0, 2) ;
     FormPdp1170Panel.ConnectToMemoryCells(mcg) ;
 
@@ -526,7 +527,7 @@ procedure TFormMain.StartupTimerTimer(Sender: TObject);
           childform := Components[i] as TFormChild ;
           if isMDIChildForm(childform) then begin
 //          if frm = FormPdp1170Panel then begin
-            // Sonder rolle für das pdp1170-Panel: ist kein MDI Child
+            // Sonder rolle fï¿½r das pdp1170-Panel: ist kein MDI Child
 //          end else begin
 
             // registry load setzt visible, wenn formstyle nicht MDIChild
@@ -534,7 +535,7 @@ procedure TFormMain.StartupTimerTimer(Sender: TObject);
             TheRegistry.Load(childform) ;
             // mache eine offenen oder geschlossene Childform draus
             setChildFormVisibility(childform, childform.visible);
-            childform.OnClose := ChildFormClose ; // Close für alle Childs gleich behandeln
+            childform.OnClose := ChildFormClose ; // Close fï¿½r alle Childs gleich behandeln
             //      end ;
           end{ "if isMDIChildForm(childform)" } ;
         end{ "if Components[i] is TFormChild" } ;
@@ -543,8 +544,8 @@ procedure TFormMain.StartupTimerTimer(Sender: TObject);
       TheRegistry.Save(self) ;
 
       FormTerminal.Hello ;
-      // Settings übernehmen. Vielleicht ist in settings noch keine
-      // ausgewählt: zwinge user dazu!
+      // Settings ï¿½bernehmen. Vielleicht ist in settings noch keine
+      // ausgewï¿½hlt: zwinge user dazu!
       try
         RenewPDP11ConsoleAndConnection(FormSettings.SelectedConfiguration) ;
       except
@@ -596,10 +597,10 @@ procedure TFormMain.LoadMachineDescription(fname:string) ;
         frm_mcglist.ConnectToMemoryCellGroup(mcg) ;
         mcg.associate := frm_mcglist ; // form mit cellgroup verbinden, s.u.
 
-        // 1.c) dynamische Menuitems für IOpage-form anlegen
+        // 1.c) dynamische Menuitems fï¿½r IOpage-form anlegen
         mi := ChildFormMenuItemByCaption(frm_mcglist.Caption) ;
         if mi = nil then begin
-          // menuitem für neue From/neue memorycellgroup im Menuitem
+          // menuitem fï¿½r neue From/neue memorycellgroup im Menuitem
           // "iopage1" anlegen
           mi := TMenuItem.Create(self) ;
           mi.Caption := frm_mcglist.Caption ;
@@ -613,7 +614,7 @@ procedure TFormMain.LoadMachineDescription(fname:string) ;
     Caption := setFormCaptionInfoField(Caption, ExtractFilename(fname)) ;
   end{ "procedure TFormMain.LoadMachineDescription" } ;
 
-// Alles löschen, was aus der MachineDescription kommt
+// Alles lï¿½schen, was aus der MachineDescription kommt
 procedure TFormMain.UnloadMachineDescription ;
   var
     i : integer ;
@@ -625,7 +626,7 @@ procedure TFormMain.UnloadMachineDescription ;
     while i < MemoryCellGroups.Count do begin
       mcg := MemoryCellGroups.Items[i] as TMemoryCellGroup ;
       if mcg.usagetag = 'machinedescription' then begin
-        // es müssen memorycellgroups, forms und menuitems gelöscht werden.
+        // es mï¿½ssen memorycellgroups, forms und menuitems gelï¿½scht werden.
 
         frm_mcglist :=  mcg.associate as TFormMemoryList ;
         mi := ChildFormMenuItemByCaption(frm_mcglist.Caption) ;
@@ -637,7 +638,7 @@ procedure TFormMain.UnloadMachineDescription ;
         inc(i) ;
     end{ "while i < MemoryCellGroups.Count" } ;
     MemoryCellGroups.bitfieldsdefs.UnLoad ;
-    // reconnect Bitfileds, damit alter Inhalt gelöscht wird
+    // reconnect Bitfileds, damit alter Inhalt gelï¿½scht wird
     FormBitfields.ConnectToMemoryCell(FormBitfields.memorycellgroup);
 
     Caption := setFormCaptionInfoField(Caption, 'no machine description') ;
@@ -645,8 +646,8 @@ procedure TFormMain.UnloadMachineDescription ;
 
 
 // welche Forms werden dynamisch als MDICHilds abgezeigt,
-// und hängen über die Caption an Menuitems?
-// Ist nötig, um zu entscheiden, welche Forms MDIChildren werden sollen
+// und hï¿½ngen ï¿½ber die Caption an Menuitems?
+// Ist nï¿½tig, um zu entscheiden, welche Forms MDIChildren werden sollen
 // nach FormShow/FormCreate kann die Collection "MDICHildren[]" benutzt werden.
 function  TFormMain.isMDIChildForm(childform: TFormChild): boolean ;
   begin
@@ -675,13 +676,13 @@ procedure TFormMain.Loadmachinedescription1Click(Sender: TObject);
 
 procedure TFormMain.Onlinedocumentation1Click(Sender: TObject);
   begin
-    ShellExecute(Handle, nil, HOME_URL, nil, nil, SW_SHOW) ;
+    OpenURL(HOME_URL) ;
   end;
 
 
 procedure TFormMain.Onlinetutorial1Click(Sender: TObject);
   begin
-    ShellExecute(Handle, nil, TUTORIAL_URL, nil, nil, SW_SHOW) ;
+    OpenURL(TUTORIAL_URL) ;
   end;
 
 procedure TFormMain.Programming1Click(Sender: TObject);
@@ -710,7 +711,7 @@ procedure TFormMain.RenewPDP11ConsoleAndConnection(settings: TFormSettingsConfig
     // Umrechnung der Adressbreiten (16, 18, 22) ist kitzelig:
     // - Die Fakes brauchen die MemoryCells aus der machine description in
     //   der neuen breite
-    // - Für non-Fakes ist die Adressbreite erst nach erzeugen der neuen Console klar
+    // - Fï¿½r non-Fakes ist die Adressbreite erst nach erzeugen der neuen Console klar
 
     // Connection einstellen
     case settings.ConnectionType of
@@ -776,7 +777,7 @@ procedure TFormMain.RenewPDP11ConsoleAndConnection(settings: TFormSettingsConfig
       connectionSerial:
         SerialIoHub.Physical_InitForCOM(settings.serialComport, settings.serialBaudrate, settings.serialFormat) ;
       connectionTelnet:
-        SerialIoHub.Physical_InitForTelnet(settings.telnetHostname, settings.telnetPort) ; // SimH nur über telnet
+        SerialIoHub.Physical_InitForTelnet(settings.telnetHostname, settings.telnetPort) ; // SimH nur ï¿½ber telnet
       else
         raise Exception.CreateFmt('Can not generate PDP-11 connection of type %d', [ord(settings.ConnectionType )]) ;
     end{ "case settings.ConnectionType" } ;
@@ -822,9 +823,9 @@ procedure TFormMain.RenewPDP11ConsoleAndConnection(settings: TFormSettingsConfig
       consoleSimH: begin
         PDP11Console := TConsolePDP11SimH.Create(MemoryCellGroups) ;
         // SimH hat 50Hz input-polling -> PDP11GUI kann nur mit ca. 600 baud senden!
-//        SerialIoHub.XmtBaudrate := 500 ; // non std, wird nur für timing benutzt
+//        SerialIoHub.XmtBaudrate := 500 ; // non std, wird nur fï¿½r timing benutzt
         SerialIoHub.XmtBaudrate := 9600 ; // oder schneller.
-        // Muss langsamer als tatsächliche Übertragung sein, wegen
+        // Muss langsamer als tatsï¿½chliche ï¿½bertragung sein, wegen
         // berechnung von delays
       end
       else
@@ -853,7 +854,7 @@ procedure TFormMain.RenewPDP11ConsoleAndConnection(settings: TFormSettingsConfig
     PDP11Console.Init(SerialIoHub) ;
 
     // Form mit anzuzeigender MMU verbinden
-    FormMMU.MMU := PDP11Console.MMU ; // MMU gehört der Console
+    FormMMU.MMU := PDP11Console.MMU ; // MMU gehï¿½rt der Console
     PDP11Console.MMU.OnMMuChanged := FormMMU.MMUChanged ; // Form update, wenn MMU touched
 
     // alle offenen fenster refreshen, damit Wechsel 18 <-> 22 optisch sichtbar wird.
@@ -874,7 +875,7 @@ procedure TFormMain.FormCloseQuery(Sender: TObject; var CanClose: boolean);
 
 
 // Alle Menuitems, die Forms an- und abschalten
-// lösen "FormEnableMenuItemClick" aus
+// lï¿½sen "FormEnableMenuItemClick" aus
 // Startup: liste der sichtabren Forms
 // Liste der bekannten Forms: FormMain.Compnentes
 procedure TFormMain.Exit1Click(Sender: TObject);
@@ -892,9 +893,9 @@ procedure TFormMain.Cascade1Click(Sender: TObject);
   var i: integer ;
     orgsize: array[0..100] of TPoint ; // original Width/Heigth
   begin
-    // besonderes Cascade: Fenstergrössen NICHT verändern!
+    // besonderes Cascade: Fenstergrï¿½ssen NICHT verï¿½ndern!
 
-    // Grössen merken
+    // Grï¿½ssen merken
     for i := 0 to mdichildcount - 1 do begin
       orgsize[i].x := MDIChildren[i].Width ;
       orgsize[i].y := MDIChildren[i].Height ;
@@ -902,7 +903,7 @@ procedure TFormMain.Cascade1Click(Sender: TObject);
 
     Cascade ;
 
-    // Grössen restaurieren
+    // Grï¿½ssen restaurieren
     for i := 0 to mdichildcount - 1 do begin
       MDIChildren[i].Width := orgsize[i].x ;
       MDIChildren[i].Height := orgsize[i].y ;
@@ -927,7 +928,7 @@ procedure TFormMain.Minimizeallbutactive1Click(Sender: TObject);
 
 procedure TFormMain.RestoreAll1Click(Sender: TObject);
   var i: integer ;
-    active: TForm ;
+    active: TCustomForm ;
   begin
     active := ActiveMDIChild ;
     for i := 0 to mdichildcount-1 do
@@ -937,7 +938,7 @@ procedure TFormMain.RestoreAll1Click(Sender: TObject);
   end;
 
 
-// sucht die childform, die mit "caption" ANFÄNGT
+// sucht die childform, die mit "caption" ANFï¿½NGT
 // Sie kann also eine Caption wie "MACRO11 source - filename" haben
 function TFormMain.ChildFormByCaption(aCaption: string): TFormChild ;
   var i: integer ;
@@ -979,14 +980,14 @@ function TFormMain.ChildFormMenuItemByCaption(aCaption: string): TMenuItem;
 procedure TFormMain.setChildFormVisibility(childform: TFormChild; isVisible: boolean) ;
   begin
     if (childform.visible = isVisible) and (childform.FormStyle = fsMDIChild) then
-      Exit ; // MDIForm ist schon so, wie gewünscht
+      Exit ; // MDIForm ist schon so, wie gewï¿½nscht
 
     if isVisible then begin
       childform.FormStyle := fsMDIChild ;
       childform.Show ;
       childform.BringToFront ;
     end else begin
-//@        childform.FormStyle := fsNormal ; // MDICHilds können nicht unsichtbar werden
+//@        childform.FormStyle := fsNormal ; // MDICHilds kï¿½nnen nicht unsichtbar werden
       childform.Hide ;
     end;
   end{ "procedure TFormMain.setChildFormVisibility" } ;
@@ -995,7 +996,7 @@ procedure TFormMain.setChildFormVisibility(childform: TFormChild; isVisible: boo
 procedure TFormMain.ApplySettings ;
   begin
 //    with FormSettings do begin
-    // ggf. geändertes consolobject neu erzeugen
+    // ggf. geï¿½ndertes consolobject neu erzeugen
     RenewPDP11ConsoleAndConnection(FormSettings.SelectedConfiguration);
 //    end;
   end;
@@ -1008,13 +1009,13 @@ procedure TFormMain.Settings1Click(Sender: TObject);
   end;
 
 
-// läuft, wenn der User das [X] zum schliessen klickt
+// lï¿½uft, wenn der User das [X] zum schliessen klickt
 procedure TFormMain.ChildFormClose(Sender: TObject; var Action: TCloseAction);
   var childform: TFormChild ;
   begin
     childform := Sender as TFormChild ;
     childform.Hide ;
-    Action := caNone ; // caHide löst childform.Hide nicht aus!
+    Action := caNone ; // caHide lï¿½st childform.Hide nicht aus!
   end;
 
 
@@ -1055,7 +1056,7 @@ procedure TFormMain.UpdateGUI ;
 procedure TFormMain.UpdateTimerTimer(Sender: TObject);
   begin
     UpdateGUI ;
-    // regelmässig Stand der Forms speichern ... damit sie nicht dauernd verloren gehen!
+    // regelmï¿½ssig Stand der Forms speichern ... damit sie nicht dauernd verloren gehen!
     RegistrySaveControls ;
   end;
 
