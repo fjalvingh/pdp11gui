@@ -22,7 +22,7 @@ unit FakePDP1144U;
 }
 
 {
-  Simuliert eine rudimientäre PDP-11/44 console.
+  Simuliert eine rudimientÃ¤re PDP-11/44 console.
   Sie dient nur zum Test der GUI
 
   - Deposit, , mit /n, /g
@@ -48,8 +48,8 @@ type
       // letzter Fehlerstring
       last_error: string ;
 
-      rubout_active : boolean ; // für besonders Echo bei Löschen mit RUBOUT
-      rubout_echochar: char ; // zecihen,das weiderholt wird, wenn man zu oft rubout drückt
+      rubout_active : boolean ; // fÃ¼r besonders Echo bei LÃ¶schen mit RUBOUT
+      rubout_echochar: char ; // zecihen,das weiderholt wird, wenn man zu oft rubout drÃ¼ckt
 
       // Consol-Commandos verarbeiten
       procedure doPrompt ; // Eingabe reset
@@ -92,7 +92,7 @@ const
 
   CHAR_RUBOUT = #$7f ;
 
-  // die 16 globalen Register R0..R7, R10..R17 werden kürzer addressiert
+  // die 16 globalen Register R0..R7, R10..R17 werden kÃ¼rzer addressiert
   global_register_base = _17777700 ;
   global_register_blocksize = 16 ;
 
@@ -102,7 +102,7 @@ constructor TFakePDP1144.Create ;
     inherited Create(matPhysical22);
   end;
 
-// Speicher löschen
+// Speicher lÃ¶schen
 procedure TFakePDP1144.PowerOn ;
   var i: integer ;
   begin
@@ -160,7 +160,7 @@ function TFakePDP1144.SerialReadByte(var b: byte) : boolean ;
     if SerialOutBuff = '' then
       result := false // buffer leer: nix zu lesen da!
     else begin
-      // ältestes Zeichen zurückgeben
+      // Ã¤ltestes Zeichen zurÃ¼ckgeben
       b := byte(SerialOutBuff[1]) ;
       SerialOutBuff := Copy(SerialOutBuff, 2, maxint) ;
       result := true ;
@@ -236,13 +236,13 @@ function TFakePDP1144.SerialWriteByte(b: byte) : boolean ;
         SerialOutBuff := SerialOutBuff + '\' ;
         rubout_active := true ;
       end;
-      if n = 0 then begin // wiederhole uenndlich letzes gelöschtes Zeichen
+      if n = 0 then begin // wiederhole uenndlich letzes gelÃ¶schtes Zeichen
         if rubout_echochar <> #0 then
           SerialOutBuff := SerialOutBuff + rubout_echochar ;
       end else begin
-        // Es ist noch was da zum Löschen:
+        // Es ist noch was da zum LÃ¶schen:
         // dann: letzes zeichen aus in_buff_echo
-// Seltsam: wenn es nix mehr zu löschen gibt, wird trotzdem mit
+// Seltsam: wenn es nix mehr zu lÃ¶schen gibt, wird trotzdem mit
 // dem letzten buchstaben geechot, obwohl er schon weg ist.
         rubout_echochar := SerialInBuff[n] ;
         SerialOutBuff := SerialOutBuff + rubout_echochar ;
@@ -272,7 +272,7 @@ procedure TFakePDP1144.doPrompt ;
 
 
 // args: 'G' -> s_addr = oktale Nummer eines globalen Registers R0..R17
-// 'N:<count>' -> die nächsten <count> Adressen mit demselben Wert füllen
+// 'N:<count>' -> die nÃ¤chsten <count> Adressen mit demselben Wert fÃ¼llen
 procedure TFakePDP1144.doDeposit(opcode_args: TStringList; s_addr, s_val: string) ;
   var i, n: integer ;
     s: string ;
@@ -285,7 +285,7 @@ procedure TFakePDP1144.doDeposit(opcode_args: TStringList; s_addr, s_val: string
     val := 0 ;
     last_error := '' ;
     n := 1 ;
-    addr_inc := 2 ; // Adressen in 2er-Sprüngen, ausser bei 'G'
+    addr_inc := 2 ; // Adressen in 2er-SprÃ¼ngen, ausser bei 'G'
 
     // addr erstmal normal interpretieren. addr kann '+' oder addr sein
     if s_addr = '+'  then
@@ -339,7 +339,7 @@ procedure TFakePDP1144.doDeposit(opcode_args: TStringList; s_addr, s_val: string
 
 
 // args: 'G' -> s_addr = oktale Nummer eines globalen Registers R0..R17
-// args: 'N:<count>' liefere die nächsten <count> Adressen, kombinierbar mit 'G'
+// args: 'N:<count>' liefere die nÃ¤chsten <count> Adressen, kombinierbar mit 'G'
 procedure TFakePDP1144.doExamine(opcode_args: TStringList; s_addr: string) ;
   var i, n: integer ;
     s: string ;
@@ -351,7 +351,7 @@ procedure TFakePDP1144.doExamine(opcode_args: TStringList; s_addr: string) ;
     addr.val := 0 ;
     last_error := '' ;
     n := 1 ;
-    addr_inc := 2 ; // Adressen in 2er-Sprüngen, ausser bei 'G'
+    addr_inc := 2 ; // Adressen in 2er-SprÃ¼ngen, ausser bei 'G'
 
     // Addr erstmal normal interpretieren. s_addr kann leer sein , dann auto inc
     if (s_addr = '') then

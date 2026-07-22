@@ -22,7 +22,7 @@ unit ConsolePDP11ODTU;
 }
 
 {
-  Steuert über RS232 die PDP-11 mit ODT Console an
+  Steuert Ã¼ber RS232 die PDP-11 mit ODT Console an
   Die Anwendung ruft nur Deposit(), Examine()
 
   Steuert 16, 18 und 22 Bit ODT consolen an.
@@ -50,7 +50,7 @@ const
   // Zeilenumbruch der PDP-Console
   CHAR_ODT_CR = #$d ;
   CHAR_ODT_LF = #$a ;
-  ODT_CMD_TIMEOUT = 1000 ; // timeout für Antwort in Millisekunden
+  ODT_CMD_TIMEOUT = 1000 ; // timeout fÃ¼r Antwort in Millisekunden
 
 type
 
@@ -71,7 +71,7 @@ type
       function regname2addr(regname:string): TMemoryAddress ;
       function physicaladdr2text(addr: TMemoryAddress): string ;
     public
-      // Rüdiger Kurt 2016: hat PDP-11 Nachbau, der als ODT prompt nicht "@", sondern "@ " zeigt.
+      // RÃ¼diger Kurt 2016: hat PDP-11 Nachbau, der als ODT prompt nicht "@", sondern "@ " zeigt.
       GobbleExtraSpaceAfterPrompt: boolean ;
       isK1630: boolean ; // Robotron 11/23 clone A6402, CPU K1630
 
@@ -102,7 +102,7 @@ type
 
       procedure ResetMachine(newpc_v: TMemoryAddress) ; override ; // Maschine reset
       procedure ResetMachineAndStartCpu(newpc_v: TMemoryAddress) ; override ; // CPU starten.
-//      function IsRunning: boolean ; virtual ; abstract ; // läuft die CPU (noch?)
+//      function IsRunning: boolean ; virtual ; abstract ; // lÃ¤uft die CPU (noch?)
       procedure ContinueCpu ; override ; // Maschine CPU reset
       procedure SingleStep; override ;
 
@@ -149,7 +149,7 @@ class function TConsolePDP11ODTScanner.Symtype2text(symtype:integer): string ;
 
 
 // ist nicht klar, ob ein Symbol durch mehr input noch
-// verlängert werden kann, wird EConsoleScannerIncompleteSymbol
+// verlÃ¤ngert werden kann, wird EConsoleScannerIncompleteSymbol
 // geworfen.
 function TConsolePDP11ODTScanner.NxtSym(raiseIncompleteOnEof: boolean = true):string ;
   var
@@ -209,8 +209,8 @@ function TConsolePDP11ODTScanner.NxtSym(raiseIncompleteOnEof: boolean = true):st
       nxtcharidx := nxtcharidx + symlen ;
     until not again ;
 
-    // Detailierte Augsbe. rest auf 32 Zeichen beschärnaken,
-    // falls mal der SerialXfer-Zeichenstrom i nden Parser gerät.
+    // Detailierte Augsbe. rest auf 32 Zeichen beschÃ¤rnaken,
+    // falls mal der SerialXfer-Zeichenstrom i nden Parser gerÃ¤t.
     Log('{Rcved Sym = (%s, "%s"), rest="%s"} ', [
             Symtype2text(CurSymType), CurSymTxt,
             Copy(CurInputLine, nxtcharidx, 32)]) ;
@@ -242,13 +242,13 @@ destructor TConsolePDP11ODT.Destroy ;
 // ermittelt den symbolischen ODT-Registernamen zu einer 22bit-UNIBUS-Adresse
 // '', wenn keiner gefunden
 
-// diese Liste hier ist Model-abhängig .. eigentlich sollte sie aus
+// diese Liste hier ist Model-abhÃ¤ngig .. eigentlich sollte sie aus
 // der .ini-Datei mit geladen werden!
 function TConsolePDP11ODT.addr2regname(addr: TMemoryAddress): string ;
   begin
     result := '' ;
     assert(addr.mat = mat) ;
-    // code für 16, 18 und 22 bit Adressen
+    // code fÃ¼r 16, 18 und 22 bit Adressen
     if addr.val = (PhysicalIopageBaseAddr(mat) + _17700) then result := 'R0'
     else if addr.val = (PhysicalIopageBaseAddr(mat) + _17701) then result := 'R1'
     else if addr.val = (PhysicalIopageBaseAddr(mat) + _17702) then result := 'R2'
@@ -267,7 +267,7 @@ function TConsolePDP11ODT.regname2addr(regname:string): TMemoryAddress ;
     regname := Uppercase(regname) ;
     result.mat := self.mat ;
     result.val := MEMORYCELL_ILLEGALVAL ;
-    // code für 18 und 22 bit Adressen
+    // code fÃ¼r 18 und 22 bit Adressen
     if regname = 'R0' then result.val := PhysicalIopageBaseAddr(mat) + _17700 ;
     if regname = 'R1' then result.val := PhysicalIopageBaseAddr(mat) + _17701 ;
     if regname = 'R2' then result.val := PhysicalIopageBaseAddr(mat) + _17702 ;
@@ -308,14 +308,14 @@ function TConsolePDP11ODT.getName: string ;
     result := 'PDP-11 ODT console' ;
   end;
 
-// Terminal-Einstellungen für die PDP-11/ODT
+// Terminal-Einstellungen fÃ¼r die PDP-11/ODT
 function TConsolePDP11ODT.getTerminalSettings: TTerminalSettings ;
   begin
     // ODT sendet selber CR,LF
     result.Receive_CRisNewline := false ; // ignore CR
     //result.Receive_CRisCRLF := true ;
     result.Receive_LFisNewline := true ; // Line end on LF
-    result.Backspace := #0 ; // PDP-11/ODT löscht nie
+    result.Backspace := #0 ; // PDP-11/ODT lÃ¶scht nie
     result.TabStop := 0 ;
   end;
 
@@ -335,7 +335,7 @@ function TConsolePDP11ODT.getFeatures: TConsoleFeatureSet ;
               ]
     else
       result := result + [
-              // cfReset, // reset unabhängig von run: INITIALIZE
+              // cfReset, // reset unabhÃ¤ngig von run: INITIALIZE
               cfActionResetMaschineAndStartCpu, // "nnnG" ist reset und start
               cfActionContinueCpu  // "P" ist Continue
               ] ;
@@ -345,7 +345,7 @@ function TConsolePDP11ODT.getFeatures: TConsoleFeatureSet ;
 
 function TConsolePDP11ODT.getPhysicalMemoryAddressType: TMemoryAddressType ;
   begin
-    // wurde im Constructor übergeben
+    // wurde im Constructor Ã¼bergeben
     result := mat ;
   end;
 
@@ -392,7 +392,7 @@ procedure TConsolePDP11ODT.Init(aConnection: TSerialIoHub) ;
     Resync ;
   end;
 
-// sagt der PDP-Console, dass sie nix mehr über die PDP-11/44 weiss
+// sagt der PDP-Console, dass sie nix mehr Ã¼ber die PDP-11/44 weiss
 procedure TConsolePDP11ODT.ClearState ;
   begin
     inherited ;
@@ -411,11 +411,11 @@ function TConsolePDP11ODT.DecodeNextAnswerPhrase: boolean ;
   const SymTypeTxt: array[TParse_SymType] of string =
     ('Incomplete', 'Octal', 'Register', 'Other', 'EOLN', 'EOF') ;
   var
-    parse_nxtcharidx: integer ; // nächstes unverarbeites Zeichen aus SerialRcvDatabuffer
+    parse_nxtcharidx: integer ; // nÃ¤chstes unverarbeites Zeichen aus SerialRcvDatabuffer
     CurSymTxt: string ;
     CurSymType: TParse_SymType ;
 
-    // gibt aus dem SerialRcvDatabuffer das nächste Smybol zurück
+    // gibt aus dem SerialRcvDatabuffer das nÃ¤chste Smybol zurÃ¼ck
   procedure Parse_Init ;
     begin
       parse_nxtcharidx := 1 ;
@@ -480,7 +480,7 @@ function TConsolePDP11ODT.DecodeNextAnswerPhrase: boolean ;
 else: scan until eoln  phOther    ->EOLN
 }
   var
-    // Globals für die parser
+    // Globals fÃ¼r die parser
     CurAnswerline: TConsoleAnswerPhrase ;
 
   procedure makePrompt ;
@@ -491,18 +491,18 @@ else: scan until eoln  phOther    ->EOLN
       CurAnswerline.phrasetype := phPrompt ;
 
       // wenn vor der Prompt ein HALT kam, ist es jetzt die LETZTE Zeile
-      // Achtung eben wurde gerade die Prompt eingefügt
+      // Achtung eben wurde gerade die Prompt eingefÃ¼gt
       if Answerlines.Count > 1 then
         haltAnswerline := Answerlines.Items[Answerlines.Count-2] as TConsoleAnswerPhrase
       else haltAnswerline := nil ;
 
-      // Hier nicht das OnHalt event auslösen ... das will wahrscheinlich
-      //Funktionen durchführen, (EXAMINE list), die wiederum vom background-empfang abhängig sind!
-      // war die Phrase davor ein "phHalt", wird jetzt das OnHalt-Event ausgelöst
+      // Hier nicht das OnHalt event auslÃ¶sen ... das will wahrscheinlich
+      //Funktionen durchfÃ¼hren, (EXAMINE list), die wiederum vom background-empfang abhÃ¤ngig sind!
+      // war die Phrase davor ein "phHalt", wird jetzt das OnHalt-Event ausgelÃ¶st
       if (haltAnswerline <> nil) and (haltAnswerline.phrasetype = phHalt) then begin
         onExecutionStopPcVal := haltAnswerline.haltaddr ;
         onExecutionStopDetected := true ;
-        // MonitorTimer kann jetzt OnExecutionStop auslösen
+        // MonitorTimer kann jetzt OnExecutionStop auslÃ¶sen
         assert(onExecutionStopPcVal.mat = matVirtual) ;
       end else begin
         onExecutionStopPcVal.val := MEMORYCELL_ILLEGALVAL ;
@@ -521,7 +521,7 @@ else: scan until eoln  phOther    ->EOLN
       CurAnswerline.phrasetype := phHalt ;
       CurAnswerline.rawtext := addrtxt ;
       CurAnswerline.haltaddr := OctalStr2Addr(addrtxt, matVirtual) ;
-      // halt -phrase löst noch nicht das OnExecutionStop-Event aus.
+      // halt -phrase lÃ¶st noch nicht das OnExecutionStop-Event aus.
       // erst, wenn die nachfolgende cmd prompt erkannt wird
     end;
 
@@ -540,7 +540,7 @@ else: scan until eoln  phOther    ->EOLN
       if addr.val = MEMORYCELL_ILLEGALVAL then
         addr := OctalStr2Addr(addrtxt, mat) ; // exception
       assert(addr.val <> MEMORYCELL_ILLEGALVAL) ;
-      // addr vor "/" ist gültig!
+      // addr vor "/" ist gÃ¼ltig!
       val := OctalStr2Dword(valtxt, 16) ; // exception?
       if val <> MEMORYCELL_ILLEGALVAL then begin
         CurAnswerline := Answerlines.Add as TConsoleAnswerPhrase ;
@@ -548,12 +548,12 @@ else: scan until eoln  phOther    ->EOLN
         CurAnswerline.examineaddr := addr ;
         CurAnswerline.examinevalue := val ;
       end else if valtxt = '?' then begin
-        // UNIBUS timeout ist gültige Antwort
+        // UNIBUS timeout ist gÃ¼ltige Antwort
         CurAnswerline := Answerlines.Add as TConsoleAnswerPhrase ;
         CurAnswerline.phrasetype := phExamine ;
         CurAnswerline.examineaddr.mat := mat ;
         CurAnswerline.examineaddr.val := MEMORYCELL_ILLEGALVAL ;  // adresse ist leider unbekannt
-        CurAnswerline.examinevalue := MEMORYCELL_ILLEGALVAL ; // gültiges Fehlersignal
+        CurAnswerline.examinevalue := MEMORYCELL_ILLEGALVAL ; // gÃ¼ltiges Fehlersignal
       end else
         raise EConsoleScannerUnknownExpression.Create('EConsoleScannerIllegalExpression 3') ;
     end{ "procedure makeExamine" } ;
@@ -579,7 +579,7 @@ else: scan until eoln  phOther    ->EOLN
     with RcvScanner do begin
       MarkParsePosition ;
       try
-        // Eingabe-Ende vom letzten Scan löschen
+        // Eingabe-Ende vom letzten Scan lÃ¶schen
         if CurSymType = symtypeEof then NxtSym ; // Incomplete, wenn nichts weiter da!
 
         // NextSym() erzeugt EConsoleScannerInputIncomplete, wenn Ende des Inputs
@@ -588,18 +588,18 @@ else: scan until eoln  phOther    ->EOLN
                 TConsolePDP11ODTScanner.Symtype2text(CurSymType), String2PrintableText(CurSymTxt, true)] );
         if CurSymType = symtypeEoln then begin
 
-// Wann können unverarbeitet Zeichen aus dem Empfangspuffer rausgeworfen werden?
+// Wann kÃ¶nnen unverarbeitet Zeichen aus dem Empfangspuffer rausgeworfen werden?
 // Wenn sie durch Zusatzempfang von noch mehr Zeichen nicht mehr in eine
-// gültige Phrase gewandelt werden können.
+// gÃ¼ltige Phrase gewandelt werden kÃ¶nnen.
 // NB: "Rauswerfen" heisst: "makeOtherLine()
 //
 // a) wenn zwei CR in einer Zeile sind:
 
 
-          // EOLN: alle zu ignorierenden Phrasen ausdrücklich hier eintragen!
+          // EOLN: alle zu ignorierenden Phrasen ausdrÃ¼cklich hier eintragen!
           NxtSym ;
           while GobbleExtraSpaceAfterPrompt and (CurSymTxt = ' ') do
-            // ignore whitespace after CR/LF: Rüdiger Kurth, K1630
+            // ignore whitespace after CR/LF: RÃ¼diger Kurth, K1630
             NxtSym ;
 
           if CurSymTxt = '@' then begin
@@ -609,7 +609,7 @@ else: scan until eoln  phOther    ->EOLN
             // PDP11/23 M8186: liefert manchmal eine Extra-Leerzeile
             makeOtherLine(''); // One CR is already eaten up
           end else if CurSymTxt = '?' then begin
-            // PDP11/23 M8186: liefert nach Ausgabe von <CR> einfach ein "?" zurück
+            // PDP11/23 M8186: liefert nach Ausgabe von <CR> einfach ein "?" zurÃ¼ck
             NxtSym ; // eat up
             makeOtherLine('?');
           end else if CurSymType in [symtypeOctal, symtypeRegister] then begin // <EOLN><addr<regname>
@@ -635,7 +635,7 @@ else: scan until eoln  phOther    ->EOLN
           end { "if CurSymType in [symtypeOctal, symtypeRegister]" } ;
         end { "if CurSymType = symtypeEoln" } else if CurSymTxt = '@' then begin
           NxtSym ;
-          // Rüdiger Kurths ODT: extra space nach @
+          // RÃ¼diger Kurths ODT: extra space nach @
           if GobbleExtraSpaceAfterPrompt and (CurSymTxt = ' ') then
             NxtSym ;
 
@@ -650,14 +650,14 @@ else: scan until eoln  phOther    ->EOLN
             raise EConsoleScannerUnknownExpression.Create('no "/" after "@<addr>"') ;
           // nach EOLN: <addr>=halt oder <addr>/<val> = examine
           NxtSym ;
-          // Rüdiger Kurths ODT: extra space nach /
+          // RÃ¼diger Kurths ODT: extra space nach /
           if GobbleExtraSpaceAfterPrompt and (CurSymTxt = ' ') then
             NxtSym ;
           if (CurSymType= symtypeOctal) or (CurSymTxt = '?' ) then begin
             makeExamine(s, CurSymTxt) ;
             NxtSym ; // Examine-Ergebnis weg
           end ;
-        end { "if CurSymTxt = '@'" } else begin // ? alles bis nächstes EOL ist unverstandene "OTHERLINE"
+        end { "if CurSymTxt = '@'" } else begin // ? alles bis nÃ¤chstes EOL ist unverstandene "OTHERLINE"
           s := CurSymTxt ;
           NxtSym ;
           while CurSymType <> symtypeEoln do begin
@@ -681,14 +681,14 @@ else: scan until eoln  phOther    ->EOLN
           CleanupInput ;
           // JETZT nochmal versuchen!!!
           result := true ;
-          // oder: nochmal ab nächstem Symbol probieren?
+          // oder: nochmal ab nÃ¤chstem Symbol probieren?
           // RestoreParsePosition ;
           // NxtSym
         end;
         on E: EConsoleScannerInputIncomplete do begin
-          // NxtSym ist auf ein unvollständiges Symbol gestossen,
+          // NxtSym ist auf ein unvollstÃ¤ndiges Symbol gestossen,
           // oder ein NxtSym konnte nichts mehr liefern
-          // nix zurückgeben, diese Funktion SPÄTER nochmal aufrufen, mit
+          // nix zurÃ¼ckgeben, diese Funktion SPÃ„TER nochmal aufrufen, mit
           // mehr input
           RestoreParsePosition ;
           result := false ;
@@ -864,7 +864,7 @@ procedure TConsolePDP11ODT.ResetMachineAndStartCpu(newpc_v: TMemoryAddress) ; //
       // K1630: <adr>AG ?
       s  := Format('%sG', [Dword2OctalStr(newpc_v.val, 0)]) ;
       WriteToPDP(s) ;
-      // keine Prompt, CPU läuft jetzt
+      // keine Prompt, CPU lÃ¤uft jetzt
     finally
       EndCriticalSection ;
     end{ "try" } ;
@@ -881,7 +881,7 @@ procedure TConsolePDP11ODT.ContinueCpu ; // CPU starten.
 
       Answerlines.Clear ;
       WriteToPDP('P') ;
-      // keine Prompt, CPU läuft jetzt
+      // keine Prompt, CPU lÃ¤uft jetzt
     finally
       EndCriticalSection ;
     end;

@@ -22,7 +22,7 @@ unit MediaImageDevicesU;
 }
 
 {
-  Objecte für alle alle Controller und Devices.
+  Objecte fÃ¼r alle alle Controller und Devices.
 
    Datenstruktur:
    -------------
@@ -60,12 +60,12 @@ unit MediaImageDevicesU;
                     `-> TapeDevice ---> TapeDevice_PC05
 
 
-  - Treestruktur für devices und subdevices wird statisch angelegt.
+  - Treestruktur fÃ¼r devices und subdevices wird statisch angelegt.
   - jedes device/subdevices hat statische Stammdaten
-    (für die Definition: Namen, driver, Diskgeometrien, etc.)
-    und dynamische Laufdaten (während es in Bearbeitung ist)
+    (fÃ¼r die Definition: Namen, driver, Diskgeometrien, etc.)
+    und dynamische Laufdaten (wÃ¤hrend es in Bearbeitung ist)
 
-    - Der Buffer für die Iamge daten ist eine separate Klasse,
+    - Der Buffer fÃ¼r die Iamge daten ist eine separate Klasse,
       ein Singleton
 }
 
@@ -109,7 +109,7 @@ type
       { -- Laufdaten --- }
       curBaseAddress: dword ; // "1775400"
       curUnitNumber: integer ;
-      curDevice : TMediaImage_AbstractDevice ; // ausgewählt und in Form aktiv
+      curDevice : TMediaImage_AbstractDevice ; // ausgewÃ¤hlt und in Form aktiv
       constructor Create  ;
       destructor Destroy ; override ;
       procedure AddDevice(aDevice: TMediaImage_AbstractDevice) ;
@@ -161,9 +161,9 @@ type
     end;
 
 {
-  Device: eines der Devices, die am selben Controllertyp hängen
+  Device: eines der Devices, die am selben Controllertyp hÃ¤ngen
   Verschiedene devices (disk, MSCP, tape, papertape) beinflussen die
-   Benutzeroberfläche.
+   BenutzeroberflÃ¤che.
    Dieser Parametersatz beschreibt einen Devicetyp
 }
 
@@ -173,21 +173,21 @@ type
       Name: string ; // as in DeviceDriverTypeComboBox, "RL01", "RL02"
 
       controller: TMediaImage_AbstractController ; // uplink to parent
-      DriverDeviceType: integer ; // Untertyp, wird direkt an PDP-11 driver übergeben
+      DriverDeviceType: integer ; // Untertyp, wird direkt an PDP-11 driver Ã¼bergeben
 
       // Device als stream of blocks
-      // Blöcke/Sectoren auf der Disc. cylinders*heads*sectorcount.
+      // BlÃ¶cke/Sectoren auf der Disc. cylinders*heads*sectorcount.
       BlockCount: integer ; // blocknr = 0 .. blockcount
-      BlockSize: integer ; // Grösse eines sectors in byte
-      MultiBlockCount: integer ; // Anzahl der Blöcke für Multi Block Read/Write
+      BlockSize: integer ; // GrÃ¶sse eines sectors in byte
+      MultiBlockCount: integer ; // Anzahl der BlÃ¶cke fÃ¼r Multi Block Read/Write
 
       DataBytesAreWordLSBs: boolean ; // if true, the device receives or transmits
       // data bytes as words with bits 15:8 = 0. (papertape)
 
-      fixCapacity : boolean ; // false: Größe ist unbeschränkt (papertape)
+      fixCapacity : boolean ; // false: GrÃ¶ÃŸe ist unbeschrÃ¤nkt (papertape)
 
-      maxBlockAccessTime_ms: integer ; // Zeit für Zugriff auf Block
-      // zeit für Positioning und retries
+      maxBlockAccessTime_ms: integer ; // Zeit fÃ¼r Zugriff auf Block
+      // zeit fÃ¼r Positioning und retries
 
 
       { --- Laufdaten --- }
@@ -232,9 +232,9 @@ type
 
       { --- Laufdaten --- }
 
-      // geschützter Bereich mit Vendor data
+      // geschÃ¼tzter Bereich mit Vendor data
       VendorAreaStartBlock: integer ; // start block
-      VendorAreaBlockCount: integer ; // länge
+      VendorAreaBlockCount: integer ; // lÃ¤nge
 
       function getBlockRangeDisplay(aStartBlockNr, aCount: integer): string ; override ;
       procedure getGeometryDisplay(lines: TStrings) ; override ;
@@ -569,7 +569,7 @@ procedure TMediaImage_DiscDevice.BlockNr2DiscAddr ; // blocknr -> cylinder,head,
 function TMediaImage_DiscDevice_Std.getBlockRangeDisplay(aStartBlockNr, aCount: integer): string ;
   begin
     result := '' ;
-    // hier die Parameterprüfung ... unlogisch
+    // hier die ParameterprÃ¼fung ... unlogisch
     assert(aStartBlockNr >= 0) ;
     assert((aStartBlockNr + aCount) <= BlockCount) ;
 
@@ -577,7 +577,7 @@ function TMediaImage_DiscDevice_Std.getBlockRangeDisplay(aStartBlockNr, aCount: 
     curBlockNr := aStartBlockNr ;
     BlockNr2DiscAddr ;
     // normale cyl/head/sector drives
-    // Check: nicht über track ende hinaus schreiben
+    // Check: nicht Ã¼ber track ende hinaus schreiben
     assert(curSector + aCount <= SectorCount) ;
 
     if aCount = 1 then
@@ -649,7 +649,7 @@ constructor TMediaImage_DiscDevice_RL01.Create ;
 
     // Cylinder 511, head 1 ist reserviert
     VendorAreaStartBlock := (CylinderCount-1) * 2 + SectorCount ;
-    VendorAreaBlockCount := SectorCount ; // länge
+    VendorAreaBlockCount := SectorCount ; // lÃ¤nge
 
     readErrorRetryCount := 16 ;
     MultiBlockCount := SectorCount ; // ein Multiblock = 1 Track
@@ -658,7 +658,7 @@ constructor TMediaImage_DiscDevice_RL01.Create ;
 
     maxBlockAccessTime_ms := 0 ; // to be defined
 
-    // 32K ist die grösse des Buffers im treiber
+    // 32K ist die grÃ¶sse des Buffers im treiber
     // See drivers\pdp11gui_serialxfer.mac, label rxbfdt:
     assert(MultiBlockCount * BlockSize <= 32768) ;
   end { "constructor TMediaImage_DiscDevice_RL01.Create" } ;
@@ -678,7 +678,7 @@ constructor TMediaImage_DiscDevice_RL02.Create ;
 
     // Cylinder 511, head 1 ist reserviert
     VendorAreaStartBlock := (CylinderCount-1) * 2 + SectorCount ;
-    VendorAreaBlockCount := SectorCount ; // länge
+    VendorAreaBlockCount := SectorCount ; // lÃ¤nge
 
     readErrorRetryCount := 16 ;
     MultiBlockCount := SectorCount ; // ein Multiblock = 1 Track
@@ -687,7 +687,7 @@ constructor TMediaImage_DiscDevice_RL02.Create ;
 
      maxBlockAccessTime_ms := 0 ; // to be defined
 
-    // 32K ist die grösse des Buffers im treiber
+    // 32K ist die grÃ¶sse des Buffers im treiber
     // See drivers\pdp11gui_serialxfer.mac, label rxbfdt:
     assert(MultiBlockCount * BlockSize <= 32768) ;
   end{ "constructor TMediaImage_DiscDevice_RL02.Create" } ;
@@ -718,7 +718,7 @@ constructor TMediaImage_DiscDevice_RX01.Create ;
 
     maxBlockAccessTime_ms := 0 ; // to be defined
 
-    // 32K ist die grösse des Buffers im treiber
+    // 32K ist die grÃ¶sse des Buffers im treiber
     // See drivers\pdp11gui_serialxfer.mac, label rxbfdt:
     assert(MultiBlockCount * BlockSize <= 32768) ;
   end{ "constructor TMediaImage_DiscDevice_RX01.Create" } ;
@@ -748,7 +748,7 @@ constructor TMediaImage_DiscDevice_RX02_SD.Create ;
 
     maxBlockAccessTime_ms := 0 ; // to be defined
 
-    // 32K ist die grösse des Buffers im treiber
+    // 32K ist die grÃ¶sse des Buffers im treiber
     // See drivers\pdp11gui_serialxfer.mac, label rxbfdt:
     assert(MultiBlockCount * BlockSize <= 32768) ;
   end{ "constructor TMediaImage_DiscDevice_RX02_SD.Create" } ;
@@ -778,7 +778,7 @@ constructor TMediaImage_DiscDevice_RX02_DD.Create ;
 
     maxBlockAccessTime_ms := 0 ; // to be defined
 
-    // 32K ist die grösse des Buffers im treiber
+    // 32K ist die grÃ¶sse des Buffers im treiber
     // See drivers\pdp11gui_serialxfer.mac, label rxbfdt:
     assert(MultiBlockCount * BlockSize <= 32768) ;
   end{ "constructor TMediaImage_DiscDevice_RX02_DD.Create" } ;
@@ -808,7 +808,7 @@ constructor TMediaImage_DiscDevice_RM02.Create ;
 
     maxBlockAccessTime_ms := 0 ; // to be defined
 
-    // 32K ist die grösse des Buffers im treiber
+    // 32K ist die grÃ¶sse des Buffers im treiber
     // See drivers\pdp11gui_serialxfer.mac, label rxbfdt:
     assert(MultiBlockCount * BlockSize <= 32768) ;
   end{ "constructor TMediaImage_DiscDevice_RM02.Create" } ;
@@ -840,7 +840,7 @@ constructor TMediaImage_DiscDevice_RK05.Create ;
 
     maxBlockAccessTime_ms := 0 ; // to be defined
 
-    // 32K ist die grösse des Buffers im treiber
+    // 32K ist die grÃ¶sse des Buffers im treiber
     // See drivers\pdp11gui_serialxfer.mac, label rxbfdt:
     assert(MultiBlockCount * BlockSize <= 32768) ;
   end{ "constructor TMediaImage_DiscDevice_RK05.Create" } ;
@@ -867,7 +867,7 @@ constructor TMediaImage_DiscDevice_RK06.Create ;
 
     maxBlockAccessTime_ms := 0 ; // to be defined
 
-    // 32K ist die grösse des Buffers im treiber
+    // 32K ist die grÃ¶sse des Buffers im treiber
     // See drivers\pdp11gui_serialxfer.mac, label rxbfdt:
     assert(MultiBlockCount * BlockSize <= 32768) ;
   end{ "constructor TMediaImage_DiscDevice_RK06.Create" } ;
@@ -893,7 +893,7 @@ constructor TMediaImage_DiscDevice_RK07.Create ;
 
     maxBlockAccessTime_ms := 0 ; // to be defined
 
-    // 32K ist die grösse des Buffers im treiber
+    // 32K ist die grÃ¶sse des Buffers im treiber
     // See drivers\pdp11gui_serialxfer.mac, label rxbfdt:
     assert(MultiBlockCount * BlockSize <= 32768) ;
   end{ "constructor TMediaImage_DiscDevice_RK07.Create" } ;
@@ -947,10 +947,10 @@ constructor TMediaImage_DiscDevice_MSCP.Create ;
 
     readErrorRetryCount := 16 ;
 
-    // die Multiblock grösse ist frei wählbar und nur durch
-    // den buffer "rxbuff" im driver beschränkt
-//      MultiBlockCount := 16384 div BlockSize ; // immer 16K übertragen
-    // immer 32K übertragen. Ist maximum im macro-11 treiber,
+    // die Multiblock grÃ¶sse ist frei wÃ¤hlbar und nur durch
+    // den buffer "rxbuff" im driver beschrÃ¤nkt
+//      MultiBlockCount := 16384 div BlockSize ; // immer 16K Ã¼bertragen
+    // immer 32K Ã¼bertragen. Ist maximum im macro-11 treiber,
     // bringt performance, wenn RLE comprimierung greift.
     MultiBlockCount := 32768 div BlockSize ;
     DataBytesAreWordLSBs := false ;
@@ -994,7 +994,7 @@ procedure TMediaImage_DiscDevice_MSCP.EvalDriveInfo(serialxfer_wordbuffer: TArra
     mediatypeid: dword ;
 
   begin { "procedure TMediaImage_DiscDevice_MSCP.EvalDriveInfo" }
-    // Rückgabe parameter: siehe
+    // RÃ¼ckgabe parameter: siehe
     //      result buffer ([word index dec]
     //      [0] unit identifer 1st lo    (from ONLINE)
     //      [1] unit identifer 1st hi    (from ONLINE)
@@ -1044,9 +1044,9 @@ function TMediaImage_DiscDevice_MSCP.getBlockRangeDisplay(aStartBlockNr, aCount:
   begin
     result := '' ;
 
-    // hier die Parameterprüfung ... unlogisch
+    // hier die ParameterprÃ¼fung ... unlogisch
 
-    // Check: block gültig
+    // Check: block gÃ¼ltig
     assert(aStartBlockNr >= 0) ;
     assert((aStartBlockNr + aCount) <= BlockCount) ;
 
@@ -1128,10 +1128,10 @@ constructor TMediaImage_TapeDevice_PC05.Create ;
     DriverDeviceType := 0 ; // don't care
     readErrorRetryCount := 0 ; // no chance to step back
 
-    // die Multiblock grösse ist frei wählbar und nur durch
-    // den buffer "rxbuff" im driver beschränkt
-//      MultiBlockCount := 16384 div BlockSize ; // immer 16K übertragen
-    // immer 32K übertragen. Ist maximum im macro-11 treiber,
+    // die Multiblock grÃ¶sse ist frei wÃ¤hlbar und nur durch
+    // den buffer "rxbuff" im driver beschrÃ¤nkt
+//      MultiBlockCount := 16384 div BlockSize ; // immer 16K Ã¼bertragen
+    // immer 32K Ã¼bertragen. Ist maximum im macro-11 treiber,
     // bringt performance, wenn RLE comprimierung greift.
     MultiBlockCount := 256 ;// max 256 bytes in one transmission. 32768 div BlockSize ;
 

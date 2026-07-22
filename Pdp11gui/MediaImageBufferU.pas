@@ -38,7 +38,7 @@ type
       Device: TMediaImage_AbstractDevice ;
 //    Controller: TMediaImage_AbstractController ;
       //DiscDriverType: TDiscDriverType ;
-      //DiscDriverSubType: integer ; // Untertyp, wird direkt an driver übergeben
+      //DiscDriverSubType: integer ; // Untertyp, wird direkt an driver Ã¼bergeben
       ImageBuffer: array of byte ; // der Image buffer
 
 //      defaultControllerBaseAddress: word ; // virtual 16 bit
@@ -52,10 +52,10 @@ type
 
       procedure setByte(i: integer; val : byte) ;
 
-      // Imagebuffer über block und byte in block zugreifen
+      // Imagebuffer Ã¼ber block und byte in block zugreifen
       procedure setImageBufferBlockByte(BlockNr, bytenr:integer ; val: byte) ;
       function getImageBufferBlockByte(BlockNr, bytenr:integer): byte ;
-      // Imagebuffer über block und word in block zugreifen
+      // Imagebuffer Ã¼ber block und word in block zugreifen
       procedure setImageBufferBlockWord(BlockNr, wordnr:integer ; val: word) ;
       function getImageBufferBlockWord(BlockNr, wordnr:integer): word ;
 
@@ -85,9 +85,9 @@ constructor TMediaImage_Buffer.Create;
 procedure TMediaImage_Buffer.LinkToDevice(aDevice: TMediaImage_AbstractDevice) ;
   begin
     Device := aDevice ;
-    // Disc grösse ist definitiv bekannt
-    // Buffer áuf die richtige Grösse einstellen
-    // blockcount < 0: dynamische Länge (papertape).
+    // Disc grÃ¶sse ist definitiv bekannt
+    // Buffer Ã¡uf die richtige GrÃ¶sse einstellen
+    // blockcount < 0: dynamische LÃ¤nge (papertape).
     SetLength(ImageBuffer, Device.BlockCount * Device.BlockSize) ;
   end;
 
@@ -103,7 +103,7 @@ procedure TMediaImage_Buffer.setByte(i: integer; val : byte) ;
   begin
     if i >= Length(ImageBuffer) then
       if not Device.fixCapacity then
-        SetLength(ImageBuffer, i+1) // buffer vergrössern
+        SetLength(ImageBuffer, i+1) // buffer vergrÃ¶ssern
       else raise Exception.CreateFmt('Imagebuffer overflow: size = %d, trying to write %d',
                 [Length(ImageBuffer), i]) ;
     ImageBuffer[i] := val ;
@@ -269,7 +269,7 @@ procedure TMediaImage_Buffer.SaveBuffer(filename: string) ;
         else m := n-i ;
         byteswritten := f.Write( ImageBuffer[i], m) ;
         assert(byteswritten = m) ;
-        i := i + byteswritten ; // vorwärts schieben
+        i := i + byteswritten ; // vorwÃ¤rts schieben
       end ;
       if tmpfilename <> '' then begin
         DeleteFile(tmpfilename) ;
@@ -281,8 +281,8 @@ procedure TMediaImage_Buffer.SaveBuffer(filename: string) ;
 
 
 // das Image aus einer Datei nach "ImageBuffer" lesen
-// overlay: nur Blöcke, die im Image nicht 0 sind, aus Datei dazu laden
-//  DiscGeometry gültig!
+// overlay: nur BlÃ¶cke, die im Image nicht 0 sind, aus Datei dazu laden
+//  DiscGeometry gÃ¼ltig!
 procedure TMediaImage_Buffer.LoadBuffer(filename: string; overlay: boolean = false) ;
 
   function isImageBlockEmpty(aBlocknr: integer): boolean ;
@@ -332,21 +332,21 @@ procedure TMediaImage_Buffer.LoadBuffer(filename: string; overlay: boolean = fal
           SetLength(ImageBuffer, f.Size) ; // image buffer as large as file
         end ;
       end{ "if not overlay" } ;
-      // ZUS: file enthält ganze Anzahl von BlockSize
+      // ZUS: file enthÃ¤lt ganze Anzahl von BlockSize
       assert((n mod Device.BlockSize) = 0) ;
       n := Length(ImageBuffer) div Device.BlockSize ; // n = Blockzahl
       i := 0 ; // blockcount
       m := Device.BlockSize ;
 
-//wen not fixCapacity: länge von iamgebuffer??ß
+//wen not fixCapacity: lÃ¤nge von iamgebuffer??ÃŸ
 
       while i < n do begin
 //        if (n - i) > ReadSize then
 //          m := ReadSize
 //        else m := n-i ;
         if overlay then begin
-          // overlay: keine Prüfung auf Dateiende,
-          // keine Prüfung auf vollständigen Block. Lade einfach drüber, was da ist.
+          // overlay: keine PrÃ¼fung auf Dateiende,
+          // keine PrÃ¼fung auf vollstÃ¤ndigen Block. Lade einfach drÃ¼ber, was da ist.
           if isImageBlockEmpty(i) then
             f.read(ImageBuffer[i*m], m) // overlay data
           else

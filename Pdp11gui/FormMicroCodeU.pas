@@ -183,7 +183,7 @@ end;
       NextMicroInstructionButton.Enabled := false ;
     end ;
 
-    // Zeilen ausf�llen
+    // Zeilen ausfüllen
     if not Loaded or (CurMicroInstruction = nil) then Exit ; // es gibt noch nix anzuzeigen
 
     // ComboBox update
@@ -260,7 +260,7 @@ end;
     end { "with MicroInstructionStringGrid" } ;
 
     if Loaded then
-      Caption := setFormCaptionInfoField(Caption, '�PC = ' + Dword2Octalstr(CurMicroInstruction.addr, 12))
+      Caption := setFormCaptionInfoField(Caption, 'µPC = ' + Dword2Octalstr(CurMicroInstruction.addr, 12))
     else
       Caption := setFormCaptionInfoField(Caption, 'code not loaded') ;
   end{ "procedure TFormMicroCode.UpdateDisplay" } ;
@@ -268,7 +268,7 @@ end;
 
 procedure TFormMicroCode.Load(filepattern:string) ;
   begin
-    CurMicroInstruction := nil ; // ist jetzt ung�ltig
+    CurMicroInstruction := nil ; // ist jetzt ungültig
     Loaded := false ;
     Pdp1144MicroCode.LoadListingPages(filepattern);
     // Code geladen: Combobox neu aufbauen. Force change!
@@ -376,7 +376,7 @@ procedure TFormMicroCode.MicroInstructionStringGridDrawCell(Sender: TObject;
               and (Cells[0,aRow] = ' Source code') ;
 
       if bitfield_changed or specialfield then begin
-        newcolor := true ; // ge�nderte Felder mit gelbem Hintergrund
+        newcolor := true ; // geänderte Felder mit gelbem Hintergrund
         Canvas.Brush.Color := ColorGridCellChangedBkGnd ;
         Canvas.Font.Color := ColorGridCellChangedText ;
       end;
@@ -388,7 +388,7 @@ procedure TFormMicroCode.MicroInstructionStringGridDrawCell(Sender: TObject;
   end{ "procedure TFormMicroCode.MicroInstructionStringGridDrawCell" } ;
 
 
-// Ge�nderte Spaltenbreiten sichern
+// Geänderte Spaltenbreiten sichern
 procedure TFormMicroCode.MicroInstructionStringGridMouseUp(Sender: TObject;
         Button: TMouseButton; Shift: TShiftState; X, Y: integer);
   begin

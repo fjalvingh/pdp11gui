@@ -70,7 +70,7 @@ procedure TFormAbout.FormCreate(Sender: TObject);
     {$endif}
     Add('* * *  %s  * * *', [Application.Title]);
     Add('', [0]) ;
-    Add('All rights by J. Hoppe, G�ttingen. ', [0]) ;
+    Add('All rights by J. Hoppe, Göttingen. ', [0]) ;
     Add('Free use granted to everbody for non-commercial usage.', [0]) ;
     Add('', [0]) ;
     Add('Updates: %s', [HOME_URL]) ;

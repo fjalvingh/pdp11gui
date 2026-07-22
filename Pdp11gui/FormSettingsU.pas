@@ -22,7 +22,7 @@ unit FormSettingsU;
 }
 
 {
-Parameter für die verschiedenen PDP-11, an die
+Parameter fÃ¼r die verschiedenen PDP-11, an die
 sich pdp11gui anschliessen kann.
 }
 
@@ -60,8 +60,8 @@ type
 
 
 (*
-// beschreibt Einstellung für einen Typ von Console
-// Zugeordnet eine Liste von möglichen COnnections
+// beschreibt Einstellung fÃ¼r einen Typ von Console
+// Zugeordnet eine Liste von mÃ¶glichen COnnections
  TSettingsConfigurationConsole = class(TObject)
    console: TConsoleGeneric ;
    connections: TList ; // of TSettingsConfigurationConnection
@@ -73,12 +73,12 @@ type
 
 
 
-  // beschreibt eine auswählbare Configuration,
+  // beschreibt eine auswÃ¤hlbare Configuration,
   // steuert das Auswahlformular
   TFormSettingsConfiguration = class(TCollectionItem)
     private
       comboboxItemText: string ; // anzeige in Combobox
-      registryPrefix: string ; // prefix für werte in registry
+      registryPrefix: string ; // prefix fÃ¼r werte in registry
       hasSerialComPort: boolean ; // COM port?
       hasSerialBaudrate: boolean ; // Baudrate eingabe?
       hasTelnet: boolean ; // telnet parameter?
@@ -95,9 +95,9 @@ type
       telnetHostname : string ;
       telnetPort : integer ;
 
-      // manche consolen (M9312) brauchen eine Einsprungadresse zurück in
+      // manche consolen (M9312) brauchen eine Einsprungadresse zurÃ¼ck in
       // den console emulator.
-      // da ist hier nicht zu lösen: die maske zeigt nur 1
+      // da ist hier nicht zu lÃ¶sen: die maske zeigt nur 1
       // edit an, der Wert ist aber pro Console verschieden und muss
       // pro Console gemangt werden!
       monitorentryaddress: TMemoryAddress ;
@@ -119,9 +119,9 @@ TSelectedTargetParams = record
     hostname : string ;
     telnetport : integer ;
 
-    // manche consolen (M9312) brauchen eine Einsprungadresse zurück in
+    // manche consolen (M9312) brauchen eine Einsprungadresse zurÃ¼ck in
     // den console emulator.
-    // da ist hier nicht zu lösen: die maske zeigt nur 1
+    // da ist hier nicht zu lÃ¶sen: die maske zeigt nur 1
     // edit an, der Wert ist aber pro Console verschieden und muss
     // pro Console gemangt werden!
     monitorentryaddress: TMemoryAddress ;
@@ -205,7 +205,7 @@ procedure TFormSettings.FormCreate(Sender: TObject);
     // load early, determines the PDP11 configurations
     TheRegistry.Load(ShowFakeConsolesCheckBox) ;
 
-    // welche PDP-11's sollen auswählbar sein?
+    // welche PDP-11's sollen auswÃ¤hlbar sein?
     createConfigurations(ShowFakeConsolesCheckBox.Checked) ;
 
     // load edit controls with values for current Configuration
@@ -220,7 +220,7 @@ procedure TFormSettings.FormDestroy(Sender: TObject);
     Configurations.Free ;
   end;
 
-// zählt alle Configurationen des Formulars auf,
+// zÃ¤hlt alle Configurationen des Formulars auf,
 // Ergebnis in "Configurations
 procedure TFormSettings.createConfigurations(showFakes: boolean);
   var
@@ -354,7 +354,7 @@ procedure TFormSettings.createConfigurations(showFakes: boolean);
     cfg.hasMonitorEntryAddress := true ;
     cfg.defaultMonitorEntryAddress := '165020' ; // see M9312 doc
 
-    // echter PDP-11 M9312 console emulator über telnet (mit konverter dazwischen)
+    // echter PDP-11 M9312 console emulator Ã¼ber telnet (mit konverter dazwischen)
     cfg := Configurations.Add as TFormSettingsConfiguration ;
     cfg.comboboxItemText := 'Physical PDP-11 with M9312 over telnet' ;
     cfg.registryPrefix := 'PDP11M9312telnet' ;
@@ -378,7 +378,7 @@ procedure TFormSettings.createConfigurations(showFakes: boolean);
     cfg.hasMonitorEntryAddress := false ;
     cfg.defaultMonitorEntryAddress := '' ;
 
-    // echte PDP-11/44 über telnet (mit konverter dazwischen)
+    // echte PDP-11/44 Ã¼ber telnet (mit konverter dazwischen)
     cfg := Configurations.Add as TFormSettingsConfiguration ;
     cfg.comboboxItemText := 'Physical PDP-11/44 over telnet' ;
     cfg.registryPrefix := 'PDP1144telnet' ;
@@ -415,7 +415,7 @@ procedure TFormSettings.createConfigurations(showFakes: boolean);
     cfg.hasMonitorEntryAddress := false ;
     cfg.defaultMonitorEntryAddress := '' ;
 
-    // echte PDP-11 ODT 16 bit über telnet (mit konverter dazwischen)
+    // echte PDP-11 ODT 16 bit Ã¼ber telnet (mit konverter dazwischen)
     cfg := Configurations.Add as TFormSettingsConfiguration ;
     cfg.comboboxItemText := 'Physical PDP-11 ODT 16 bit (LSI11-03) over telnet' ;
     cfg.registryPrefix := 'PDP11ODT16telnet' ;
@@ -439,7 +439,7 @@ procedure TFormSettings.createConfigurations(showFakes: boolean);
     cfg.hasMonitorEntryAddress := false ;
     cfg.defaultMonitorEntryAddress := '' ;
 
-    // echte PDP-11 ODT 18 bit über telnet (mit konverter dazwischen)
+    // echte PDP-11 ODT 18 bit Ã¼ber telnet (mit konverter dazwischen)
     cfg := Configurations.Add as TFormSettingsConfiguration ;
     cfg.comboboxItemText := 'Physical PDP-11 ODT 18 bit (11/23) over telnet' ;
     cfg.registryPrefix := 'PDP11ODT18telnet' ;
@@ -463,7 +463,7 @@ procedure TFormSettings.createConfigurations(showFakes: boolean);
     cfg.hasMonitorEntryAddress := false ;
     cfg.defaultMonitorEntryAddress := '' ;
 
-    // echte PDP-11 ODT 22 bit über telnet (mit konverter dazwischen)
+    // echte PDP-11 ODT 22 bit Ã¼ber telnet (mit konverter dazwischen)
     cfg := Configurations.Add as TFormSettingsConfiguration ;
     cfg.comboboxItemText := 'Physical PDP-11 ODT 22 bit (11/53,73,93) over telnet' ;
     cfg.registryPrefix := 'PDP11ODT22telnet' ;
@@ -623,7 +623,7 @@ procedure TFormSettings.UpdateProperties ;
     idx:  integer ;
   begin { "procedure TFormSettings.UpdateProperties" }
 
-    // 1) Controls je nach Target-auswahl übereinander anzeigen:
+    // 1) Controls je nach Target-auswahl Ã¼bereinander anzeigen:
     curTop := Pdp11SelectComboBox.Top ;
     vdist := Pdp11SelectComboBox.Height + 3 ; //  3 pix room between lines
 
@@ -656,7 +656,7 @@ procedure TFormSettings.UpdateProperties ;
       selectedConfiguration.serialFormat := serformat8N1
     else
       selectedConfiguration.serialFormat := TSerialFormat(SerialFormatComboBox.ItemIndex) ; // only this
-// special Test for Rüdiger Kurth
+// special Test for RÃ¼diger Kurth
 //   selectedConfiguration.serialFormat := serformat87N1 ;
 
     selectedConfiguration.telnetHostname := HostnameEdit.text ;

@@ -53,7 +53,7 @@ const
   // reaod-only Grid-Zellen
   ColorGridCellReadOnlyBkGnd = TColor($E0E0E0) ; // grauer Hintergrund
   ColorGridCellReadOnlyText = clBlack ; 
-  // ge�nderte Grid-Zellen
+  // geänderte Grid-Zellen
   ColorGridCellChangedBkGnd = TColor($80FFFF) ; // helles gelb
   ColorGridCellChangedText = clBlack ; 
 
@@ -91,7 +91,7 @@ function String2ID(caption: string): string ; // einheitliche Schreibweise
 
 function StripQuotes(s: string): string ; 
 
-// �ndert in einer Caption der Form "Fenster title - irgend was"
+// Ändert in einer Caption der Form "Fenster title - irgend was"
 // den Teil hinter dem "-"
 function setFormCaptionInfoField(orgCaption:string ; newInfo: string):string ; 
 function getFormCaptionFixedField(aCaption:string ):string ; 
@@ -99,7 +99,7 @@ function getFormCaptionFixedField(aCaption:string ):string ;
 
 // speichert die colwidths als Kommaliste im key "<formname>.ColWidhts"
 procedure FormGridSaveColWidths(formname:string ; grid: TStringGrid) ; 
-// l�dt ColWidths f�r ein grid aus dem Key "<formname>.ColWidhts"
+// lädt ColWidths für ein grid aus dem Key "<formname>.ColWidhts"
 procedure FormGridLoadColWidths(formname:string ; grid: TStringGrid) ; 
 
 function Character2PrintableText(c:char; showcontrolchars: boolean): string ; inline ; 
@@ -183,7 +183,7 @@ function Dword2OctalStr(val: dword; fixbitwidth: integer = 0): string ;
     if result = '' then 
       result := '0' ; 
 
-    // Soll-l�nge erzeugen
+    // Soll-länge erzeugen
     while length(result) < fixdigitwidth do 
       result := '0' + result ; 
   end{ "function Dword2OctalStr" } ; 
@@ -232,7 +232,7 @@ function getFormCaptionFixedField(aCaption:string ):string ;
   begin 
     // Annahme: alles vor dem " - " ist die originale Caption, dahinter kommen info Angaben
     // Also: "Macro Source - test.mac" => "Macro Source"
-    // "PDP-11/44 �Code" => "PDP-11/44 �Code"
+    // "PDP-11/44 µCode" => "PDP-11/44 µCode"
     i := pos(' - ', aCaption) ; 
     if i > 0 then 
       result := Trim(Copy(aCaption, 1, i-1)) 
@@ -256,7 +256,7 @@ procedure FormGridSaveColWidths(formname:string ; grid: TStringGrid) ;
   end{ "procedure FormGridSaveColWidths" } ; 
 
 
-// l�dt ColWidths f�r ein grid aus dem Key "<formname>.ColWidhts"
+// lädt ColWidths für ein grid aus dem Key "<formname>.ColWidhts"
 procedure FormGridLoadColWidths(formname:string ; grid: TStringGrid) ; 
   var i: integer ; 
     sl: TStringList ; 
@@ -274,7 +274,7 @@ procedure FormGridLoadColWidths(formname:string ; grid: TStringGrid) ;
   end{ "procedure FormGridLoadColWidths" } ; 
 
 
-// Zeichen als sichtbaren string: "\xhh" f�r Steuerzeichen
+// Zeichen als sichtbaren string: "\xhh" für Steuerzeichen
 function Character2PrintableText(c:char; showcontrolchars: boolean): string ; inline ; 
   begin 
     result := '' ; 
@@ -297,7 +297,7 @@ function Character2PrintableText(c:char; showcontrolchars: boolean): string ; in
   end{ "function Character2PrintableText" } ; 
 
 
-// Zeichen als sichtbaren string: "\xhh" f�r Steuerzeichen
+// Zeichen als sichtbaren string: "\xhh" für Steuerzeichen
 function String2PrintableText(s:string; showcontrolchars: boolean): string ; 
   var i: integer ; 
   begin 
@@ -383,7 +383,7 @@ procedure TRestZeit.setCur(curvalue: integer) ;
     if anteil = 0 then 
       restTicks := 0 // es hat noch nicht angefangen: gesamtzeit kann nicht berechnet werden
     else if anteil > 1 then 
-      restTicks := 1000 // dauert l�nger als erwartet: immer 1 sek anzeigen
+      restTicks := 1000 // dauert länger als erwartet: immer 1 sek anzeigen
     else begin 
       totalticks := round(curticks / anteil) ; 
       restTicks := totalticks - curticks ; 

@@ -44,7 +44,7 @@ type
 
 
   TJH_Registry = class(TRegistry)
-      fRegistryKey: string ; // Schl�ssel f�r alle Einstellungen
+      fRegistryKey: string ; // Schlüssel für alle Einstellungen
       fWasFound: boolean ; // false: letztes Load musste Defaultwert nehmen
       fReadOnly: boolean ;
 
@@ -143,7 +143,7 @@ function entab(ins : string ; tabcnt : integer) : string ;
    VB : String darf keine TAB's enthalten }
 
 
-// eindeutigen Path des controls aus Namen seinerr parent frames und froms verkn�pfen
+// eindeutigen Path des controls aus Namen seinerr parent frames und froms verknüpfen
 function getControlNamePath(ctl: TControl) : string ;
 
 function GetEnv(varname: string ; var varval: string):boolean ;
@@ -161,10 +161,10 @@ function GetLastErrorText:string ;
 function FileSearchRecursive(const name: string; const DirList: string): string;
 
 function TempFilename : string ;
-{ erzeugt einen guten Namen f�r einen tempor�ren File }
+{ erzeugt einen guten Namen für einen temporären File }
 
 function CorrectNumber(s:string):string ;
-{ aus . und , jeweils das g�ltige Dezimaltrennzeichen machen }
+{ aus . und , jeweils das gültige Dezimaltrennzeichen machen }
 
 function TryStrToDword(s: string ; var d: dword): boolean ;
 
@@ -180,18 +180,18 @@ function OpenForWrite(var fout: System.text; fname:string;
         var create_file_always: boolean; // File ohne Rueckfrage ueberschreiben, auch wenn Archivebit gesetzt
         create_dir_mode: TCreateDirMode
         ) : boolean ;
-{ Datei zum Schreiben �ffnen.
+{ Datei zum Schreiben öffnen.
   Wenn es sie schon gibt, und ihr Archivflag gesetzt ist:
-  r�ckfragen, ob sie �berschrieben werden soll.
+  rückfragen, ob sie überschrieben werden soll.
   Wenn nein: false.
 }
 procedure CloseAfterWrite(var fout: System.text; fname:string) ;
 { Datei nach Schreiben schliessen.
-  Danach das Archivbit l�schen.
+  Danach das Archivbit löschen.
 }
 
 function IsBinaryFile(fname:string): boolean ;
-{ true, wenn die Datei Zeichen aus #0..#31 enth�lt (ohne $9 $d $a $1a) }
+{ true, wenn die Datei Zeichen aus #0..#31 enthält (ohne $9 $d $a $1a) }
 
 function StrToDword(s:string):dword ;
 
@@ -227,7 +227,7 @@ function TrimChars(s: string; cs: charset): string ;
 {-Given a set of word delimiters, return words into stringlist }
 procedure ExtractWords(sl: TStringList; s : string; WordDelims : charset);
 
-// L�scht rekursiv alle Registrykeys ab aPath
+// Löscht rekursiv alle Registrykeys ab aPath
 procedure DeleteRegKey(aRoot : HKey; aPath : string);
 
 
@@ -251,7 +251,7 @@ function IdenticFiles(fname1, fname2: string): boolean ;
 // true, wenn beide Dateien den gleichen Inhalt haben.
 
 
-// macht "AbsolutePath" relativ zu "BasePath", falls m�glich
+// macht "AbsolutePath" relativ zu "BasePath", falls möglich
 // Danach gilt:   Expand(BasePath + \ + result == AbsolutePath
 // Bsp: Basepath = "C:\Tools\programme\MyProg"
 //      AbsolutePath = "C:\Tools\Data\MyProg"
@@ -377,7 +377,7 @@ function ExtractWord(n : word; s : string; WordDelims : CharSet) : string;
   begin
     SLen := length(s) ;
     Len := 0;
-    SetLength(result, 1023) ; { intialisieren! auch f�r lange SubStrings !! Aschu 10.11.02}
+    SetLength(result, 1023) ; { intialisieren! auch für lange SubStrings !! Aschu 10.11.02}
     i := WordPosition(n, s, WordDelims);
     if i <> 0 then
       {find the end of the current word}
@@ -470,7 +470,7 @@ function entab(ins : string ; tabcnt : integer) : string ;
 
 
 
-// eindeutigen Path des controls aus Namen seinerr parent frames und froms verkn�pfen
+// eindeutigen Path des controls aus Namen seinerr parent frames und froms verknüpfen
 function getControlNamePath(ctl: TControl) : string ;
   begin
     result := ctl.name ;
@@ -570,13 +570,13 @@ function FileSearchRecursive(const name: string; const DirList: string): string;
 
 
 function TempFilename : string ;
-{ erzeugt einen guten Namen f�r einen tempor�ren File }
+{ erzeugt einen guten Namen für einen temporären File }
   begin
     result := SysUtils.GetTempFileName(GetTempDir, 'scr') ;
   end ;
 
 function CorrectNumber(s:string):string ;
-{ aus . und , jeweils das g�ltige Dezimaltrennzeichen machen }
+{ aus . und , jeweils das gültige Dezimaltrennzeichen machen }
   var i: integer ;
   begin
     for i := 1 to length(s) do
@@ -603,7 +603,7 @@ function CorrectPath(p:string):string ;
       if (p[n] = '\') and (p[n-1] <> ':') then
         p := Copy(p, 1, n-1) ;
 
-    { 2. Eintr�ge der Form "\xxx\.." entfernen, wiederholt }
+    { 2. Einträge der Form "\xxx\.." entfernen, wiederholt }
     fertig := false ;
     while not fertig do begin
       i := pos('\..', p) ;
@@ -728,12 +728,12 @@ function GetLongFileName( sShortName : string ) : string;
 
 function OpenForWrite(var fout: System.text; fname:string;
         allow_skip: boolean; var create_file_always: boolean; create_dir_mode: TCreateDirMode) : boolean ;
-{ Datei zum Schreiben �ffnen.
+{ Datei zum Schreiben öffnen.
   Wenn es sie schon gibt, und ihr Archivflag gesetzt ist:
-  r�ckfragen, ob sie �berschrieben werden soll.
+  rückfragen, ob sie überschrieben werden soll.
   Wenn nein: false.
   Sonst:
-        Datei �ffnen.
+        Datei öffnen.
 
   create_file_always: true: keine Check des archivebits.
   wird hier gesetzt, wenn "NoToall" geantwortet wird.
@@ -787,7 +787,7 @@ function OpenForWrite(var fout: System.text; fname:string;
 
 procedure CloseAfterWrite(var fout: System.text; fname:string) ;
 { Datei nach Schreiben schliessen.
-  Danach das Archivbit l�schen.
+  Danach das Archivbit löschen.
 }
   var
     res: integer ;
@@ -799,7 +799,7 @@ procedure CloseAfterWrite(var fout: System.text; fname:string) ;
   end ;
 
 function IsBinaryFile(fname:string): boolean ;
-{ true, wenn die Datei Zeichen aus #0..#31 enth�lt (ohne $9 $d $a $1a).
+{ true, wenn die Datei Zeichen aus #0..#31 enthält (ohne $9 $d $a $1a).
   Nur die ersten 1000. Byte untersuchen }
   const
     checksize = 1000 ; // maxsoviele Zeichen untersuchen
@@ -819,7 +819,7 @@ function IsBinaryFile(fname:string): boolean ;
       // SourceInsight lockt Files so, dass es hier eine Exception gibt.
       n := fs.read(buffer, checksize) ;
       for i := 0 to n-1 do
-        // nicht alle Binzeichen testen, daf�r sehr schnell
+        // nicht alle Binzeichen testen, dafür sehr schnell
         if (buffer[i] <= 8) or ((buffer[i] >= $0e) and (buffer[i] <= $19)) then begin
           result := true ;
           Break ;
@@ -842,7 +842,7 @@ function TryStrToDword(s: string ; var d: dword): boolean ;
       d := i and $ffffffff ;
   end ;
 
-// kann auch '$ffffffff' ohne �berlauf wandeln
+// kann auch '$ffffffff' ohne Überlauf wandeln
 function StrToDword(s:string): dword ;
   var base: dword ;
     i: integer ;
@@ -947,7 +947,7 @@ function Dword2OctalStr(val: dword; fixbitwidth: integer = 0): string ;
     if result = '' then
       result := '0' ;
 
-    // Soll-l�nge erzeugen
+    // Soll-länge erzeugen
     while length(result) < fixdigitwidth do
       result := '0' + result ;
   end{ "function Dword2OctalStr" } ;
@@ -1008,8 +1008,8 @@ function Old_PatternMatch(line,pattern : string) : boolean ;
   begin
     line := Uppercase(ReduceWhiteSpace(line)) ;
     pattern := Uppercase(ReduceWhiteSpace(pattern)) ;
-    if pattern = ''   then result := true { leeres Muster: ist �ber all drin }
-    else if line = '' then result := false { leere Zeile: enth�lt kein Muster }
+    if pattern = ''   then result := true { leeres Muster: ist über all drin }
+    else if line = '' then result := false { leere Zeile: enthält kein Muster }
     else begin
       { 'pattern' wird zwischen den '*' in Teilmuster zerlegt.
         Die muessen ALLE in der richtigen Reihenfolge im String vorkommen }
@@ -1017,7 +1017,7 @@ function Old_PatternMatch(line,pattern : string) : boolean ;
       for i := 1 to WordCount(pattern, ['*']) do begin
         partial_pattern := ExtractWord(i, pattern, ['*']) ;
         cur_found_pos := pos(partial_pattern, line) ;
-        if cur_found_pos >= 1 then { gefunden: 'line' verk�rzen }
+        if cur_found_pos >= 1 then { gefunden: 'line' verkürzen }
           line := Copy(line, cur_found_pos + length(partial_pattern), 999)
         else begin found := false ; Break end ;
       end ;
@@ -1028,11 +1028,11 @@ function Old_PatternMatch(line,pattern : string) : boolean ;
 
 function PatternMatch(line,pattern : string) : boolean ;
   var
-    l_len, p_len: integer ; // Gesamtl�nge von line und pattern
-    l_pos: integer; // Start in 'line' f�r Einzelmustervergleich
+    l_len, p_len: integer ; // Gesamtlänge von line und pattern
+    l_pos: integer; // Start in 'line' für Einzelmustervergleich
     p_pos: integer; //   "    "  'pattern' "         "
     sub_pattern_found: integer; // 0 = noch unklar, -1 = NEIN, 1 = JA
-    l_idx, p_idx: integer ; // Laufindex w�hrend Einzelmustervergleich
+    l_idx, p_idx: integer ; // Laufindex während Einzelmustervergleich
     p_was_space, l_was_space: boolean ;
   begin
     l_len := length(line) ;
@@ -1044,7 +1044,7 @@ function PatternMatch(line,pattern : string) : boolean ;
     l_pos := 1 ;
     p_pos := 1 ;
 
-    // Sonderf�lle:
+    // Sonderfälle:
     // 1. pattern nur aus '*' gilt als leeres 'pattern'
     // 2. leeres 'pattern' matcht alles: leere 'line' und gesetzte 'line'
     // 3. gesetztes 'pattern' matcht nie leere 'line'
@@ -1063,7 +1063,7 @@ function PatternMatch(line,pattern : string) : boolean ;
         // fertig, wenn "found <>0"
         // wenn found = 1:
         // Mutispaces werden wie ein Space behandelt
-        // VB: line[l_pos] g�ltig, pattern[p_pos] g�ltig
+        // VB: line[l_pos] gültig, pattern[p_pos] gültig
         // line[l_pos] nicht auf folge-Spaces
         // pattern[p_pos] nicht auf folge-Spaces oder '*'
 
@@ -1297,7 +1297,7 @@ procedure TJH_Registry.autoSaveToFile(Sender: TObject) ;
 
 // Key sichern, durch Aufruf von "REGEDIT.EXE"
 // Export/Import via "regedit.exe" ist Windows-spezifisch und unter Linux
-// nicht verf�gbar bzw. nicht sinnvoll (TRegistry ist hier keine echte Registry).
+// nicht verfügbar bzw. nicht sinnvoll (TRegistry ist hier keine echte Registry).
 procedure TJH_Registry.SaveToFile ;
   begin
     raise Exception.Create('TJH_Registry.SaveToFile() is not supported on this platform') ;
@@ -1522,7 +1522,7 @@ procedure TJH_Registry.Load(cb: TCheckBox; defaultval: boolean) ;
         fWasFound := true ;
         b := ReadBool(getControlNamePath(cb));
       end else b := defaultval ;
-      cb.Checked := b ;  // l�st einen Event aus
+      cb.Checked := b ;  // löst einen Event aus
     finally
       Loading := false ;
     end ;
@@ -1550,7 +1550,7 @@ procedure TJH_Registry.Load(rb: TRadioButton; defaultval: boolean) ;
         fWasFound := true ;
         b := ReadBool(getControlNamePath(rb));
       end else b := defaultval ;
-      rb.Checked := b ;  // l�st einen Event aus
+      rb.Checked := b ;  // löst einen Event aus
     finally
       Loading := false ;
     end ;
@@ -1580,7 +1580,7 @@ procedure TJH_Registry.Load(ed: TEdit; defaultval: string = '') ;
         s := ReadString(namepath);
       end else
         s := defaultval ;
-      ed.text := s ;  // l�st einen Event aus
+      ed.text := s ;  // löst einen Event aus
     finally
       Loading := false ;
     end { "try" } ;
@@ -1606,7 +1606,7 @@ procedure TJH_Registry.Load(mi: TMenuItem; defaultval: boolean = false) ;
         fWasFound := true ;
         b := ReadBool(mi.name);
       end else b := defaultval ;
-      mi.Checked := b ;  // l�st einen Event aus
+      mi.Checked := b ;  // löst einen Event aus
     finally
       Loading := false ;
     end ;
@@ -1634,7 +1634,7 @@ procedure TJH_Registry.Load(ed: TMaskEdit; defaultval: string = '') ;
         fWasFound := true ;
         s := ReadString(getControlNamePath(ed));
       end else s := defaultval ;
-      ed.text := s ;  // l�st einen Event aus
+      ed.text := s ;  // löst einen Event aus
     finally
       Loading := false ;
     end ;
@@ -1661,7 +1661,7 @@ procedure TJH_Registry.Load(pagecontrol: TPageControl) ;
         fWasFound := true ;
         result := ReadInteger(getControlNamePath(pagecontrol)+'.ActivePageIndex');
       end else result := defaultval ;
-      pagecontrol.ActivePageIndex := result ;  // l�st einen Event aus
+      pagecontrol.ActivePageIndex := result ;  // löst einen Event aus
     finally
       Loading := false ;
     end ;
@@ -1675,7 +1675,7 @@ procedure TJH_Registry.Save(form: TForm) ;
       if (fRegistryKey <> '') and OpenKey(fRegistryKey, true) then begin
         WriteInteger(getControlNamePath(form)+'.WindowState', ord(form.WindowState)) ;
         WriteInteger(getControlNamePath(form)+'.Visible', ord(form.Visible)) ;
-        if (form.WindowState <> wsMinimized) and form.Visible then begin // sonst sind die Koordinaten ung�ltig
+        if (form.WindowState <> wsMinimized) and form.Visible then begin // sonst sind die Koordinaten ungültig
           WriteInteger(getControlNamePath(form)+'.Left', form.left) ;
           WriteInteger(getControlNamePath(form)+'.Top', form.top) ;
           WriteInteger(getControlNamePath(form)+'.Width', form.width) ;
@@ -1709,7 +1709,7 @@ procedure TJH_Registry.Load(form: TForm{; left, top, width, height: integer; sta
           form.Visible := boolean(get('Visible', ord(form.Visible))) ;
         form.left := get('Left', form.left) ;
         form.top := get('Top', form.top) ;
-        // festdesignte Fenstergr�ssen nicht �bersteuern
+        // festdesignte Fenstergrössen nicht übersteuern
         if form.BorderStyle in [bsSizeable, bsSizeToolWin] then begin
           form.width := get('Width', form.width) ;
           form.height := get('Height', form.height) ;
@@ -1796,7 +1796,7 @@ procedure TJH_Registry.Save(name: string ; sl: TStrings) ;
     i: integer ;
     subkey: string ;
   begin
-    // <name> wird ein Subkey, der wird erstmal total gel�scht
+    // <name> wird ein Subkey, der wird erstmal total gelöscht
     if not Loading and not fReadOnly and (fRegistryKey <> '') then begin
       subkey := fRegistryKey+ '\' + name ;
       DeleteKey(subkey) ;
@@ -1835,7 +1835,7 @@ procedure TJH_Registry.Load(name: string ; sl: TStrings) ;
 procedure OptimizeAnyGridColWidths(aGrid: TControl);
 // verarbeitet TStringGrids
   const
-    gap = 8;  {zus�tzliche L�cke zwischen Text aund Spaltengrenzen in Pixeln}
+    gap = 8;  {zusätzliche Lücke zwischen Text aund Spaltengrenzen in Pixeln}
     max_cols = 100;
   var
     stgrid: TStringGrid ;
@@ -1847,11 +1847,11 @@ procedure OptimizeAnyGridColWidths(aGrid: TControl);
     gewicht : array[0..max_cols] of double;  // Gewicht des sichtbaren Inhalts der Spalte
     gewicht_summe: double ; // Summe der Gewichte aller Spalten
 
-    max_breite : array[0..max_cols] of longint;   // Obergrenze f�r Spaltenbreite
+    max_breite : array[0..max_cols] of longint;   // Obergrenze für Spaltenbreite
     breite : array[0..max_cols] of integer;  // berechnete Breite in Pixel
     short : array[0..max_cols] of boolean;  // true: Spalte braucht weniger Platz und wird nicht weiter verrechnet
     invisible : array[0..max_cols] of boolean;  // true: Spalte ist unsitbar und wird nicht mit berechnet
-    total_grid_colspace: longint ; // Platz im Grid f�r Cell-inhalte (quer, in Pixel)
+    total_grid_colspace: longint ; // Platz im Grid für Cell-inhalte (quer, in Pixel)
     free_grid_colspace: longint ; // noch auf "not short" Spalten zu verteilen
     ready: boolean ;
   begin { "procedure OptimizeAnyGridColWidths" }
@@ -1873,7 +1873,7 @@ procedure OptimizeAnyGridColWidths(aGrid: TControl);
     total_grid_colspace := stgrid.ClientRect.Right - stgrid.ClientRect.left - stgrid.colcount ;
 
     tmp := 0 ; // damit keine fehlende Initalisierung angemeckert wird ...
-    // Spalten�berschriften gewichten
+    // Spaltenüberschriften gewichten
     for _col := 0 to colcount-1 do begin
       if not invisible[_col] then
         if _col > max_cols then begin MessageDlg('zu viele Spalten!',mtError, [mbOK],0); Exit end;
@@ -1883,7 +1883,7 @@ procedure OptimizeAnyGridColWidths(aGrid: TControl);
       max_breite[_col] := tmp ;
     end;
 
-    {f�r jede Spalte die Gesamtzahl der Zeichen auf Basis des gesamten Datasets ermitteln}
+    {für jede Spalte die Gesamtzahl der Zeichen auf Basis des gesamten Datasets ermitteln}
     for _col := 0 to colcount-1 do
       if not invisible[_col] then
         for _row := 1 to stgrid.rowcount-1 do begin
@@ -1893,17 +1893,17 @@ procedure OptimizeAnyGridColWidths(aGrid: TControl);
         end ;
 
 
-    // gewicht[] enth�lt jetzt die Gesamtl�nger aller sichtbaren Inhalte der Spalte
-    // Verfahren ist iterativ: loop, bis eine Proportinalit�tsvertielung
+    // gewicht[] enthält jetzt die Gesamtlänger aller sichtbaren Inhalte der Spalte
+    // Verfahren ist iterativ: loop, bis eine Proportinalitätsvertielung
     // keine Spalten mehr mit zuviel Platz versieht.
     repeat
 
-      // 1. Verteile die Breitenseite auf Basis der Zeichensummen nichtmarkeirter so, dass das ganze Grid gef�llt wird.
+      // 1. Verteile die Breitenseite auf Basis der Zeichensummen nichtmarkeirter so, dass das ganze Grid gefüllt wird.
       // breite neu = Gridbreite * breitensumme/zeichensumme
       // 2. setze "short"-Marke bei Spalten, die jetzt zuviel Platz gekriegt haben,
-      //    und verk�rze sie
+      //    und verkürze sie
 
-      // beim verf�gbarer Platz die short[]-Spalten nicht ber�cksichtigen
+      // beim verfügbarer Platz die short[]-Spalten nicht berücksichtigen
       free_grid_colspace := total_grid_colspace ;
       for _col := 0 to colcount-1 do
         if not invisible[_col] then
@@ -1914,14 +1914,14 @@ procedure OptimizeAnyGridColWidths(aGrid: TControl);
         if not invisible[_col] then
           if not short[_col] then gewicht_summe := gewicht_summe + gewicht[_col] ;
 
-      { den noch verf�gbaren Platz auf die not-short Spalten verteilen}
+      { den noch verfügbaren Platz auf die not-short Spalten verteilen}
       for _col := 0 to colcount-1 do
         if not invisible[_col] then
           if not short[_col] then
             breite[_col] := round(free_grid_colspace * gewicht[_col] / gewicht_summe);
 
       // Check: haben Spalten mehr Platz als ihr Maximum gekriegt?
-      // wenn ja: verk�rze sie aufs Maximum, setze sie "short" und mache noch einen Durchgang
+      // wenn ja: verkürze sie aufs Maximum, setze sie "short" und mache noch einen Durchgang
       ready := true ;
       for _col := 0 to colcount-1 do
         if not invisible[_col] then
@@ -1934,7 +1934,7 @@ procedure OptimizeAnyGridColWidths(aGrid: TControl);
     until ready ;
 
     // Abschlusskorrektur: wird jetzt insgesamt weniger Platz verbraucht als vorhanden:
-    // freien Platz gleichm��ig auf alle Spalten verteilen
+    // freien Platz gleichmäßig auf alle Spalten verteilen
     free_grid_colspace := total_grid_colspace ;
     for _col := 0 to colcount-1 do
       if not invisible[_col] then
@@ -1954,9 +1954,9 @@ procedure OptimizeAnyGridColWidths(aGrid: TControl);
 
   end{ "procedure OptimizeAnyGridColWidths" } ;
 
-//einen Process starten, und siene Info zur�ckgeben
+//einen Process starten, und siene Info zurückgeben
 //false: not started
-// L�scht rekursiv alle Registrykeys ab aPath
+// Löscht rekursiv alle Registrykeys ab aPath
 procedure DeleteRegKey(aRoot : HKey; aPath : string);
   var
     sl : TStringList;
@@ -2014,7 +2014,7 @@ function GetUniqueFilename(dir: string; prefix, ext: string): string ;
     Count: integer ;
   begin
     Count := 0 ;
-    // versuche erst den Namen ohne Z�hler
+    // versuche erst den Namen ohne Zähler
     result := CorrectPath(dir + '\'
             + prefix
             + '.' + ext) ;
@@ -2092,7 +2092,7 @@ function IdenticFiles(fname1, fname2: string): boolean ;
   end { "function IdenticFiles" } ;
 
 
-// macht "AbsolutePath" relativ zu "BasePath", falls m�glich
+// macht "AbsolutePath" relativ zu "BasePath", falls möglich
 // Danach gilt:   Expand(BasePath + \ + result == AbsolutePath
 // Bsp: Basepath = "C:\Tools\programme\MyProg"
 //      AbsolutePath = "C:\Tools\Data\MyProg"
@@ -2148,44 +2148,44 @@ procedure ReRaiseExceptionWithStackDump(e:Exception) ;
 
 
 // FindFilenameInText()
-// Findet in einer Textziel die erste Zeichenkette, die einen g�ltigen
-// Dateinamen einer vorhandenen Datei bildet. Der Filename muss relativ zu "workpath" g�ltig sein.
+// Findet in einer Textziel die erste Zeichenkette, die einen gültigen
+// Dateinamen einer vorhandenen Datei bildet. Der Filename muss relativ zu "workpath" gültig sein.
 function FindFilenameInText(workpath: string ; line: string): string ;
 {
-    Testf�lle:
-1.    Filename f�ngt mitten in g�ltigem Namensausdruck an:
+    Testfälle:
+1.    Filename fängt mitten in gültigem Namensausdruck an:
     workdir=e:\mydir
     "error found:\temp\compile.log does not exist"
     > Es darf nicht "d:\temp\compile.log" gefunden werden,
       sondern muss "\temp\compile.log" mit Work drive "e:"  sein.
 
-2.  Filename endet mitten in g�ltigem Namensausdruck:
+2.  Filename endet mitten in gültigem Namensausdruck:
     "d:\peak\peakcan25\current\canapi\canapi.c(1389) : error C2143: Syntaxfehler : Fehlendes ')' vor '->'"
     Es muss "d:\peak\peakcan25\current\canapi\canapi.c" gefunden werden.
 3.  Filename muss sauber terminiert sein (mit Zeichen nicht aus [A-Z0-9_]
      "__ACHTUNG__d:\temp\compile_2006_10_06.log__not_found___"
-    > "d:\temp\compile_2006_10_06.log" kann nicht gefunden werden da, '_' immer zum Namen geh�rt.
-4.  Es darf nicht ein Teil eines Filenames genommen werden, nur weil daf�r ein File existiert:
+    > "d:\temp\compile_2006_10_06.log" kann nicht gefunden werden da, '_' immer zum Namen gehört.
+4.  Es darf nicht ein Teil eines Filenames genommen werden, nur weil dafür ein File existiert:
     Workdir = "e:\temp", "E:\temp\cur" existiert, ...\canapi.c existiert nicht:
     "d:\peak\peakcan25\current\canapi\canapi.c(1389) : error C2143: Syntaxfehler : Fehlendes ')' vor '->'"
     > Es darf nicht "E:\temp\cur" geliefert werden.
-    > Absolute Pfade d�rfen nicht verst�mmelt werden.
+    > Absolute Pfade dürfen nicht verstümmelt werden.
 5.  UNC-PFade: "\\192.128.0.1\freigabe\temp\file.txt"
 
-Einfaches Verfahren hier (ignoriert F�lle 1. und 4.)
+Einfaches Verfahren hier (ignoriert Fälle 1. und 4.)
 Solange kein Name gefunden, scanne ab "startpos"
-   Verl�ngere Zeichenkette ab startpos um 1 und checke, obs ein g�ltiger Name ist
+   Verlängere Zeichenkette ab startpos um 1 und checke, obs ein gültiger Name ist
      wenn ja: merken
    Ergebnis:
-   wenn ja: l�ngster Name ab startpos gefunden
+   wenn ja: längster Name ab startpos gefunden
 
    Zusatz: eine Kette aus den klassischen Identifier-zeichen "A-Z0-9_" wird nie
-   unterbrochen, um einen Namen g�ltig zu machen.
-   Umlaute werden dabei nicht ber�cksichtigt
+   unterbrochen, um einen Namen gültig zu machen.
+   Umlaute werden dabei nicht berücksichtigt
 }
   var
     startpos, endpos: integer ; // Substring[start..end] checken
-    cur_filename: string ; //l�ngster NAme ab startpos
+    cur_filename: string ; //längster NAme ab startpos
 //    best_filename : string ; // globales optimum
     line_len: integer ;
     tst_filename: string ;
@@ -2195,30 +2195,30 @@ Solange kein Name gefunden, scanne ab "startpos"
     startpos := 1 ;
     line_len := length(line) ;
 
-//    best_filename := '' ; // der erste gefundene g�ltige Name
+//    best_filename := '' ; // der erste gefundene gültige Name
 
-    ///// outer loop: finde l�ngstn g�ltigen Namen ab "Startposition"
+    ///// outer loop: finde längstn gültigen Namen ab "Startposition"
     ///
     while (startpos < line_len) do begin // see break-condition below
-      cur_filename := '' ; // der l�ngste ab startpos gefundene g�ltige Name
+      cur_filename := '' ; // der längste ab startpos gefundene gültige Name
       endpos := startpos ;
-      ///// inner loop: finde maximal langen g�ltigen Filenamen ab inkl "startpos"
+      ///// inner loop: finde maximal langen gültigen Filenamen ab inkl "startpos"
       while endpos < line_len do begin
-        // bricht ab, wenn cur_filename maximal verl�ngert ist
-        // h�nge das n�chstes Segment dran (a-z_\.
-        // An einen Filename darf niemals ein Zeichen aus A-Z0-9_ angeh�ngt werden
+        // bricht ab, wenn cur_filename maximal verlängert ist
+        // hänge das nächstes Segment dran (a-z_\.
+        // An einen Filename darf niemals ein Zeichen aus A-Z0-9_ angehängt werden
         inc(endpos) ;
         while (endpos < line_len) and CharInSet(UpCase(line[endpos+1]), ['A'..'Z','0'..'9','_']) do
           inc(endpos) ;
-        // Test: verl�ngerter Filename immer noch g�ltig?
+        // Test: verlängerter Filename immer noch gültig?
         tst_filename := Copy(line, startpos, endpos-startpos+1) ;
         if FileExists(GetAbsolutePath(workpath, tst_filename)) then
-          cur_filename := tst_filename ; // g�ltig, k�rzere L�sung �berschreiben
-        // wenn nicht gefunden: weiter verl�ngern!
+          cur_filename := tst_filename ; // gültig, kürzere Lösung überschreiben
+        // wenn nicht gefunden: weiter verlängern!
       end { "while endpos < line_len" } ;
-      // cur_filename ist g�ltig: ist es soweit der beste
+      // cur_filename ist gültig: ist es soweit der beste
       if cur_filename <> '' then begin
-        // ab startpos Name gefunden: gibt erste Namen zur�ck.
+        // ab startpos Name gefunden: gibt erste Namen zurück.
         result := cur_filename ;
         Break ;
       end;
@@ -2353,7 +2353,7 @@ procedure SyncPoint ;
   end ;
 
 function SetForegroundWindowEx(hWndWindow: THandle): boolean ;
-{ Windows-spezifischer Workaround, unter Linux/LCL nicht n�tig. }
+{ Windows-spezifischer Workaround, unter Linux/LCL nicht nötig. }
   begin
     result := true ;
   end { "function SetForegroundWindowEx" } ;
@@ -2438,7 +2438,7 @@ function AssertDifferentColor(variablecolor, referencecolor: TColor): TColor ;
       TColor2RGB(referencecolor, r1, g1, b1) ;
       TColor2RGB(result, r2, g2, b2) ;
 
-      //  r,g,b werden gleich behandelt -> farbton bleibt (nach m�glichkeit),
+      //  r,g,b werden gleich behandelt -> farbton bleibt (nach möglichkeit),
       // maximale distance = 128
       if (r1+g1+b1) > 3*128 then begin
         // reference heller als 50% grau:  mach farbe dunkler, bis max (0,0,0)

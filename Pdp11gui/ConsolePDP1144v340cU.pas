@@ -21,7 +21,7 @@ unit ConsolePDP1144v340cU;
    CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
-// Console-Adapter für den fake.
+// Console-Adapter fÃ¼r den fake.
 // wie ConsolePDP1144, aber nur Examine und Deposit sind implementiert
 
 interface

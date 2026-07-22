@@ -137,7 +137,7 @@ constructor TFormMemoryTest.Create(AOwner: TComponent) ;
   begin
     inherited Create(AOwner) ;
     TheState := 0 ;
-    MemoryGrid.OnUpdate := UpdateDisplay ; // wenn sich das grid ändert, muss diese Form reagieren
+    MemoryGrid.OnUpdate := UpdateDisplay ; // wenn sich das grid Ã¤ndert, muss diese Form reagieren
     UpdateGUI ;
   end;
 
@@ -182,14 +182,14 @@ procedure TFormMemoryTest.UpdateGUI ;
 procedure TFormMemoryTest.UpdateDisplay(Sender: TObject);
   begin
     // Do not update  MemoryGrid,. es ist die gnaze Zeit invisible
-//    if Sender <> MemoryGrid then // hat der Frame das Update ausgelöst?
+//    if Sender <> MemoryGrid then // hat der Frame das Update ausgelÃ¶st?
 //      MemoryGrid.UpdateDisplay  // nein: update frame, er updated wieder die Form
 //    else begin
 
     //
 //    if startaddr.mat = matUnknown then begin
     if TheState = 0 then begin
-      // noch nie "Set" gedrückt
+      // noch nie "Set" gedrÃ¼ckt
       max_memoryblock_wordcount := PhysicalIopageBaseAddr(MemoryGrid.memorycellgroup.mat) div 2 ;
 
       startaddr.mat := MemoryGrid.memorycellgroup.mat ;
@@ -208,7 +208,7 @@ procedure TFormMemoryTest.UpdateDisplay(Sender: TObject);
     //MemoryBlockSizeEdit.Text := Dword2OctalStr(memoryblock_wordcount) ;
     Caption := setFormCaptionInfoField(Caption, Addr2OctalStr(startaddr)) ;
 
-    // Das MemoryGrid ist alClient und möchte in einer bestimmten Grösse angezeigt werden,
+    // Das MemoryGrid ist alClient und mÃ¶chte in einer bestimmten GrÃ¶sse angezeigt werden,
     // tue ihm den Gefallen.
 //    ClientHeight :=  MemoryGrid.optimal_height + PanelT.Height ;
 //    ClientWidth := MemoryGrid.optimal_width ;
@@ -292,7 +292,7 @@ procedure TFormMemoryTest.SetStartAddrButtonClick(Sender: TObject);
     // neue mcg: neu mit grid verbinden
     MemoryGrid.ConnectToMemoryCellGroup(MemoryGrid.memorycellgroup) ;
     // examine nur die zellen mit edit_value =ILLEGAL
-    // nein! auf M9312 console emualtor führt jede nicht vorhandene Adresse zum stop
+    // nein! auf M9312 console emualtor fÃ¼hrt jede nicht vorhandene Adresse zum stop
 //    MemoryGrid.ExamineCells({unknown_only}true) ;
     UpdateDisplay(self) ;
   end{ "procedure TFormMemoryTest.SetStartAddrButtonClick" } ;
@@ -301,7 +301,7 @@ procedure TFormMemoryTest.SetStartAddrButtonClick(Sender: TObject);
 procedure TFormMemoryTest.Log(line:string);
   var datestr: string ;
   begin
-    // Für Log Form: anderer Zeitstempel
+    // FÃ¼r Log Form: anderer Zeitstempel
     DateTimeToString(datestr, 'ddd hh:nn:ss', Now) ;
     line := Format('[%d: %s] %s', [TestLogMemo.Lines.count+1, datestr, line]) ;
     TestLogMemo.Lines.Add(line) ;
@@ -326,7 +326,7 @@ procedure TFormMemoryTest.PanelTClick(Sender: TObject);
   Verfahren:
   moving one (oder moving zero) durch die 16 datenbits des PDP-11 words
   "permanent 0"/"permanent 1"/"tied together" merken.
-  Das ganze für die start adresse aller Chips wiederholen.
+  Das ganze fÃ¼r die start adresse aller Chips wiederholen.
   Nur solche bits als "permanent 0, permant 1 / tied together anzeigen,
   die an JEDER Chipadresse auftreten.
 
@@ -446,11 +446,11 @@ function TFormMemoryTest.TestDataLines(polarity: integer) : boolean ;
       testaddr := startaddr ;
       if test_chip_end_addr then
         testaddr.val := testaddr.val + chipaddrsize - 2 ; // last word in each block
-      // sammle dataline für alle Chips, Abbruch,wenn sich
+      // sammle dataline fÃ¼r alle Chips, Abbruch,wenn sich
       // alle Datenleitungen mal bewegt haben
       repeat
-        // finde memorycell für die adresse
-        cellidx := mcg.CellIndexByAddr(testaddr) ; // Zelle über Adresse finden. -1: not found
+        // finde memorycell fÃ¼r die adresse
+        cellidx := mcg.CellIndexByAddr(testaddr) ; // Zelle Ã¼ber Adresse finden. -1: not found
         if cellidx < 0 then
           assert(cellidx >= 0) ; // random range must be ok
         mc := mcg.Cell(cellidx) ;
@@ -463,10 +463,10 @@ function TFormMemoryTest.TestDataLines(polarity: integer) : boolean ;
     end { "for test_chip_end_addr" } ;
 
 
-    // Mögliche Ergebnisse:
+    // MÃ¶gliche Ergebnisse:
     //  stuck_l_bit_mask oder stuck_h_bit_mask: tote data lines
     // weder stuck_l_bit_mask noch stuck_h_bit_mask: keine
-    //  tote data lines, aber möglicherweise andre Fehler
+    //  tote data lines, aber mÃ¶glicherweise andre Fehler
     if not all_datalines_toggled then begin
       Log('Data lines not OK.') ;
       Log('Lines detected as permanent "high": %s,  bits= %s', [
@@ -568,7 +568,7 @@ function TFormMemoryTest.TestAdressLines(phase: integer): boolean ;
 
         //  pattern from address bit
         dataval := addrval and $ffff ; // write address into cell
-        cellidx := mcg.CellIndexByAddr(addr) ; // Zelle über Adresse finden. -1: not found
+        cellidx := mcg.CellIndexByAddr(addr) ; // Zelle Ã¼ber Adresse finden. -1: not found
         if cellidx < 0 then
           assert(cellidx >= 0) ; // addr must be in range
         mc := mcg.Cell(cellidx) ;
@@ -694,7 +694,7 @@ function TFormMemoryTest.TestDatabits(phase: integer): boolean;
 
         //    if (dataaddr.val >= startaddr.val) and (dataaddr.val <= endaddr.val) then begin
         // last check
-        cellidx := mcg.CellIndexByAddr(dataaddr) ; // Zelle über Adresse finden. -1: not found
+        cellidx := mcg.CellIndexByAddr(dataaddr) ; // Zelle Ã¼ber Adresse finden. -1: not found
         if cellidx >= 0 then begin
           // current test address not in range, skip
 //          assert(cellidx >= 0) ; // addr must be in range
@@ -778,7 +778,7 @@ function TFormMemoryTest.TestRandom(count: integer): boolean;
     for i := 0 to count-1 do begin
       addr := startaddr;
       addr.val := startaddr.val + 2 * random(memoryblock_wordcount) ; // only even addresses
-      cellidx := mcg.CellIndexByAddr(addr) ; // Zelle über Adresse finden. -1: not found
+      cellidx := mcg.CellIndexByAddr(addr) ; // Zelle Ã¼ber Adresse finden. -1: not found
       if cellidx < 0 then
         assert(cellidx >= 0) ; // random range must be ok
       mc := mcg.Cell(cellidx) ;
@@ -827,7 +827,7 @@ function TFormMemoryTest.TestRandom(count: integer): boolean;
 procedure TFormMemoryTest.TestDataLinesButtonClick(Sender: TObject);
   begin
     // versuche moving 1 an verschiedenen Chips,
-    // bis eine davon eine gute Speicherzelle enthält
+    // bis eine davon eine gute Speicherzelle enthÃ¤lt
     // moving oder moving 1
     if not TestDataLines(1) then
       Exit ;

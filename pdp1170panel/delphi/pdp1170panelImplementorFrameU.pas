@@ -25,25 +25,25 @@ unit pdp1170panelImplementorFrameU;
     pdp1170panelframe
 
     zeigt das Bild eine sPDP11/70 Consolepanels an
-    Die LEDs und Switches werden �ber ein untergeordnetes
+    Die LEDs und Switches werden über ein untergeordnetes
     Tpdp1170panel verwaltet. Die Anwendung arbeitet nur mit member
     "pdp1170panel", nie mit dem Frame
 
     LEDS und Switches sind durch Images dargestellt.
     EIn LED oder Switch hat mehrere "States"
     LED: immer 2 States (0=OFF, 1=ON)
-    Switches haben meist 2 States, manche haben auch mehr (Drehkn�pfe haben 8).
+    Switches haben meist 2 States, manche haben auch mehr (Drehknöpfe haben 8).
 
     Die Images sind den States zugeordnet.
-    F�r den Normalsatte 0 zeigt das Hintergrund bild den State schon an.
+    Für den Normalsatte 0 zeigt das Hintergrund bild den State schon an.
 
     - Klicken auf einen Switch:
     - a) ein Visible Image wird angeclickt:
-      der Switch ist im Satte > 0 und wird �ber ein �bergegblendetes Image dargestellt.
+      der Switch ist im Satte > 0 und wird über ein übergegblendetes Image dargestellt.
      b) Das Hintergrundbild kriegt den Click:
        Der Switch ist im State 0, kein besonderes Iamge wird angezeigt.
        Es wird ermittelt, welche unsichtbaren Images am Mausklickpunkt liegen,
-       �ber diese wird dann der angclickte Switch gefunden.
+       über diese wird dann der angclickte Switch gefunden.
 
 }
 
@@ -56,7 +56,7 @@ uses
 
 type
 
-  // Ist ein Implementor f�r pdp1170panel
+  // Ist ein Implementor für pdp1170panel
   Tpdp1170panelImplementorFrame = class(TFrame)
       img_panel_background: TImage;
       img_sw_21: TImage;
@@ -186,7 +186,7 @@ type
 
     public
       { Public-Deklarationen }
-      pdp1170panel: Tpdp1170Panel ; // BasisPanel, unabh�ngig von Darstellung
+      pdp1170panel: Tpdp1170Panel ; // BasisPanel, unabhängig von Darstellung
 
       constructor Create(Owner: TComponent); override ;
       // destructor Destroy ;
@@ -241,12 +241,12 @@ constructor Tpdp1170panelImplementorFrame.Create(Owner: TComponent) ;
     ctrl.States[1].image := img_led_data_paths ;
     ctrl := pdp1170panel.getControlByName(_Led, pdp1170Led_DATA_SELECT, 'BUS REG') ; assert(ctrl <> nil) ;
     ctrl.States[1].image := img_led_bus_reg ;
-    ctrl := pdp1170panel.getControlByName(_Led, pdp1170Led_DATA_SELECT, '�ADRS FPP/CPU') ; assert(ctrl <> nil) ;
+    ctrl := pdp1170panel.getControlByName(_Led, pdp1170Led_DATA_SELECT, 'µADRS FPP/CPU') ; assert(ctrl <> nil) ;
     ctrl.States[1].image := img_led_uadrs_fpp_cpu ;
     ctrl := pdp1170panel.getControlByName(_Led, pdp1170Led_DATA_SELECT, 'DISPLAY REGISTER') ; assert(ctrl <> nil) ;
     ctrl.States[1].image := img_led_display_reg ;
 
-    // Adress-Leds: �ber Index finden
+    // Adress-Leds: über Index finden
     ctrl := pdp1170panel.getControlByID(_Led, pdp1170Led_ADDRESS, 0) ; assert(ctrl <> nil) ;
     ctrl.States[1].image := img_led_addr_00 ;
     ctrl := pdp1170panel.getControlByID(_Led, pdp1170Led_ADDRESS, 1) ; assert(ctrl <> nil) ;
@@ -292,7 +292,7 @@ constructor Tpdp1170panelImplementorFrame.Create(Owner: TComponent) ;
     ctrl := pdp1170panel.getControlByID(_Led, pdp1170Led_ADDRESS, 21) ; assert(ctrl <> nil) ;
     ctrl.States[1].image := img_led_addr_21 ;
 
-    // DATA-Leds: �ber Index finden
+    // DATA-Leds: über Index finden
     ctrl := pdp1170panel.getControlByID(_Led, pdp1170Led_DATA, 0) ; assert(ctrl <> nil) ;
     ctrl.States[1].image := img_led_data_00 ;
     ctrl := pdp1170panel.getControlByID(_Led, pdp1170Led_DATA, 1) ; assert(ctrl <> nil) ;
@@ -331,7 +331,7 @@ constructor Tpdp1170panelImplementorFrame.Create(Owner: TComponent) ;
     ctrl := pdp1170panel.getControlByName(_Led, pdp1170Led_PARITY, 'PARITY HIGH') ; assert(ctrl <> nil) ;
     ctrl.States[1].image := img_led_parity_high ;
 
-    // Diese LEDS sind einzeln in ihrer Gruppe, kein Name n�tig
+    // Diese LEDS sind einzeln in ihrer Gruppe, kein Name nötig
     ctrl := pdp1170panel.getControlByID(_Led, pdp1170Led_PAR_ERR, 0) ; assert(ctrl <> nil) ;
     ctrl.States[1].image := img_led_par_err ;
     ctrl := pdp1170panel.getControlByID(_Led, pdp1170Led_ADRS_ERR, 0) ; assert(ctrl <> nil) ;
@@ -446,8 +446,8 @@ constructor Tpdp1170panelImplementorFrame.Create(Owner: TComponent) ;
     state.image := img_sw_addrselect_pos5 ;
 
     // DATA_SELECT-Drehschalter
-    // Hier: immer zwei Schalterstellungen f�r einen State:
-    // "getStateByName" findet den ersten State, der n�chste kommt 4 states sp�ter
+    // Hier: immer zwei Schalterstellungen für einen State:
+    // "getStateByName" findet den ersten State, der nächste kommt 4 states später
     //   Codierung der indexe   Codierung der images
     //   (pdp1170panel.Create)
     //     3      0                 7      0
@@ -460,7 +460,7 @@ constructor Tpdp1170panelImplementorFrame.Create(Owner: TComponent) ;
     //      0     3                  4     3
     //
     ctrl := pdp1170panel.getControlByID(_Switch, pdp1170Sw_DATA_SELECT, 0) ; assert(ctrl <> nil) ;
-    // reihenfolge muss mit values �bereinstimmen!
+    // reihenfolge muss mit values übereinstimmen!
     state := ctrl.States[0] ; assert(state.value = 0) ;
     state.image := img_sw_dataselect_pos0;
     state := ctrl.States[4] ; assert(state.value = 0) ;
@@ -633,7 +633,7 @@ constructor Tpdp1170panelImplementorFrame.Create(Owner: TComponent) ;
 
 
 // Welches Switch/Led-Image liegt an den Mauskoordinaten?
-// 'ctrl' ist das zugeh�rige control zur�ckgegeben werden.
+// 'ctrl' ist das zugehörige control zurückgegeben werden.
 function Tpdp1170panelImplementorFrame.ControlImageAtPos(pos: TPoint; var ctrl: Tpdp1170PanelControl): TImage ;
   var
     i, j: integer ;
@@ -691,7 +691,7 @@ procedure Tpdp1170panelImplementorFrame.img_panel_backgroundMouseMove(Sender: TO
       cur_hint := ''
     else cur_hint := Format('%s "%s"', [ctrl.ctltype_str, ctrl.name]) ;
 
-    // wenn sich der Hint �ndert: refresh des Hint fensters.
+    // wenn sich der Hint ändert: refresh des Hint fensters.
     if img_panel_background.Hint <> cur_hint then begin
       Application.CancelHint ;
       img_panel_background.Hint := cur_hint ;
@@ -714,7 +714,7 @@ procedure Tpdp1170panelImplementorFrame.ImagesMouseDown(Sender: TObject;
     if Sender = img_panel_background then begin
       pos.x := x ; pos.y := y ;
 
-      // Click auf Hintergrund: welches Image k�nnte am Clickpunkt liegen?
+      // Click auf Hintergrund: welches Image könnte am Clickpunkt liegen?
       // wenn eins gefunden: Das PanelControl ist im Zustand 0 und zeigt kein Image an
       pos := self.ScreenToClient(img_panel_background.ClientToScreen(pos)) ;
       image := ControlImageAtPos(pos, ctrl) ;
@@ -727,22 +727,22 @@ procedure Tpdp1170panelImplementorFrame.ImagesMouseDown(Sender: TObject;
     if ctrl <> nil then
       case ctrl.ctltype of
         _Led: begin
-          // Sonderfunktion: Anklicken der Led �ndert ihren Zustand,
+          // Sonderfunktion: Anklicken der Led ändert ihren Zustand,
           // wird erst von pdp1170panel an die Application signalisiert
           ctrl.implementor_active_state_index := (ctrl.getActiveState.index + 1) mod ctrl.StateCount;
           UpdateImages ;
         end ;
         _Switch: begin
-          // Maus ist down: Drehswitch auf die n�chste Position
+          // Maus ist down: Drehswitch auf die nächste Position
           // Bidi-Switches flippen
           // Taster auf "activ"
           if (ctrl.flags and PDP1170PANEL_FLAG_SWITCH_LAMPTEST) <> 0 then
             pdp1170panel.lamptest_active := true ;
 
-          // Switch auf den zyklisch n�chsten value setzen
+          // Switch auf den zyklisch nächsten value setzen
           // Dabei nicht an "values" orientieren, sodnenr an
           // der Defintionsreihenfolge
-          // Bsp "11/70 rotationskn�pfe": codewerte sind nicht sequntiell,
+          // Bsp "11/70 rotationsknöpfe": codewerte sind nicht sequntiell,
           // wenn man den Schalter sequentuiell dreht!
           // wird erst von pdp1170panel an die Application signalisiert
 
@@ -790,15 +790,15 @@ procedure Tpdp1170panelImplementorFrame.UpdateImages ;
       for j := 0 to ctrl.StateCount-1 do begin
         image := ctrl.States[j].image ;
         if image <> nil then
-          // Sonderfunktion: Lamptest f�r LEDs: alle images zeigen
+          // Sonderfunktion: Lamptest für LEDs: alle images zeigen
           if (ctrl.ctltype = _Led) and pdp1170panel.lamptest_active and (image <> nil) then begin
             image.Visible := true ;
             image.BringToFront ;
           end else if ctrl.implementor_active_state_index = j then begin
-            // Image f�r diesen State anzeigen
+            // Image für diesen State anzeigen
             image.Visible := true ;
             image.BringToFront ;
-          end else // images f�r die nichtactiven States ausblenden
+          end else // images für die nichtactiven States ausblenden
             image.Visible := false ;
       end { "for j" } ;
     end { "for i" } ;

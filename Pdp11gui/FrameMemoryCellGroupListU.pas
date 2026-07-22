@@ -48,7 +48,7 @@ type
     private
       { Private-Deklarationen }
       memorycellgroup: TMemoryCellGroup ;
-      // wird von der memorycellgroup aufgerufen, wenn sich eine zelle spontan �ndert
+      // wird von der memorycellgroup aufgerufen, wenn sich eine zelle spontan ändert
       procedure MemoryCellChange(Sender { = memorycellgroup}: TObject; memorycell: TMemoryCell) ;
       procedure SyncBitfieldForm(aRow: integer) ;
 
@@ -126,7 +126,7 @@ procedure TFrameMemoryCellGroupList.FrameResize(Sender: TObject);
 
 
 // readonly-Spalten nicht weiss,
-// ge�nderte Werte gelb
+// geänderte Werte gelb
 procedure TFrameMemoryCellGroupList.MemoryCellsStringGridDrawCell(Sender: TObject;
         aCol, aRow: integer; Rect: TRect; State: TGridDrawState);
   var
@@ -146,7 +146,7 @@ procedure TFrameMemoryCellGroupList.MemoryCellsStringGridDrawCell(Sender: TObjec
         if aCol = 2 then begin // editierbarer Wert
           mc := Objects[aCol,aRow] as TMemoryCell ;
           if (mc <> nil) and (mc.edit_value <> mc.pdp_value) then begin
-            newcolor := true ; // ge�nderte Felder mit gelbem Hintergrund
+            newcolor := true ; // geänderte Felder mit gelbem Hintergrund
             Canvas.Brush.Color := ColorGridCellChangedBkGnd ;
             Canvas.Font.Color := ColorGridCellChangedText ;
           end;
@@ -204,7 +204,7 @@ procedure TFrameMemoryCellGroupList.MemoryCellsStringGridSelectCell(Sender: TObj
       if (aRow < 1) or ((aCol=0) or (aCol = 1) or (aCol=3)) then
         options := options - [goEditing]
       else begin
-        // falls eine neue Zelle gew�hlt wird,
+        // falls eine neue Zelle gewählt wird,
         // wird eine editierte verlassen: alles neu malen!
         UpdateDisplay ;
         options := options + [goEditing] ;
@@ -222,9 +222,9 @@ procedure TFrameMemoryCellGroupList.MemoryCellsStringGridSetEditText(Sender: TOb
     i: integer ;
   begin
     // eingegebenen Value an die memorycell weiterleiten
-    // nur g�ltige Octalziffern durchlassen
+    // nur gültige Octalziffern durchlassen
 
-    // '?' erlauben, als ung�ltige Zahl (macht das Grid intern)
+    // '?' erlauben, als ungültige Zahl (macht das Grid intern)
     s := '' ;
     for i := 1 to Length(Value) do
       if isOctalDigit(Value[i]) then
@@ -237,7 +237,7 @@ procedure TFrameMemoryCellGroupList.MemoryCellsStringGridSetEditText(Sender: TOb
     mc := MemoryCellsStringGrid.Objects[aCol, aRow] as TMemoryCell ;
     if mc <> nil then
       if s = '' then
-        mc.edit_value := MEMORYCELL_ILLEGALVAL // kann w�hrend EEdit vorkommen
+        mc.edit_value := MEMORYCELL_ILLEGALVAL // kann während EEdit vorkommen
       else
         mc.edit_value := OctalStr2Dword(s, 16) ;
   end{ "procedure TFrameMemoryCellGroupList.MemoryCellsStringGridSetEditText" } ;
@@ -282,7 +282,7 @@ end;
     // die letzte Spalte geht bis ans Formende
     FrameResize(nil) ;
 
-    // callback bei Zellen�nderung
+    // callback bei Zellenänderung
     mcg.OnMemoryCellChange := MemoryCellChange ;
 
     // Alle Zellen anzeigen
@@ -303,7 +303,7 @@ end;
   end{ "procedure TFrameMemoryCellGroupList.ConnectToMemoryCellGroup" } ;
 
 
-// wird von der memorycellgroup aufgerufen, wenn sich eine zelle spontan �ndert
+// wird von der memorycellgroup aufgerufen, wenn sich eine zelle spontan ändert
 procedure TFrameMemoryCellGroupList.MemoryCellChange(Sender { = memorycellgroup}: TObject; memorycell: TMemoryCell) ;
   begin
     memorycell.edit_value := memorycell.pdp_value ;

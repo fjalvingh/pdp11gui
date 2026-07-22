@@ -26,22 +26,22 @@ unit Pdp11MMUU ;
 // (11/44, 11/70).
 
 //
-// ACHTUNG: TPdp11MMU muss ständig mit dem
+// ACHTUNG: TPdp11MMU muss stÃ¤ndig mit dem
 // CPU.PWS mode, dem MMR0, MMR3 und den PAR-Table aktualisiert werden.
 
-// Die MMU hat für die relevanten Register eine eigene MemoryCellgroup.
-// Sie führt auf Befehl aktiv ein "Examine" aus.
-// Die ergebnisse leitet sie per an die MemoryCells der Oberfläche weiter
+// Die MMU hat fÃ¼r die relevanten Register eine eigene MemoryCellgroup.
+// Sie fÃ¼hrt auf Befehl aktiv ein "Examine" aus.
+// Die ergebnisse leitet sie per an die MemoryCells der OberflÃ¤che weiter
 //
 // Werden memoryCellgroups mit gleichen Adressen ausserhalb aktualisiert,
-// wird die MMU durch TMemoryCellGroups.SyncMemoryCells() ebenfalls geändert.
+// wird die MMU durch TMemoryCellGroups.SyncMemoryCells() ebenfalls geÃ¤ndert.
 //
-// TPdp11MMU ist unabhängig von der Definition der MMU in der *.ini-Datei!
+// TPdp11MMU ist unabhÃ¤ngig von der Definition der MMU in der *.ini-Datei!
 //
 // TPdp11MMU ist ein logisches member der PDP-11-Console.
 // Erst wenn die PDP-11-Version bekannt ist, kann auch die MMU parametrisiert werden.
 //
-// Funktioneit für 18 und 22 Bit PDP-11,
+// Funktioneit fÃ¼r 18 und 22 Bit PDP-11,
 // Steuerung durch ThePhysicalAddressWidth.
 
 interface
@@ -71,7 +71,7 @@ type
 
   TPdp11Mmu = class(TObject)
     private
-      // Speicherzellen der simulierten PDP-11, die relevant für die MMU sind
+      // Speicherzellen der simulierten PDP-11, die relevant fÃ¼r die MMU sind
       memorycellgroup: TMemoryCellGroup ;
 
       psw_memorycell: TMemoryCell ; // CPU.PSW hat eine Sonderrolle
@@ -81,7 +81,7 @@ type
       procedure evalMemoryCells ;
 
       // wird aufgerufen, wenn PSW, oder die MMU register von aussen
-      // durch TMemoryCellGroups.SyncMemoryCells() geändert werden.
+      // durch TMemoryCellGroups.SyncMemoryCells() geÃ¤ndert werden.
       procedure MemoryCellChange(Sender: TObject ; mc: TMemoryCell) ;
 
     public
@@ -95,8 +95,8 @@ type
       EnableRelocation: boolean ; // Bit mmr0:<0>
 
       // Bits aus MMR3:
-      // wenn für einen CPU-Mode "EnableDSpace" false ist,
-      // wird immer ein Zugriff auf den IsntructionSpace durchgeführt
+      // wenn fÃ¼r einen CPU-Mode "EnableDSpace" false ist,
+      // wird immer ein Zugriff auf den IsntructionSpace durchgefÃ¼hrt
       EnableDSpace: array [TPdp11MmuCpuMode] of boolean ; // MMR<2:0>
 
       Mapping22Bit: boolean ; // MMR3<4>, not used
@@ -105,7 +105,7 @@ type
 
       // die Page Adress Register bilden die eigentliche MemoryPageTable in aufbereiteter Form
       PAR: array[TPdp11MmuCpuMode, TPdp11MmuIDMode, 0..7] of dword ;
-      // die page descriptor register (PDR) liefern die seitenlänge
+      // die page descriptor register (PDR) liefern die seitenlÃ¤nge
       // die schlichte Adressumsetzung.
       PDR: array[TPdp11MmuCpuMode, TPdp11MmuIDMode, 0..7] of dword ;
 
@@ -122,7 +122,7 @@ type
       function Virtual2PhysicalInstruction(addr_v: TMemoryAddress): TMemoryAddress ;
 
       // das PSW auffrischen, sync mit anderen memorycells
-      // eigene Function, da es sich wahrscheinlich viel öfter ändert
+      // eigene Function, da es sich wahrscheinlich viel Ã¶fter Ã¤ndert
       // als die MMU Einstellungen
       procedure ExamineCpuMode ;
       // die MMR0, MMR3 und PAR[] auffrischen, sync mit anderen memorycelles
@@ -186,7 +186,7 @@ constructor TPdp11Mmu.Create(memorycellgroups: TMemoryCellgroups) ;
       memorycellgroup.Add(iopagebase + _12220 + 2 * idx) ; // Supervisor Data PDR
       memorycellgroup.Add(iopagebase + _12240 + 2 * idx) ; // Supervisor Instruction PAR
       memorycellgroup.Add(iopagebase + _12200 + 2 * idx) ; // Supervisor Instruction PDR
-      // muss sortiert werden für optimierten Zugriff
+      // muss sortiert werden fÃ¼r optimierten Zugriff
     end{ "for idx" } ;
 *)
   end { "constructor TPdp11Mmu.Create" } ;
@@ -201,7 +201,7 @@ destructor TPdp11Mmu.Destroy ;
 
 
   // ist die MMU gerade auf 16, 18 oder 22 Bit physical eingestellt?
-  // ändert sichm wenn ein anderes Tagret gewählt wird!
+  // Ã¤ndert sichm wenn ein anderes Tagret gewÃ¤hlt wird!
 function  TPdp11Mmu.getPhysicalAddressType: TMemoryAddressType ;
 begin
 result := memorycellgroup.Cell(0).addr.mat ;
@@ -252,7 +252,7 @@ function TPdp11Mmu.Virtual2Physical(addr_v: TMemoryAddress; cpumode: TPdp11MmuCp
         result.val := MEMORYCELL_ILLEGALVAL
       else
         result.val := (pageAddressField shl 6) + displacement ;
-      // Addr ungültig wegen page len?
+      // Addr ungÃ¼ltig wegen page len?
     end { "if not EnableRelocation ... ELSE" } ;
   end { "function TPdp11Mmu.Virtual2Physical" } ;
 
@@ -342,7 +342,7 @@ procedure TPdp11Mmu.evalMemoryCell(mc: TMemoryCell) ;
 procedure TPdp11Mmu.evalMemoryCells ;
   var i: integer ;
   begin
-    // schleife über alle memorycell
+    // schleife Ã¼ber alle memorycell
     for i := 0 to memorycellgroup.Count-1 do begin
       evalMemoryCell(memorycellgroup.Cell(i)) ;
     end ;
@@ -351,7 +351,7 @@ procedure TPdp11Mmu.evalMemoryCells ;
 
 
 // das PSW auffrischen, sync mit anderen memorycells
-// eigene Function, da es sich wahrscheinlich viel öfter ändert
+// eigene Function, da es sich wahrscheinlich viel Ã¶fter Ã¤ndert
 // als die MMU Einstellungen
 procedure TPdp11Mmu.ExamineCpuMode ;
   begin
@@ -370,7 +370,7 @@ procedure TPdp11Mmu.ExamineMMU ;
   end ;
 
 // wird aufgerufen, wenn PSW, oder die MMU register von aussen
-// durch TMemoryCellGroups.SyncMemoryCells() geändert werden.
+// durch TMemoryCellGroups.SyncMemoryCells() geÃ¤ndert werden.
 procedure TPdp11Mmu.MemoryCellChange(Sender: TObject ; mc: TMemoryCell) ;
   begin
     evalMemoryCell(mc);

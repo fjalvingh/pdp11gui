@@ -21,7 +21,7 @@ unit ConsolePDP11M9301FakeU;
    CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
-// Console-Adapter für den fake.
+// Console-Adapter fÃ¼r den fake.
 // wie ConsolePDP11M9301.
 
 interface

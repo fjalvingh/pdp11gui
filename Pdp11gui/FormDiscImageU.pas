@@ -29,7 +29,7 @@ Disc-Images lesen/schreiben
   Verfahren: ein Treiberprogramm wird in die cpu geladen.
   Es liest/schreibt pro Aufruf einen bestimmten Sector = Block
   aus einem Sectorpuffer.
-  Der Sector puffer wird mit Examine/Deposits übertragen
+  Der Sector puffer wird mit Examine/Deposits Ã¼bertragen
   und von PDP11GUI in einen image file geschrieben.
 
   Es werden die MACRO-Forms und die FormExecute benutzt, der User
@@ -37,7 +37,7 @@ Disc-Images lesen/schreiben
 
 Imagefile = list of sectors.
 
-BadBlockList wird immer parallel zum ImageBuffer mitgeführt
+BadBlockList wird immer parallel zum ImageBuffer mitgefÃ¼hrt
 
 }
 
@@ -58,7 +58,7 @@ uses
   ; 
 
 type 
-  // Drei States für die Subsystem Disc, Driver und File.
+  // Drei States fÃ¼r die Subsystem Disc, Driver und File.
   TDiscImage_DeviceState = ( 
       diDevice_SelectController, // alles unbekannt
       // controller ist bekannt, einstellen von addresse, unit und device.
@@ -74,7 +74,7 @@ type
       diDriver_Loading, 
       // Ab hier: Treiber ist geladen. Disk info kann abgefragt oder gesetzt werden
       diDriver_Loaded,  // Treiber geladen, aber gestoppt
-      diDriver_Execute, // Treiber läuft, kann nächsten Befehl abarbeiten
+      diDriver_Execute, // Treiber lÃ¤uft, kann nÃ¤chsten Befehl abarbeiten
       diDriver_Execute_Selftest, 
       diDriver_Execute_GetDriveInfo, 
       diDriver_Execute_Read, 
@@ -89,7 +89,7 @@ type
       diImageFile_Init, 
       diImageFile_Cleared, // Datei geladen/cleared
       diImageFile_Loaded, // Datei geladen/cleared
-      diImageFile_Changed, // Datei durch auslesen geändert
+      diImageFile_Changed, // Datei durch auslesen geÃ¤ndert
       diImageFile_Saved 
     ) ; 
 
@@ -241,7 +241,7 @@ type
 
       BadBlockList: TBadBlockList ; // index = blocknr
 
-      SerialXfer: TSerialTransfer ; // Objekt zur Datenübertragung
+      SerialXfer: TSerialTransfer ; // Objekt zur DatenÃ¼bertragung
 
       procedure UpdateDisplay ; 
 
@@ -254,7 +254,7 @@ type
       // Controller reset und Media-Info aus drive abfragen
       procedure ResetUnibusAndDrive ; 
 
-      // Mehrere blöcke lesen. Assert: startblock muss Sectornr 0 ergeben
+      // Mehrere blÃ¶cke lesen. Assert: startblock muss Sectornr 0 ergeben
       function ReadMultiBlock(aStartBlockNr: integer; blockcount: integer; check_only: boolean): integer ; 
       function WriteMultiBlock(aStartBlockNr: integer; blocksToWrite: integer): integer ; 
 
@@ -275,7 +275,7 @@ type
       // das Image aus dem RL02 lesen nach "ImageBuffer" lesen
       procedure SaveImageBuffer(filename: string) ; 
       // das Image aus dem RL02 lesen nach "ImageBuffer" lesen
-      // overlay: nur Blöcke, die nicht 0 sind
+      // overlay: nur BlÃ¶cke, die nicht 0 sind
       procedure LoadImageBuffer(filename: string; overlay: boolean = false) ; 
 
     end{ "TYPE TFormDiscImage = class(TFormChild)" } ; 
@@ -367,7 +367,7 @@ procedure TFormDiscImage.FormDestroy(Sender: TObject);
 
 procedure TFormDiscImage.FormAfterShow(Sender: TObject); 
   begin 
-    // die gelöschte Warnmeldung wieder anzeigen
+    // die gelÃ¶schte Warnmeldung wieder anzeigen
     FormDiscImageExitQueryForm.DoNotShowAgain := false ; 
   end; 
 
@@ -463,7 +463,7 @@ procedure TFormDiscImage.setController(aController: TMediaImage_AbstractControll
     if aController = selectedController then Exit ; 
     selectedController := aController ; 
 
-    setImageFileState(diImageFile_Init); // Image size ist ungültig
+    setImageFileState(diImageFile_Init); // Image size ist ungÃ¼ltig
 
     // fill device selection combobox
     if selectedController.curBaseAddress = 0 then 
@@ -481,7 +481,7 @@ procedure TFormDiscImage.setController(aController: TMediaImage_AbstractControll
     else if selectedController.curDevice <> nil then 
       DeviceComboBox.ItemIndex := DeviceComboBox.Items.IndexOf(selectedController.curDevice.name) ; 
 
-    // sicherstellen ,das immer ein Device ausgewählt ist.
+    // sicherstellen ,das immer ein Device ausgewÃ¤hlt ist.
     ControllerBaseAddressEdit.Text := Dword2OctalStr(selectedController.curBaseAddress,16) ; 
     UnitNumberEdit.Text := IntToStr(selectedController.curUnitNumber) ; 
     controllerParametersChanged ; 
@@ -496,9 +496,9 @@ procedure TFormDiscImage.setController(aController: TMediaImage_AbstractControll
   end{ "procedure TFormDiscImage.setController" } ; 
 
 
-// Oberfläche und Buffer für gewähltes device einstellen
+// OberflÃ¤che und Buffer fÃ¼r gewÃ¤hltes device einstellen
 // durch manuelle Auswahl oder als Ergebnis von OpenDisc
-// "selectedController" muss gültig sein
+// "selectedController" muss gÃ¼ltig sein
 procedure TFormDiscImage.setDeviceForSelectedController(aDeviceName:string) ; 
   var ext, s: string ; 
     i: integer ; 
@@ -542,7 +542,7 @@ procedure TFormDiscImage.setDeviceForSelectedController(aDeviceName:string) ;
     SaveDiskMetaInfoDialog.Filter := s ; 
 
     MediaImageBuffer.LinkToDevice(selectedDevice); 
-    // bei MSCP kommt das nochmal mit anderen Grössendaten!
+    // bei MSCP kommt das nochmal mit anderen GrÃ¶ssendaten!
     ClearImageBuffer ; 
 
     BlockPerTransferEdit.Text := IntToStr(selectedDevice.MultiBlockCount) ; 
@@ -554,7 +554,7 @@ procedure TFormDiscImage.setDeviceForSelectedController(aDeviceName:string) ;
 
 procedure TFormDiscImage.DeviceComboBoxChange(Sender: TObject); 
   begin 
-    // manuell Device gewählt
+    // manuell Device gewÃ¤hlt
     setDeviceForSelectedController(DeviceComboBox.Text) ; 
   end; 
 
@@ -563,7 +563,7 @@ procedure TFormDiscImage.DeviceComboBoxChange(Sender: TObject);
 procedure TFormDiscImage.ControllerComboBoxChange(Sender: TObject); 
   begin 
     if not CheckRunMode then begin 
-      ControllerComboBox.ItemIndex := -1 ; // Auswahl ungültig
+      ControllerComboBox.ItemIndex := -1 ; // Auswahl ungÃ¼ltig
       Exit ; 
     end; 
 
@@ -613,9 +613,9 @@ procedure TFormDiscImage.Abort ;
   end; 
 
 
-// für einen logischen Block die Parameter in block 0 setzen
-// hängt vom DiscTyp und vom Assembler-Driver-programm ab
-// In "blockinfo" wird ein anzeigbarer String über cylinder, head, sector gebildet
+// fÃ¼r einen logischen Block die Parameter in block 0 setzen
+// hÃ¤ngt vom DiscTyp und vom Assembler-Driver-programm ab
+// In "blockinfo" wird ein anzeigbarer String Ã¼ber cylinder, head, sector gebildet
 procedure TFormDiscImage.SetupDriverDiskParams(aBlocknr, BlockOrSectorCount: integer; 
         var blockinfo:string) ; 
   var flags: word ; 
@@ -656,7 +656,7 @@ procedure TFormDiscImage.UpdateDisplay ;
   begin 
     DriveInfoMemo.Clear ; 
     if DeviceState = diDevice_Open then begin 
-      // show name in combobox, wichtig für MSCP
+      // show name in combobox, wichtig fÃ¼r MSCP
       // combobx is now disabled, but must have style "dropDown"
       DeviceComboBox.Text := selectedDevice.name ; //
       selectedDevice.getGeometryDisplay(DriveInfoMemo.Lines) ; 
@@ -664,7 +664,7 @@ procedure TFormDiscImage.UpdateDisplay ;
       DriveInfoMemo.Lines.Add('Disc not open') ; 
 
 
-    // Controls nur für Disc
+    // Controls nur fÃ¼r Disc
     captionmsg := '' ; 
     case DeviceState of 
       diDevice_SelectController: begin 
@@ -677,7 +677,7 @@ procedure TFormDiscImage.UpdateDisplay ;
         DeviceComboBox.Enabled := false ; 
         OpenDeviceButton.Enabled := false ; 
         ReadWriteGroupBox.Visible := false ; 
-        DriverState := diDriver_Init ; // Treiber ungültig
+        DriverState := diDriver_Init ; // Treiber ungÃ¼ltig
         LoadDriverButton.Enabled := false ; 
         BlockPerTransferEdit.Enabled := false ; 
         captionmsg := getDeviceStateAsText(DeviceState) ; 
@@ -721,7 +721,7 @@ procedure TFormDiscImage.UpdateDisplay ;
     end{ "case DeviceState" } ; 
     DiscInfoLabel.Caption := assembleCaption(captionmsg, DeviceStateInfo) ; 
 
-    // Controls nur für Driver
+    // Controls nur fÃ¼r Driver
     captionmsg := '' ; 
     case DriverState of 
       diDriver_Init: begin 
@@ -795,10 +795,10 @@ procedure TFormDiscImage.UpdateDisplay ;
     end { "case DriverState" } ;
     DriverInfoLabel.Caption := assembleCaption(captionmsg, DriverStateInfo) ;
 
-    // Controls nur für File
+    // Controls nur fÃ¼r File
     captionmsg := '' ;
     case ImageFileState of
-      diImageFile_Init: begin // Grösse unklar
+      diImageFile_Init: begin // GrÃ¶sse unklar
         ClearImageButton.Enabled := false ;
         LoadImageFileButton.Enabled := false ;
         SaveImageButton.Enabled := false ;
@@ -821,7 +821,7 @@ procedure TFormDiscImage.UpdateDisplay ;
         MediaSerialNumberEdit.Enabled := false ;
       end{ "case ImageFileState of diImageFile_Cleared:" } ;
       diImageFile_Loaded: begin
-        // wenn File geladen: Löschen und Ändern erlauben.
+        // wenn File geladen: LÃ¶schen und Ã„ndern erlauben.
         ClearImageButton.Enabled := true ;
         LoadImageFileButton.Enabled := true ;
         SaveImageButton.Enabled := true  ;
@@ -834,7 +834,7 @@ procedure TFormDiscImage.UpdateDisplay ;
         MediaSerialNumberEdit.Enabled := true ; 
       end{ "case ImageFileState of diImageFile_Loaded:" } ; 
       diImageFile_Changed: begin 
-        // wenn Daten von Disk oder Overlay: nur Löschen oder Speichern oder Ändern erlauben
+        // wenn Daten von Disk oder Overlay: nur LÃ¶schen oder Speichern oder Ã„ndern erlauben
         ClearImageButton.Enabled := true ; 
         LoadImageFileButton.Enabled := false ; 
         SaveImageButton.Enabled := true ; 
@@ -867,7 +867,7 @@ procedure TFormDiscImage.UpdateDisplay ;
 
     ImageFileInfoLabel.Caption := assembleCaption(captionmsg, ImageFileStateInfo) ; 
 
-    // Schreiben möglich, wenn DiscOpen, Driver geladen, Image gültig
+    // Schreiben mÃ¶glich, wenn DiscOpen, Driver geladen, Image gÃ¼ltig
     if (DeviceState = diDevice_Open) 
             and (DriverState >= diDriver_Loaded) 
             and (ImageFileState >= diImageFile_Cleared) then begin 
@@ -879,7 +879,7 @@ procedure TFormDiscImage.UpdateDisplay ;
       WriteSingleBlockButton.Enabled := false ; 
     end; 
 
-    // Lesen möglich, wenn DiscOpen, Driver geladen
+    // Lesen mÃ¶glich, wenn DiscOpen, Driver geladen
     if (DeviceState = diDevice_Open) 
             and (DriverState >= diDriver_Loaded) then begin 
       BlockNrLabel.Caption := Format('Next %s:', [selectedController.dataBlockName]) ; 
@@ -896,7 +896,7 @@ procedure TFormDiscImage.UpdateDisplay ;
       ReadSingleBlockButton.Enabled := true ; 
       CheckImageButton.Enabled := true ; 
       CheckSingleBlockButton.Enabled := true ; 
-      StopButton.Enabled := true ; // hängt auch nur von DeviceState und DriverState ab
+      StopButton.Enabled := true ; // hÃ¤ngt auch nur von DeviceState und DriverState ab
     end { "if (DeviceState = diDevice_Open) and (DriverState >= diDriver_Loaded)" } else begin 
       ReadImageButton.Enabled := false ; 
       ReadSingleBlockButton.Enabled := false ; 
@@ -922,7 +922,7 @@ procedure TFormDiscImage.UpdateDisplay ;
       end; 
 
     // Eingaben korrigieren
-    // auf Bereich 1.. DiscImage.MultiBlockCount einschränken
+    // auf Bereich 1.. DiscImage.MultiBlockCount einschrÃ¤nken
     if BlockPerTransferEdit.Visible then 
 
       if selectedDevice <> nil then 
@@ -971,7 +971,7 @@ procedure TFormDiscImage.setImageFileState(state: TDiscImage_ImageFileState ; ms
   end; 
 
 
-// Die Source des Driver Programs laden, übersetzen und den Code schreiben
+// Die Source des Driver Programs laden, Ã¼bersetzen und den Code schreiben
 procedure TFormDiscImage.LoadDriver ; 
   var 
     filename: string ; 
@@ -981,7 +981,7 @@ procedure TFormDiscImage.LoadDriver ;
     try 
       filename := selectedController.DriverSourceFilename ; 
       // suche relativ zum Verzeichnis  [Personalfolder]
-      // "filename" enthält schon das prefix '\driver\' !
+      // "filename" enthÃ¤lt schon das prefix '\driver\' !
       fullfname1 := FormMain.DefaultDataDirectory + '\' + filename ; 
       fullfname2 := ExtractFilePath(Application.ExeName)  + '\' + filename ; // wenn ich entwickle
       if FileExists(fullfname1) then 
@@ -1038,7 +1038,7 @@ procedure TFormDiscImage.StartDriver ;
     // starten
     Application.ProcessMessages ;
 
-    //  cfActionResetMaschineAndStartCpu wird von allen Maschinen unterstützt
+    //  cfActionResetMaschineAndStartCpu wird von allen Maschinen unterstÃ¼tzt
     FormMain.FormExecute.doResetMachineAndSetPCandStart ;
 //    else begin
     // START CODE WITHOUT HARD RESET
@@ -1046,13 +1046,13 @@ procedure TFormDiscImage.StartDriver ;
 //      FormMain.FormExecute.doSetPCandContinue(pdp11ProcAddr) ;
 
 //      if FormMain.PDP11Console is TConsolePDP1144 then begin
-//        // Nach Continue: Wartepause nötig für 11/44: Console processor hang up?
+//        // Nach Continue: Wartepause nÃ¶tig fÃ¼r 11/44: Console processor hang up?
 //        // sleep(250) ist nicht immer OK, sleep(300) scheint OK
 //        sleep(350) ;
 //      end;
     //  end ;
-    // "350" nötig für 11/44, "documented" firmware
-    // "250" nötig für 11/23: Sichtbarkeit der Startanweisung in ODT
+    // "350" nÃ¶tig fÃ¼r 11/44, "documented" firmware
+    // "250" nÃ¶tig fÃ¼r 11/23: Sichtbarkeit der Startanweisung in ODT
 
 //    WaitAndProcessMessages(350) ;
     // 11/44, v.340: prints ("Program")
@@ -1124,7 +1124,7 @@ procedure TFormDiscImage.OpenDeviceButtonClick(Sender: TObject);
   end; 
 
 // Drive reset.
-// liefert ggf Drive SubType zurück in SerialXFER.XmitBlock0Data
+// liefert ggf Drive SubType zurÃ¼ck in SerialXFER.XmitBlock0Data
 procedure TFormDiscImage.ResetUnibusAndDrive ; 
   var 
     //s: string ;
@@ -1168,7 +1168,7 @@ procedure TFormDiscImage.ResetUnibusAndDrive ;
 
         try 
           SerialXfer.Execute( 
-                  60000, // worst time für einen sector zugriff in ms: 60 sec!!!
+                  60000, // worst time fÃ¼r einen sector zugriff in ms: 60 sec!!!
                   opcode) ; // Reset Controller
           // opcode muss 0 sein, wenn OK
           errorloc := opcode ; 
@@ -1204,25 +1204,25 @@ procedure TFormDiscImage.ResetUnibusAndDrive ;
     end { "try" } ; 
   end{ "procedure TFormDiscImage.ResetUnibusAndDrive" } ; 
 
-//resetdrive für alle drivetypes
-//auswertung der rückgabedaten abh von disk type
+//resetdrive fÃ¼r alle drivetypes
+//auswertung der rÃ¼ckgabedaten abh von disk type
 
-//das hier nur für MSCP!!!
+//das hier nur fÃ¼r MSCP!!!
 
 
-// Daten über den seriellen loader übertragen:
+// Daten Ã¼ber den seriellen loader Ã¼bertragen:
 // Format: 8 characters definieren jeweils 6 bits
 // 8 chars <=> 3 words
 // Code in serialxfer.mac, das von den disc loadern .INCLUded wird.
 
 
 // started das driver-Program mit Parametern in R0..R5
-// überträgt das Ergebnis aus dem Sectorbuffer in den ImageBuffer
+// Ã¼bertrÃ¤gt das Ergebnis aus dem Sectorbuffer in den ImageBuffer
 //
-// der RL02 driver kann mehrere Blöcke auf derselben Track lesen.
-// check_only: wenn true, werden die gelesenen Daten nicht übertragen,
+// der RL02 driver kann mehrere BlÃ¶cke auf derselben Track lesen.
+// check_only: wenn true, werden die gelesenen Daten nicht Ã¼bertragen,
 //  dient zum bad sector scan.
-//result: anzahl der gelesenen Blöcke
+//result: anzahl der gelesenen BlÃ¶cke
 function TFormDiscImage.ReadMultiBlock(aStartBlockNr: integer ; blockcount: integer ; 
         check_only: boolean): integer ; 
   var 
@@ -1261,13 +1261,13 @@ function TFormDiscImage.ReadMultiBlock(aStartBlockNr: integer ; blockcount: inte
         //  mit retry 3 Umdrehungen/sector =  500ms !
         pdp11proctimeout_ms := 500 * blockcount + selectedDevice.maxBlockAccessTime_ms; 
 
-        SetLength(SerialXfer.XmitBlock1Data, 0) ; // keine DiskDaten übertragen, nur register
+        SetLength(SerialXfer.XmitBlock1Data, 0) ; // keine DiskDaten Ã¼bertragen, nur register
 
         RestZeit.setCur(aStartBlockNr) ; 
         UpdateDisplay ; 
 
         SerialXfer.Execute( 
-                pdp11proctimeout_ms, // worst Zeit für alle sector zugriffe in ms,
+                pdp11proctimeout_ms, // worst Zeit fÃ¼r alle sector zugriffe in ms,
                 opcode) ; // Controller nicht reset
         if DriverState = diDriver_UserStop then Exit ; 
 
@@ -1291,7 +1291,7 @@ function TFormDiscImage.ReadMultiBlock(aStartBlockNr: integer ; blockcount: inte
 
         if not check_only then begin 
           // Daten aus response Block0 in das DiskImage kopieren
-          // Länge von Block 0 ist angepasst
+          // LÃ¤nge von Block 0 ist angepasst
           n := length(SerialXfer.XmitBlock0Data) ; // m = bytes
 //      assert(n * 2 >= DiscGeometry.Blocksize) ;
 
@@ -1349,11 +1349,11 @@ procedure TFormDiscImage.ReadSingleBlockButtonClick(Sender: TObject);
 
 ///////////////////////////////////////////////////
 // Open Disc: alle Vorbereitungen zum Lesen/Schreiben treffen.
-// VB: DiscType, DiscSubType, UnitNr sind gültig!
+// VB: DiscType, DiscSubType, UnitNr sind gÃ¼ltig!
 // - ggf Treiber laden
 // - ggf. aus Controller Geometrie abfragen,
 // - oder Geometry selber setzen
-// da Geometry klar: Buffergrössen setzen
+// da Geometry klar: BuffergrÃ¶ssen setzen
 
 procedure TFormDiscImage.Pdp11ResetAndOpenDisc ;
   begin 
@@ -1383,7 +1383,7 @@ procedure TFormDiscImage.Pdp11ResetAndOpenDisc ;
 
     if selectedDevice is TMediaImage_DiscDevice_MSCP then begin 
       // MSCP "doinit" leaves Disk data in SerialXfer.XmitBlock0Data
-      // Input: gefüllter SerialXFER.XmitBlock0Data, der von ResetDrive() geliefert wurde
+      // Input: gefÃ¼llter SerialXFER.XmitBlock0Data, der von ResetDrive() geliefert wurde
       // SerialXfer.XmitBlock0Data must contain the MSCP driver response
       // to a SerialTransferDriver_opInit  command.
       (selectedDevice as TMediaImage_DiscDevice_MSCP).EvalDriveInfo(SerialXfer.XmitBlock0Data) ; 
@@ -1408,13 +1408,13 @@ procedure TFormDiscImage.Pdp11ResetAndOpenDisc ;
 
 
 // das Image aus dem RL02 lesen nach "ImageBuffer" lesen
-// protectVendorArea: wenn true, nicht über bad sector files oder
+// protectVendorArea: wenn true, nicht Ã¼ber bad sector files oder
 // Herstellerkennungen schreiben
 procedure TFormDiscImage.ReadImage(startblocknr: integer; check_only: boolean) ; 
 
 // liest einzeln und unoptimiert alle Sectoren des aktuellen Cylinder/Head.
 // dient dazu, den bad block in der track zu finden
-// DriverErrorTxt: Info des Drivers über Fehlerposition.
+// DriverErrorTxt: Info des Drivers Ã¼ber Fehlerposition.
   procedure ReadTrackBlocks(startblocknr: integer ; SectorCount: integer; errorStop: boolean ;  var DriverErrorTxt:string); 
     var BlockNr: integer ; 
       retryCount: integer ; 
@@ -1424,7 +1424,7 @@ procedure TFormDiscImage.ReadImage(startblocknr: integer; check_only: boolean) ;
       BlockNr := startblocknr ; 
       while BlockNr < startblocknr + SectorCount do begin 
 
-        retryCount := 0 ; // wird bis ReadErrorRetryCount gezählt
+        retryCount := 0 ; // wird bis ReadErrorRetryCount gezÃ¤hlt
         repeat 
 
           Application.ProcessMessages ; 
@@ -1447,7 +1447,7 @@ procedure TFormDiscImage.ReadImage(startblocknr: integer; check_only: boolean) ;
         if DriverState = diDriver_Error then begin 
           registerBadBlock(BlockNr, bbsScan, Format('FAILURE reading sector after %d retries: %s', 
                   [retryCount, lastDriverErrorTxt])) ; 
-          DriverErrorTxt := lastDriverErrorTxt ; // Fehlerrückgabe
+          DriverErrorTxt := lastDriverErrorTxt ; // FehlerrÃ¼ckgabe
           if errorStop then 
             Exit ; 
         end else if retryCount >  1 then 
@@ -1486,22 +1486,22 @@ procedure TFormDiscImage.ReadImage(startblocknr: integer; check_only: boolean) ;
         Log('ReadImage() aborted'); 
         Exit ; 
       end; 
-      // Anzahl der Blocks, die jetzt gelesen werden. Nicht über Trackende hinaus!
+      // Anzahl der Blocks, die jetzt gelesen werden. Nicht Ã¼ber Trackende hinaus!
       // Hier ggf kleinere Blockzahl benutzen, und nicht
-      // ganze Tracks. Nötig bei langsamen Baudraten und controller timeout
-      // während der seriellen Übertragung
-      // Nötig für MSCP RX33 diskette bei 9600 baud? Controller timeout!
+      // ganze Tracks. NÃ¶tig bei langsamen Baudraten und controller timeout
+      // wÃ¤hrend der seriellen Ãœbertragung
+      // NÃ¶tig fÃ¼r MSCP RX33 diskette bei 9600 baud? Controller timeout!
 
       // diese Logik hier auch nach WriteImage() !
 
-      m := StrToInt(BlockPerTransferEdit.Text) ; // .Update() garantiert immer gültigen Inhalt
+      m := StrToInt(BlockPerTransferEdit.Text) ; // .Update() garantiert immer gÃ¼ltigen Inhalt
       // m := DiscImage.MultiBlockCount ;
 
-      // Nicht über disk ende hinauslesen
+      // Nicht Ã¼ber disk ende hinauslesen
       while (BlockNr + m) > n do   // ORIGINAL, aber falsch?
 //      while (BlockNr + m - 1) > n do
         dec(m) ; 
-      // nicht über Trackende hinauslesen
+      // nicht Ã¼ber Trackende hinauslesen
       while  ((BlockNr+m-1) div selectedDevice.MultiBlockCount) > (BlockNr div selectedDevice.MultiBlockCount) do 
         dec(m) ; 
 
@@ -1513,7 +1513,7 @@ procedure TFormDiscImage.ReadImage(startblocknr: integer; check_only: boolean) ;
       if DriverState = diDriver_Error then begin 
         // Beim Lesen des Tracks wurde ein Fehler gesehen,
         // lies den track jetzt sectorweise, um den bad block zu finden.
-        // DiscGeometry ist gültig.
+        // DiscGeometry ist gÃ¼ltig.
         ReadTrackBlocks(BlockNr, m, StopOnErrorCheckBox.Checked, DriverErrorTxt) ; 
 
         // Unrecoverable error? TehndiDriver_Error set again.
@@ -1530,7 +1530,7 @@ procedure TFormDiscImage.ReadImage(startblocknr: integer; check_only: boolean) ;
   end{ "procedure TFormDiscImage.ReadImage" } ; 
 
 
-// Leses bis Fehler, oder bis weniger zurückkommt als angefordert
+// Leses bis Fehler, oder bis weniger zurÃ¼ckkommt als angefordert
 procedure TFormDiscImage.ReadImageStream(startblocknr: integer ; check_only: boolean) ; 
   var 
     BlockNr: integer ; 
@@ -1549,7 +1549,7 @@ procedure TFormDiscImage.ReadImageStream(startblocknr: integer ; check_only: boo
         Exit ; 
       end; 
 
-      blocksToRead := StrToInt(BlockPerTransferEdit.Text) ; // .Update() garantiert immer gültigen Inhalt
+      blocksToRead := StrToInt(BlockPerTransferEdit.Text) ; // .Update() garantiert immer gÃ¼ltigen Inhalt
 
       blocksRead := ReadMultiBlock(BlockNr, blocksToRead, check_only); // nicht immer ganze tracks lesen
       if DriverState = diDriver_UserStop then begin 
@@ -1587,7 +1587,7 @@ function TFormDiscImage.WriteMultiBlock(aStartBlockNr: integer; blocksToWrite: i
     if DriverState = diDriver_UserStop then Exit ; 
 
     // nicht schreiben, wenn
-    /// FALSCHE Arithmetik! Funktioniert nur für infoArea=  ganzer Track!
+    /// FALSCHE Arithmetik! Funktioniert nur fÃ¼r infoArea=  ganzer Track!
     if selectedDevice is TMediaImage_DiscDevice_Std 
             and ProtectVendorAreaCheckBox.Checked then begin 
       discdev := selectedDevice as TMediaImage_DiscDevice_Std ; 
@@ -1634,7 +1634,7 @@ function TFormDiscImage.WriteMultiBlock(aStartBlockNr: integer; blocksToWrite: i
         UpdateDisplay ; 
 
         SerialXfer.Execute( 
-                pdp11proctimeout_ms, // worst Zeit für alle sector zugriffe in ms,
+                pdp11proctimeout_ms, // worst Zeit fÃ¼r alle sector zugriffe in ms,
                 opcode) ; // Controller nicht reset
 
         // opcode muss 0 sein, wenn OK
@@ -1679,7 +1679,7 @@ procedure TFormDiscImage.WriteSingleBlockButtonClick(Sender: TObject);
 
 
 // das Image aus dem Imagebuffer in das RL02 schreiben.
-// protectVendorArea: wenn true, nicht über bad sector files oder
+// protectVendorArea: wenn true, nicht Ã¼ber bad sector files oder
 // Herstellerkennungen schreiben
 procedure TFormDiscImage.WriteImage(startblocknr: integer) ; 
 
@@ -1732,16 +1732,16 @@ procedure TFormDiscImage.WriteImage(startblocknr: integer) ;
         Exit ; 
       end; 
 
-      // Anzahl der Blocks, die jetzt geschrieben werden. Nicht über Diskende hinaus!
+      // Anzahl der Blocks, die jetzt geschrieben werden. Nicht Ã¼ber Diskende hinaus!
 
-      m := StrToInt(BlockPerTransferEdit.Text) ; // .Update() garantiert immer gültigen Inhalt
+      m := StrToInt(BlockPerTransferEdit.Text) ; // .Update() garantiert immer gÃ¼ltigen Inhalt
       // m := DiscImage.MultiBlockCount ;
 
-      // Nicht über disk ende hinauslesen
+      // Nicht Ã¼ber disk ende hinauslesen
 //      while (BlockNr + m) > n do   // ORIGINAL, aber falsch?
       while (BlockNr + m - 1) > n do 
         dec(m) ; 
-      // nicht über Trackende hinauslesen
+      // nicht Ã¼ber Trackende hinauslesen
       while  ((BlockNr+m-1) div selectedDevice.MultiBlockCount) > (BlockNr div selectedDevice.MultiBlockCount) do 
         dec(m) ; 
 
@@ -1755,7 +1755,7 @@ procedure TFormDiscImage.WriteImage(startblocknr: integer) ;
       if DriverState = diDriver_Error then begin 
         // Beim Lesen des tracks wurde ein Fehler gesehen,
         // lies den track jetzt sectorweise, um den bad block zu finden.
-        // DiscGeometry ist gültig.
+        // DiscGeometry ist gÃ¼ltig.
         WriteTrackBlocks(BlockNr, StopOnErrorCheckBox.Checked, m) ; 
         if StopOnErrorCheckBox.Checked then begin 
           Log('Error occured: WriteImage() terminated'); 
@@ -1784,7 +1784,7 @@ procedure TFormDiscImage.WriteImageStream(startblocknr: integer) ;
         Exit ; 
       end; 
 
-      blocksToWrite := StrToInt(BlockPerTransferEdit.Text) ; // .Update() garantiert immer gültigen Inhalt
+      blocksToWrite := StrToInt(BlockPerTransferEdit.Text) ; // .Update() garantiert immer gÃ¼ltigen Inhalt
 
       blocksWritten := WriteMultiBlock(BlockNr, blocksToWrite); // nicht immer ganze tracks lesen
       if DriverState = diDriver_UserStop then begin 
@@ -1803,7 +1803,7 @@ procedure TFormDiscImage.WriteImageStream(startblocknr: integer) ;
   end{ "procedure TFormDiscImage.WriteImageStream" } ; 
 
 
-// wordcount: Datenmenge, die zum Test übertragen wird
+// wordcount: Datenmenge, die zum Test Ã¼bertragen wird
 // testpattern: enum
 procedure TFormDiscImage.Selftest(wordcount: integer; randomWordcount: boolean ; testpattern:integer) ; 
   begin 
@@ -1828,10 +1828,10 @@ procedure TFormDiscImage.SelftestButtonClick(Sender: TObject);
     n := StrToInt(SelfTestRepeatCountEdit.Text); 
     // testpattern: siehe SerialXfer.Selftest()
     if SelftestPatternComboBox.ItemIndex < 0 then 
-      SelftestPatternComboBox.ItemIndex := 0 ; // wähle ersten Eintrag
+      SelftestPatternComboBox.ItemIndex := 0 ; // wÃ¤hle ersten Eintrag
     // macht UNIBUS reset. Daher muss das Disc System neu initialisiert werden.
     // (MSCP braucht nach Reset neues UnibusResetAndOpenDisc)
-    // jetzt neues "ResetAndOpen ermöglichen
+    // jetzt neues "ResetAndOpen ermÃ¶glichen
 
 //    setController(selectedController) ;
 //    setDeviceState(diDevice_SelectDevice);
@@ -1920,7 +1920,7 @@ procedure TFormDiscImage.MediaSerialNumberEditExit(Sender: TObject);
 procedure TFormDiscImage.OverlayFileButtonClick(Sender: TObject); 
   var fname: string ; 
   begin 
-    // overlay übernimmt path und extension vom image file
+    // overlay Ã¼bernimmt path und extension vom image file
     fname := TheRegistry.Load(RegistryKeyDiskImageFilename, '') ; 
     OpenDiskImageOverlayDialog.InitialDir := ExtractFileDir(fname) ; 
     OpenDiskImageOverlayDialog.filename := '' ; 
@@ -1979,8 +1979,8 @@ procedure TFormDiscImage.ReadImageButtonClick(Sender: TObject);
         RestZeit.setStart(startblocknr, selectedDevice.blockcount) ; 
         ReadImage(startblocknr, check_only) ; 
       end else begin 
-        // device hat keine feste Grösse, stream of data
-        RestZeit.valid := false ; // keine Zeitschätzung möglich
+        // device hat keine feste GrÃ¶sse, stream of data
+        RestZeit.valid := false ; // keine ZeitschÃ¤tzung mÃ¶glich
         ReadImageStream(startblocknr, check_only) ; 
       end; 
     finally 
@@ -2000,7 +2000,7 @@ procedure TFormDiscImage.WriteImageButtonClick(Sender: TObject);
         RestZeit.setStart(startblocknr, selectedDevice.blockcount) ; 
         WriteImage(startblocknr) ; 
       end else begin 
-        // device hat keine feste Grösse, stream of data.
+        // device hat keine feste GrÃ¶sse, stream of data.
         RestZeit.setStart(startblocknr, MediaImageBuffer.getblockcount) ; 
         WriteImageStream(startblocknr) ; 
       end; 
@@ -2035,7 +2035,7 @@ procedure TFormDiscImage.registerBadBlock(badblocknr: integer; source: TBadBlock
     Cylinder,Head,Sector: integer ; 
 
   begin 
-    // ergänze cylinder,head,sector
+    // ergÃ¤nze cylinder,head,sector
     if selectedDevice is TMediaImage_DiscDevice_Std then begin 
       discdev := selectedDevice as TMediaImage_DiscDevice_Std ; 
       discdev.BlockNr2DiscAddr(badblocknr, Cylinder, Head, Sector) ; 

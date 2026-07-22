@@ -22,8 +22,8 @@ unit FormMacro11ListingU;
 }
 
 {
-  Zeigt den output einer MACRO-11 �bersetzung an,
-  analysiert ihn und erzeugt eine MemoryCellgroup f�r den Code.
+  Zeigt den output einer MACRO-11 Übersetzung an,
+  analysiert ihn und erzeugt eine MemoryCellgroup für den Code.
 
   Findet auch MACRO-11 Fehler-meldungen,
   sowie ungebundene globale Symbole (Postfix 'G' und ')
@@ -33,7 +33,7 @@ unit FormMacro11ListingU;
   Sourcezeile 1:n ListingZeile 1:n memorycell
 
   "memorycell.listinglinenr" ist der foreign key auf listing
-  "formlisting.sourcelinenr[i]" enth�lt die Nr der Sourcezeile,
+  "formlisting.sourcelinenr[i]" enthält die Nr der Sourcezeile,
   die listingzeile i fabriziert hat
 
   Der aktuelle PC kann im Gutter mit eienr Marke versehen werden.
@@ -65,7 +65,7 @@ type
     private
       { Private-Deklarationen }
 
-      CodeParsed: boolean ; // keine doppelten L�ufe von "ParseCode()"
+      CodeParsed: boolean ; // keine doppelten Läufe von "ParseCode()"
 
       // Ersatz fuer JvEditor.LineInformations: JvEditor/JVCL ist unter
       // Lazarus nicht verfuegbar, Editor ist jetzt ein TSynEdit.
@@ -87,8 +87,8 @@ type
 
       DepositSuccess: boolean ; // true, wenn erfolgriech in memory geschrieben
 
-      FirstErrorMsg : string ; // Fehlermeldung bei �bersetzung. '' = kein Fehler
-      FirstErrorFilename : string ; // Fehlerfile bei �bersetzung
+      FirstErrorMsg : string ; // Fehlermeldung bei Übersetzung. '' = kein Fehler
+      FirstErrorFilename : string ; // Fehlerfile bei Übersetzung
       FirstErrorLineNr : integer ; // Zeile der Fehlermeldung in der Source
 
       PCMarkerRow: integer ; // Zeilennumer mit dem PC
@@ -123,7 +123,7 @@ constructor TFormMacro11Listing.Create(aOwner: TComponent) ;
     // private events
     // die MDI-Show/Hide logik in TFormChild verursacht Windowsgehler,
     // wenn JVEditor eine lange Source geladen hat.
-    OnAfterShow := FormAfterShow ; // l�dt den letzten File
+    OnAfterShow := FormAfterShow ; // lädt den letzten File
     OnBeforeHide := FormBeforeHide ;
 
     Editor.OnSpecialLineColors := EditorSpecialLineColors ;
@@ -195,7 +195,7 @@ procedure TFormMacro11Listing.EditorResize(Sender: TObject);
 
 procedure TFormMacro11Listing.FormBeforeHide(Sender: TObject);
   begin
-    // source aus editor l�schen, sonst
+    // source aus editor löschen, sonst
     // gibt es einen Fehler beim Load, wenn formstyle auf fsMDICild geht
     Editor.Lines.Clear ;
   end;
@@ -215,7 +215,7 @@ procedure TFormMacro11Listing.LoadFile(fname: string) ;
     tmpLines: TStringList ;
     i: integer ;
   begin
-    CodeParsed := false ; // letztes Parsing wird ung�ltig
+    CodeParsed := false ; // letztes Parsing wird ungültig
     PCMarkerRow := -1 ;
     FirstErrorFilename := '' ;
     FirstErrorMsg := '' ;
@@ -231,9 +231,9 @@ procedure TFormMacro11Listing.LoadFile(fname: string) ;
       Editor.Lines.Clear ;
       SetLength(HighlightLines, 0) ;
       // diese bescheuerte MDI-Child-visiblity-Problematik:
-      // bei geladenen (grossem) File kann der �bergang visible->invisible nicht stattfinden
-      // LoadFromFile darf nur ausgef�hrt werden, wenn "Visible = true'
-      // Wenn invisible: das Laden wird dann verz�gert im OnAfterShow() durchgef�hrt.
+      // bei geladenen (grossem) File kann der Übergang visible->invisible nicht stattfinden
+      // LoadFromFile darf nur ausgeführt werden, wenn "Visible = true'
+      // Wenn invisible: das Laden wird dann verzögert im OnAfterShow() durchgeführt.
       if visible then begin
         Editor.BeginUpdate ;
         Log('LoadFromFile(%s)', [fname]) ;
@@ -253,7 +253,7 @@ procedure TFormMacro11Listing.LoadFile(fname: string) ;
       end { "if visible" } ;
       Caption := setFormCaptionInfoField(Caption, fname) ;
 
-      // Filename merken, auch f�r OnAfterShow
+      // Filename merken, auch für OnAfterShow
       TheRegistry.Save('ListingFilename', fname);
     finally
       tmpLines.Free ;
@@ -291,14 +291,14 @@ D:\pdp11\pdp 11-44\progs\memoryaddress.mac:11: ***ERROR Illegal addressing mode
 procedure TFormMacro11Listing.ParseCode;
 
 
-// einen byte oder word-Value in die aktuelel/n�cshte
-// adresse f�llen. addr inc
+// einen byte oder word-Value in die aktuelel/näcshte
+// adresse füllen. addr inc
 // result: false, wenn format-fehler
 
-// an manchen Values h�ngen hinten noch das Suffixe
+// an manchen Values hängen hinten noch das Suffixe
 //  '
-//  G: Ungebundenes Global (sehr h�ufig!), Zeichen f�r Tippfehler,
-//      oder unvollst�ndige Source
+//  G: Ungebundenes Global (sehr häufig!), Zeichen für Tippfehler,
+//      oder unvollständige Source
 //  C: ?
 // manche values sind 8 bit = 3 zeichen lang.
 // dann kombiniere ZWEI zu einer memorycell
@@ -361,7 +361,7 @@ procedure TFormMacro11Listing.ParseCode;
       end;
       if mc = nil then
         mc := memorycellgroup.Add(addr.val and $fffffffe) ; // neue Cell immer mit gerader adresse            // weiteren 16 bit wert in der Zeile gefunden
-      // b) wert in memorycell f�llen
+      // b) wert in memorycell füllen
       case value_byte_count of
         1: if not odd(addr.val) then
             mc.edit_value := value
@@ -428,12 +428,12 @@ procedure TFormMacro11Listing.ParseCode;
         // das erste Wort muss eine dezimalzahl sein.
         // danach kommt optional eine octal-adresse
         // danach optional Werte.
-        // Nur die Werte z�hlen
+        // Nur die Werte zählen
 
         // Spalten: 1..8: Zeilennummer (optional)
         //            10-16 adresse
         // Ansatz: Zeilennummer weg, dann frei Format parsen, keine festen Spalten
-        // (ich bin zu faul zum ausz�hlen)
+        // (ich bin zu faul zum auszählen)
         s_lineno := Trim(Copy(line, 1, 8)) ;
         s_addr := Trim(Copy(line, 10,6)) ;
         line1 := Copy(line, 17, maxint) ;
@@ -452,10 +452,10 @@ procedure TFormMacro11Listing.ParseCode;
         except
           code_field_ready := true ;
         end;
-        if code_field_ready then Continue ; // n�chste Zeile
+        if code_field_ready then Continue ; // nächste Zeile
 
         // line1: Sourcezeile ohne Zeilennummer und addresse
-        // values sind jetzt das 1, 2., 3. , ... Wort in der verk�rzten Zeile
+        // values sind jetzt das 1, 2., 3. , ... Wort in der verkürzten Zeile
         // read all octal data words bnehind address, until label or opcode
         j := 1 ;
         code_field_ready := false ;

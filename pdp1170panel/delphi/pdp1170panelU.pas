@@ -23,9 +23,9 @@ unit pdp1170panelU;
 
 {
   Pdp1170Panel
-  Klasse, die ein Console-Panel für die PDP-11/70 kapselt.
-  abgleitet: physische Klasse für USB-angestuerte Hardware
-  ingebettet in: Frame für viruelles Console-Panel
+  Klasse, die ein Console-Panel fÃ¼r die PDP-11/70 kapselt.
+  abgleitet: physische Klasse fÃ¼r USB-angestuerte Hardware
+  ingebettet in: Frame fÃ¼r viruelles Console-Panel
 
   public model
   panel = 1:n Leds: Tpdp1170PanelControl
@@ -34,19 +34,19 @@ unit pdp1170panelU;
   Ansteuerung:
   Jeder Switch/Led hat n States.
 
-  1. Control suchen über Name/Gruppe/Typ
+  1. Control suchen Ã¼ber Name/Gruppe/Typ
 
   2. Control setzen oder abfragen mit
-     Tpdp1170PanelControl.getActiveState/setActiveStateByValue geändert werden.
+     Tpdp1170PanelControl.getActiveState/setActiveStateByValue geÃ¤ndert werden.
 
 
-  3. Danach muss für das ganze panel
+  3. Danach muss fÃ¼r das ganze panel
     Tpdp1170Panel.SyncWithImplementor()
     aufgerufen werden: das gleicht den State vom Tpdp1170Panel mit
-    der tatsächlichen Implementierung ab.
+    der tatsÃ¤chlichen Implementierung ab.
     Switches werden gelesen, LEDs werden geschrieben.
 
-   Manche Implemantationen (Der Frame) oder später mal die USB-Hardware
+   Manche Implemantationen (Der Frame) oder spÃ¤ter mal die USB-Hardware
    setzen die Switch-Controls on Event.
 
 
@@ -102,14 +102,14 @@ type
 
 
 const
-  // Werte für Tpdp1170PanelControl.flags
+  // Werte fÃ¼r Tpdp1170PanelControl.flags
   PDP1170PANEL_FLAG_NONE = 0 ;
   PDP1170PANEL_FLAG_SWITCH_ACTION = 1 ; // action switch: Taster
   PDP1170PANEL_FLAG_SWITCH_LAMPTEST = 2 ; // ist der Lamptest
 
   MAX_PDP1170PANEL_LED_COUNT = 100 ; // LEDs
-  MAX_PDP1170PANEL_SWITCH_COUNT = 100 ; // Switches und Drehknöpfe
-  // die Drehknöpfe haben 8 Zustände, die LEDs und Schalter nur jeweils 2
+  MAX_PDP1170PANEL_SWITCH_COUNT = 100 ; // Switches und DrehknÃ¶pfe
+  // die DrehknÃ¶pfe haben 8 ZustÃ¤nde, die LEDs und Schalter nur jeweils 2
   MAX_PDP1170PANEL_CONTROL_STATES = 8 ;
 
 type
@@ -117,11 +117,11 @@ type
   Tpdp1170PanelControlState = class(TObject)
     public
       // index/value: Bei den 11/70 Drehschalter kodiert "index" die Raste,
-      // "value ist der Wert für eine Raststellung!
+      // "value ist der Wert fÃ¼r eine Raststellung!
       index: integer ; // Platznummer des States. "Reihenfolge" der States
       value: integer ; // ID, wie von Schaltung geliefert: 0, 1, 2, ...
-      name: string ; // Beschreibung für den Zustand
-      image: TImage ; // wenn Form: Bild für den Zustand
+      name: string ; // Beschreibung fÃ¼r den Zustand
+      image: TImage ; // wenn Form: Bild fÃ¼r den Zustand
 
       constructor Create(_value: integer ; _name: string) ;
     end ;
@@ -143,11 +143,11 @@ type
 
       group: Tpdp1170panelControlGroup ; // ID: gruppe
       name: string ; // Beschreibung
-      // Verhaltens-flags. 1 für Switches heisst: switch ist nicht bistabil,
-      // switcht automatisch auf 0 zurück
+      // Verhaltens-flags. 1 fÃ¼r Switches heisst: switch ist nicht bistabil,
+      // switcht automatisch auf 0 zurÃ¼ck
       flags: integer ;
-      StateCount: integer ; // wieviel Zustände hat dieses Control ?
-      // LEDs eigentlich nur zwei, die beiden Drehknöpfe haben aber 8!
+      StateCount: integer ; // wieviel ZustÃ¤nde hat dieses Control ?
+      // LEDs eigentlich nur zwei, die beiden DrehknÃ¶pfe haben aber 8!
       States: array [0..MAX_PDP1170PANEL_CONTROL_STATES] of Tpdp1170PanelControlState ;
 
       active_state_index: integer  ; // aktuell aktiver Zustand
@@ -156,12 +156,12 @@ type
 
       // nach UpdateEvents ist   active_state = implementor_active_state
 
-      // wenn physikalisches Panel über Ansteuerungsplatine:
+      // wenn physikalisches Panel Ã¼ber Ansteuerungsplatine:
       register_nr: integer ; // Nummer des registers
-      register_mask: dword ; // bitmask für die sate.values des registers
+      register_mask: dword ; // bitmask fÃ¼r die sate.values des registers
       register_lsb: dword ;  // abgeleitet: Nr des Bits, das LSB des State.value darstellt
       // Bsp: lsb = 3 -> value 1 -> maske 0x0008, value 5 -> maske 0x0028
-      // Die Länge des belegten Bitblocks ergibt sich aus StateCount
+      // Die LÃ¤nge des belegten Bitblocks ergibt sich aus StateCount
 
       constructor Create(
               _ctltype: Tpdp1170panelControlType ;
@@ -175,9 +175,9 @@ type
       // zum registrieren der States
       function AddState(_state: Tpdp1170PanelControlState): Tpdp1170PanelControlState ;
 
-      // einen State über seine Zahl finden
+      // einen State Ã¼ber seine Zahl finden
       function getStateByValue(_value: integer): Tpdp1170PanelControlState ;
-      // einen State über seinen Namen finden
+      // einen State Ã¼ber seinen Namen finden
       function getStateByName(_name: string): Tpdp1170PanelControlState ;
 
       function getActiveState: Tpdp1170PanelControlState ; virtual ;
@@ -186,7 +186,7 @@ type
     end{ "TYPE Tpdp1170PanelControl = class(TObject)" } ;
 
 
-// Basisklasse für das simulierte und das physikalische Panel
+// Basisklasse fÃ¼r das simulierte und das physikalische Panel
   Tpdp1170Panel = class(TObject)
     private
       function Add(ctrl: Tpdp1170PanelControl): Tpdp1170PanelControl ;
@@ -199,11 +199,11 @@ type
       lamptest_active: boolean ; // TRUE, wenn Lamptest active ist
 
       // Das hier muss der Implementor (Frame oder USB-hardwarew) auf seine Update-logik lenken
-      OnSyncSwitchesFromImplementor: TNotifyEvent ; // Sender: geändertes Control
-      OnSyncLedsToImplementor: TNotifyEvent ; // Sender: geändertes Control
+      OnSyncSwitchesFromImplementor: TNotifyEvent ; // Sender: geÃ¤ndertes Control
+      OnSyncLedsToImplementor: TNotifyEvent ; // Sender: geÃ¤ndertes Control
 
-      // Damit kriegt die Anwendung änderungen mit.
-      OnControlStateChanged: TNotifyEvent ;// Sender: geändertes Control
+      // Damit kriegt die Anwendung Ã¤nderungen mit.
+      OnControlStateChanged: TNotifyEvent ;// Sender: geÃ¤ndertes Control
 
     public
       constructor Create ;
@@ -211,11 +211,11 @@ type
 
       function getControlByID(_ctltype: Tpdp1170panelControlType ;
               _group: Tpdp1170panelControlGroup ; _index: integer): Tpdp1170PanelControl ;
-      // eine Switch/LED über group und name finden
+      // eine Switch/LED Ã¼ber group und name finden
       function getControlByName(_ctltype: Tpdp1170panelControlType ;
               _group: Tpdp1170panelControlGroup ; _name: string): Tpdp1170PanelControl ;
-      // eine Control über eines ihrer State-Images finden
-      // keine angabe, ob siwthc oder led gewünscht ist ..
+      // eine Control Ã¼ber eines ihrer State-Images finden
+      // keine angabe, ob siwthc oder led gewÃ¼nscht ist ..
       // das sollte sich wirklich aus dem image ergeben!
       //
       function getControlByImage(_image: TImage): Tpdp1170PanelControl ;
@@ -286,7 +286,7 @@ function Tpdp1170PanelControl.AddState(_state: Tpdp1170PanelControlState):
   end;
 
 
-// einen State über seine Zahl finden
+// einen State Ã¼ber seine Zahl finden
 function Tpdp1170PanelControl.getStateByValue(_value: integer): Tpdp1170PanelControlState ;
   var i: integer ;
   begin
@@ -297,8 +297,8 @@ function Tpdp1170PanelControl.getStateByValue(_value: integer): Tpdp1170PanelCon
   end ;
 
 
-// einen State über seinen Namen finden
-// gibt den ersten State mit diesem Namen zurück
+// einen State Ã¼ber seinen Namen finden
+// gibt den ersten State mit diesem Namen zurÃ¼ck
 function Tpdp1170PanelControl.getStateByName(_name: string): Tpdp1170PanelControlState ;
   var i: integer ;
   begin
@@ -318,17 +318,17 @@ function Tpdp1170PanelControl.getActiveState: Tpdp1170PanelControlState ;
   end;
 
 
-// die Anwendung ändert erstmal "implementor_active_state"
+// die Anwendung Ã¤ndert erstmal "implementor_active_state"
 // erst beim "SyncWithImplementor" wird wirksam, und
-// dann werden auch die Chnge-Events ausgelöst
+// dann werden auch die Chnge-Events ausgelÃ¶st
 procedure Tpdp1170PanelControl.setActiveStateByValue(_value: integer) ;
   var state: Tpdp1170PanelControlState ;
     i: integer ;
   begin
-    // ist der State für das Control überhaupt möglich?
+    // ist der State fÃ¼r das Control Ã¼berhaupt mÃ¶glich?
     state := getStateByValue(_value) ;
     if state = nil then
-      raise Exception.CreateFmt('state with value %d not defined für control "%s"', [_value, name]) ;
+      raise Exception.CreateFmt('state with value %d not defined fÃ¼r control "%s"', [_value, name]) ;
     for i := 0 to StateCount-1 do // grmbl ... noch mal suchen, damit der Index bekannt wird.
       if (States[i] = state) and (implementor_active_state_index <> i) then begin
         implementor_active_state_index := i ;
@@ -337,7 +337,7 @@ procedure Tpdp1170PanelControl.setActiveStateByValue(_value: integer) ;
   end{ "procedure Tpdp1170PanelControl.setActiveStateByValue" } ;
 
 
-// ein Control (Switch/Led) über group und index finden
+// ein Control (Switch/Led) Ã¼ber group und index finden
 // result NULL: not found
 function Tpdp1170Panel.getControlByID(_ctltype: Tpdp1170panelControlType ;
         _group: Tpdp1170panelControlGroup  ;
@@ -355,7 +355,7 @@ function Tpdp1170Panel.getControlByID(_ctltype: Tpdp1170panelControlType ;
   end;
 
 
-// ein Control (Switch/Led) über group und name finden
+// ein Control (Switch/Led) Ã¼ber group und name finden
 // result NULL: not found
 function Tpdp1170Panel.getControlByName(_ctltype: Tpdp1170panelControlType ;
         _group : Tpdp1170panelControlGroup ;
@@ -374,7 +374,7 @@ function Tpdp1170Panel.getControlByName(_ctltype: Tpdp1170panelControlType ;
   end;
 
 
-// ein Control (Switch/Led) über das image finden
+// ein Control (Switch/Led) Ã¼ber das image finden
 // durchsucht alle States des Control.
 // result NULL: not found
 function Tpdp1170Panel.getControlByImage(_image: TImage): Tpdp1170PanelControl ;
@@ -412,7 +412,7 @@ constructor Tpdp1170Panel.Create ;
     OnSyncSwitchesFromImplementor := nil ;
     OnSyncLedsToImplementor := nil ;
 
-    // die Datenstruktur für die LEDs und die Switches anlegen
+    // die Datenstruktur fÃ¼r die LEDs und die Switches anlegen
     ControlCount := 0 ;
     // LEDs haben immer nur zwei states
 
@@ -430,7 +430,7 @@ constructor Tpdp1170Panel.Create ;
     // index wie index der switch-Positionen
     Add(Tpdp1170PanelControl.Create(_Led, self, pdp1170Led_DATA_SELECT, 0, PDP1170PANEL_FLAG_NONE, 'BUS REG')) ;
     Add(Tpdp1170PanelControl.Create(_Led, self, pdp1170Led_DATA_SELECT, 1, PDP1170PANEL_FLAG_NONE, 'DATA PATHS')) ;
-    Add(Tpdp1170PanelControl.Create(_Led, self, pdp1170Led_DATA_SELECT, 2, PDP1170PANEL_FLAG_NONE, 'µADRS FPP/CPU')) ;
+    Add(Tpdp1170PanelControl.Create(_Led, self, pdp1170Led_DATA_SELECT, 2, PDP1170PANEL_FLAG_NONE, 'ÂµADRS FPP/CPU')) ;
     Add(Tpdp1170PanelControl.Create(_Led, self, pdp1170Led_DATA_SELECT, 3, PDP1170PANEL_FLAG_NONE, 'DISPLAY REGISTER')) ;
 
     Add(Tpdp1170PanelControl.Create(_Led, self, pdp1170Led_ADDRESS, 0, PDP1170PANEL_FLAG_NONE, 'ADDRESS 0')) ;
@@ -482,7 +482,7 @@ constructor Tpdp1170Panel.Create ;
     Add(Tpdp1170PanelControl.Create(_Led, self, pdp1170Led_PAUSE, 0, PDP1170PANEL_FLAG_NONE, 'PAUSE')) ;
     Add(Tpdp1170PanelControl.Create(_Led, self, pdp1170Led_MASTER, 0, PDP1170PANEL_FLAG_NONE, 'MASTER')) ;
 
-    // Ausnahme: USER/SUPER/KERNEL ist 1 Control mit 4 Zuständen
+    // Ausnahme: USER/SUPER/KERNEL ist 1 Control mit 4 ZustÃ¤nden
     // 00000000=Kernel, 00000100 = OFF, 00000200 = SUPER 00000300=USER
     // index-reihenfolge wie auf display
     ctrl := Add(Tpdp1170PanelControl.Create(_Led, self, pdp1170Led_USER_SUPER_KERNEL, 0, PDP1170PANEL_FLAG_NONE, 'USER')) ;
@@ -505,7 +505,7 @@ constructor Tpdp1170Panel.Create ;
       end ;
     end;
 
-    // Die meisten Switches haben nur zwei states, die Drehknöpfe haben 8
+    // Die meisten Switches haben nur zwei states, die DrehknÃ¶pfe haben 8
     ctrl := Add(Tpdp1170PanelControl.Create(_Switch, self, pdp1170Sw_Power, 0, {flags=}0, 'Power')) ;
     ctrl.AddState(Tpdp1170PanelControlState.Create(0, 'OFF')) ;
     ctrl.AddState(Tpdp1170PanelControlState.Create(1, 'POWER')) ;
@@ -556,11 +556,11 @@ constructor Tpdp1170Panel.Create ;
     ctrl := Add(Tpdp1170PanelControl.Create(_Switch, self, pdp1170Sw_DATA_SELECT, 0, PDP1170PANEL_FLAG_NONE, 'DATA SELECT')) ;
     ctrl.AddState(Tpdp1170PanelControlState.Create(0, 'BUS REG')) ;
     ctrl.AddState(Tpdp1170PanelControlState.Create(1, 'DATA PATHS')) ;
-    ctrl.AddState(Tpdp1170PanelControlState.Create(3, 'µADRS FPP/CPU')) ;
+    ctrl.AddState(Tpdp1170PanelControlState.Create(3, 'ÂµADRS FPP/CPU')) ;
     ctrl.AddState(Tpdp1170PanelControlState.Create(2, 'DISPLAY REGISTER')) ;
     ctrl.AddState(Tpdp1170PanelControlState.Create(0, 'BUS REG')) ;
     ctrl.AddState(Tpdp1170PanelControlState.Create(1, 'DATA PATHS')) ;
-    ctrl.AddState(Tpdp1170PanelControlState.Create(3, 'µADRS FPP/CPU')) ;
+    ctrl.AddState(Tpdp1170PanelControlState.Create(3, 'ÂµADRS FPP/CPU')) ;
     ctrl.AddState(Tpdp1170PanelControlState.Create(2, 'DISPLAY REGISTER')) ;
 
     Add(Tpdp1170PanelControl.Create(_Switch, self, pdp1170Sw_DATA, 0, PDP1170PANEL_FLAG_NONE, 'DATA 0')) ;
@@ -586,7 +586,7 @@ constructor Tpdp1170Panel.Create ;
     Add(Tpdp1170PanelControl.Create(_Switch, self, pdp1170Sw_DATA, 20, PDP1170PANEL_FLAG_NONE, 'DATA 20')) ;
     Add(Tpdp1170PanelControl.Create(_Switch, self, pdp1170Sw_DATA, 21, PDP1170PANEL_FLAG_NONE, 'DATA 21')) ;
 
-    // alle Data-Switches können nur ON/OFF sein
+    // alle Data-Switches kÃ¶nnen nur ON/OFF sein
     for i := 0 to ControlCount-1 do
       if Controls[i].group = pdp1170Sw_DATA then begin
         Controls[i].AddState(Tpdp1170PanelControlState.Create(0, 'OFF')) ;
@@ -620,13 +620,13 @@ procedure Tpdp1170Panel.SyncWithImplementor ;
     // Switches lesen
     OnSyncSwitchesFromImplementor(self) ;
 
-    //// LEDS in pdp1170panel updaten, die hardwaremässig durch Drehschalter definiert werden
+    //// LEDS in pdp1170panel updaten, die hardwaremÃ¤ssig durch Drehschalter definiert werden
 
     // ADRESS_SELECT
     ctrl := getControlByID(_Switch, pdp1170Sw_ADDRESS_SELECT, 0) ; assert(ctrl <> nil) ;
     switch_index := ctrl.implementor_active_state_index ;
-    // alle leds der gruppe pdp1170Led_ADDRESS_SELECT löschen, nur die eine setzen
-    // leds über gleichen "index" finden!
+    // alle leds der gruppe pdp1170Led_ADDRESS_SELECT lÃ¶schen, nur die eine setzen
+    // leds Ã¼ber gleichen "index" finden!
     for i := 0 to ControlCount - 1 do begin
       ctrl := Controls[i] ; // ctrl ist jetzt die LED!
       if ctrl.group = pdp1170Led_ADDRESS_SELECT then
@@ -635,13 +635,13 @@ procedure Tpdp1170Panel.SyncWithImplementor ;
         else
           ctrl.implementor_active_state_index := 0 //LED OFF
     end;
-    // nochmal, für DATA_SELECT.
+    // nochmal, fÃ¼r DATA_SELECT.
     ctrl := getControlByID(_Switch, pdp1170Sw_DATA_SELECT, 0) ; assert(ctrl <> nil) ;
     switch_index := ctrl.implementor_active_state_index ;
     // index 0..7 auf led 0..3 abbilden
     switch_index := switch_index mod 4 ;
-    // alle leds der gruppe pdp1170Led_DATA_SELECT löschen, nur die eine setzen
-    // leds über gleichen "index" finden!
+    // alle leds der gruppe pdp1170Led_DATA_SELECT lÃ¶schen, nur die eine setzen
+    // leds Ã¼ber gleichen "index" finden!
     for i := 0 to ControlCount - 1 do begin
       ctrl := Controls[i] ; // ctrl ist jetzt die LED!
       if ctrl.group = pdp1170Led_DATA_SELECT then
@@ -654,7 +654,7 @@ procedure Tpdp1170Panel.SyncWithImplementor ;
     // LEDs setzen
     OnSyncLedsToImplementor(self) ;
 
-    // Löse die Change-Events aus
+    // LÃ¶se die Change-Events aus
     for i := 0 to ControlCount - 1 do begin
       ctrl := Controls[i] ;
       if ctrl.active_state_index <> ctrl.implementor_active_state_index then begin

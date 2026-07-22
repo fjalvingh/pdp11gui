@@ -45,7 +45,7 @@ Das Flag RUNMODE steuert das verhalten von nnnG (START)und P (Proceed)
 }
 
 {
-  Simuliert eine rudimentäre PDP-11 ODT console ( wie 11/73).
+  Simuliert eine rudimentÃ¤re PDP-11 ODT console ( wie 11/73).
   Sie dient nur zum Test der GUI
 
   - Deposit, , mit /n, /g
@@ -85,7 +85,7 @@ globals:
 
  Zusatz zur Documentation, ausgetestet von Steve Maddison, www.cosam.org:
 
- 2008/9/5 Jörg Hoppe <j_hoppe@t-online.de>:
+ 2008/9/5 JÃ¶rg Hoppe <j_hoppe@t-online.de>:
 > > - odd addresses? ("1001/")
 
 They're rejected, and your response is correct too:
@@ -192,10 +192,10 @@ type
 
   TFakePDP11ODT = class(TFakePDP11Generic)
     private
-      LastLocationExpr: string ; // letzte geöffnete Location
-      NextLocationExpr: string ; // logisch "nächste" Addresse
+      LastLocationExpr: string ; // letzte geÃ¶ffnete Location
+      NextLocationExpr: string ; // logisch "nÃ¤chste" Addresse
 
-      LastLocationAddr: TMemoryAddress ; // letzte geöffnete Addresse
+      LastLocationAddr: TMemoryAddress ; // letzte geÃ¶ffnete Addresse
 
       procedure print(s:string) ;
 
@@ -213,7 +213,7 @@ type
 
       TheState: TFakePDP11ODTState ;
 
-      // Rüdiger Kurt 2016: hat Robotron A6402 mit K1630 CPU,
+      // RÃ¼diger Kurt 2016: hat Robotron A6402 mit K1630 CPU,
       // PDP-11 Nachbau, der als ODT prompt nicht "@", sondern "@ " zeigt.
       IsK1630: boolean ;
 
@@ -248,7 +248,7 @@ constructor TFakePDP11ODT.Create(mat: TMemoryAddressType) ;
     IsK1630 := false ;
   end;
 
-// Speicher löschen
+// Speicher lÃ¶schen
 procedure TFakePDP11ODT.PowerOn ;
   var i: integer ;
   begin
@@ -282,7 +282,7 @@ function TFakePDP11ODT.SerialReadByte(var b: byte) : boolean ;
     if SerialOutBuff = '' then
       result := false // buffer leer: nix zu lesen da!
     else begin
-      // ältestes Zeichen zurückgeben
+      // Ã¤ltestes Zeichen zurÃ¼ckgeben
       b := byte(SerialOutBuff[1]) ;
       SerialOutBuff := Copy(SerialOutBuff, 2, maxint) ;
       result := true ;
@@ -295,8 +295,8 @@ procedure TFakePDP11ODT.print(s:string) ;
   end;
 
 
-// Prompt "@" drucken und alles für neue Zeile vorbereiten.
-// das "@"  kann auch unterdrückt werden, siehe <LF>-Problematik.
+// Prompt "@" drucken und alles fÃ¼r neue Zeile vorbereiten.
+// das "@"  kann auch unterdrÃ¼ckt werden, siehe <LF>-Problematik.
 procedure TFakePDP11ODT.doPrompt(print_prompt:boolean=true) ;
   begin
     if print_prompt then begin
@@ -311,12 +311,12 @@ procedure TFakePDP11ODT.doPrompt(print_prompt:boolean=true) ;
     TheState := odtstatePrompt ;
   end;
 
-// Wert einer Adresse anzeigen. addrexpr muss ein gültiger
-// addressausdruck sein: octal, oder R0..R7, $0..$§7 $S,RS, oder ähnlich
+// Wert einer Adresse anzeigen. addrexpr muss ein gÃ¼ltiger
+// addressausdruck sein: octal, oder R0..R7, $0..$Â§7 $S,RS, oder Ã¤hnlich
 //
 // Ausserdem wird hier gleich "next_location" berechnet.
-// das ist "+2" für octal adressen, "+! und rollaround für Regsiter,
-// noop für PSW
+// das ist "+2" fÃ¼r octal adressen, "+! und rollaround fÃ¼r Regsiter,
+// noop fÃ¼r PSW
 procedure TFakePDP11ODT.doOpenLocation(addrexpr:string) ;
   var
     c: char ;
@@ -347,7 +347,7 @@ procedure TFakePDP11ODT.doOpenLocation(addrexpr:string) ;
       LastLocationExpr := Addr2OctalStr(LastLocationAddr) ;
       nextlocationaddr := LastLocationAddr ; // init
       if LastLocationAddr.val < PhysicalIopageBaseAddr + _17776 then
-        nextlocationaddr.val := LastLocationAddr.val+2 // +=2 für octal adressen
+        nextlocationaddr.val := LastLocationAddr.val+2 // +=2 fÃ¼r octal adressen
       else
         nextlocationaddr.val := 0 ; // roll around
 
@@ -362,7 +362,7 @@ procedure TFakePDP11ODT.doOpenLocation(addrexpr:string) ;
         LastLocationAddr.val := PhysicalIopageBaseAddr + _17776 ; // $077, Rxxx477: alles PSW!
         addrexpr := 'RS' ;
         LastLocationExpr := 'RS' ;
-        NextLocationExpr := 'RS' ; // keine nächste Adresse
+        NextLocationExpr := 'RS' ; // keine nÃ¤chste Adresse
       end else begin
         // wie "R0", "$6", nur die letzte Ziffer beachten
         c := addrexpr[length(addrexpr)] ;
@@ -370,7 +370,7 @@ procedure TFakePDP11ODT.doOpenLocation(addrexpr:string) ;
           'S': begin
             LastLocationAddr.val := PhysicalIopageBaseAddr + _17776 ;  // RS -> PSW
             LastLocationExpr := 'RS' ;
-            NextLocationExpr := 'RS' ; // keine nächste Adresse
+            NextLocationExpr := 'RS' ; // keine nÃ¤chste Adresse
           end ;
           '0'..'7': begin
             i := ord(c) - ord('0') ;
@@ -402,7 +402,7 @@ procedure TFakePDP11ODT.doOpenLocation(addrexpr:string) ;
 
 
 // offene Adresse "last_location" schliessen
-// wenn valexpr <> '': prüfen und neuen Wert schreiben
+// wenn valexpr <> '': prÃ¼fen und neuen Wert schreiben
 procedure TFakePDP11ODT.doCloseLocation(valexpr:string) ;
   var
     val: dword ;
@@ -558,7 +558,7 @@ function TFakePDP11ODT.SerialWriteByte(b: byte) : boolean ;
           // do NOT echo <LF> !
           // ZUS: "next_location" wurde schon in "doOpenLocation() berechnet
           // wenn next_location = 0: roll around von max addr to 0:
-          // LF verhält sich dann aber wie <CR>!
+          // LF verhÃ¤lt sich dann aber wie <CR>!
           case TheState of
             odtstateOpen, odtstateEnterLocationContents: begin
               if TheState = odtstateOpen then

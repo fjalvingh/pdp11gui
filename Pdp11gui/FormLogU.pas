@@ -109,7 +109,7 @@ begin
 //    if UseLog then begin
     result := String2PrintableText(s, true) ;
 
-    // Für Log Form: anderer Zeitstempel
+    // FÃ¼r Log Form: anderer Zeitstempel
     DateTimeToString(datestr, 'ddd hh:nn:ss.zzz', Now) ;
     result := Format('[%d: %s] %s', [LogMemo.Lines.Count+1, datestr, result]) ;
 end;
@@ -140,7 +140,7 @@ procedure TFormLog.Log(s:string) ;
 
 
 // String in Column "colidx" loggen
-// Wenn String = '$HEADERS': Überschriftenzeile fabrizieren
+// Wenn String = '$HEADERS': Ãœberschriftenzeile fabrizieren
 procedure TFormLog.LogStrCol(aColidx: TLogColumnIndex ; logstr: string) ;
 
   const
@@ -153,7 +153,7 @@ procedure TFormLog.LogStrCol(aColidx: TLogColumnIndex ; logstr: string) ;
       result := (ord(colidx) * columwidth)+ 1 ;
     end;
 
-  // leere Zeile, mit Spaltenspearatoren und viel Platz zurückgeben
+  // leere Zeile, mit Spaltenspearatoren und viel Platz zurÃ¼ckgeben
   procedure init_putstr(var buff:string) ;
     var i: Integer ;
       colidx: TLogColumnIndex ;
@@ -186,18 +186,18 @@ procedure TFormLog.LogStrCol(aColidx: TLogColumnIndex ; logstr: string) ;
     DateTimeToString(datestr, 'hh:nn:ss', Now) ;
     lineinfostr := Format('[%4d: %s = %7.0n]', [LogFileLineCount, datestr, 1.0*GetTickCount]) ;
 
-    // erstmal 1K Zeile leer füllen
+    // erstmal 1K Zeile leer fÃ¼llen
     init_putstr(linebuff) ;
     // Titelzeile ausgeben?
     if (LogFileLineCount mod LogFileTitleIntervall) = 0 then begin
       for colidx := low(TLogColumnIndex) to high(TLogColumnIndex) do begin
         s := GetEnumName(TypeInfo(TLogColumnIndex), Integer(colidx)) ;
         s := Copy(s, 1+length('LogCol_'), maxint) ; // immer gleiches Prefix weg
-        s := Copy(s, 1, columwidth-1) ; // Auf Platz verkürzen
+        s := Copy(s, 1, columwidth-1) ; // Auf Platz verkÃ¼rzen
         putstr(linebuff, colidx, s) ;
       end ;
       linebuff := Trim(linebuff) ;
-      // Links keine lineinfo, dafür gleich langer Leerstring
+      // Links keine lineinfo, dafÃ¼r gleich langer Leerstring
       s := lineinfostr ;
       for i := 1 to length(s) do s[i] := '-' ;
       writeln(LogFile, s + ' ' + linebuff) ;
@@ -226,7 +226,7 @@ procedure TFormLog.FormCreate(Sender: TObject);
       try
         if not GetEnv('TEMP', tmpdir) then
           tmpdir := 'C:\' ; // panic, does  not work on win7/vista
-        // Ungültig unter Vista !!!
+        // UngÃ¼ltig unter Vista !!!
         AssignFile(LogFile, tmpdir + '\' + Connection_LogIoStream_Filename) ;
         Rewrite(LogFile) ;
       except

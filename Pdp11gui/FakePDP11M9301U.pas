@@ -23,7 +23,7 @@ unit FakePDP11M9301U;
 
 
 {
-  Simuliert eine rudiment‰re PDP-11 mit M9301 console emulator.
+  Simuliert eine rudiment√§re PDP-11 mit M9301 console emulator.
   Abgeleitet von M9312
   }
 

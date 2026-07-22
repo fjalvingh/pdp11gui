@@ -91,7 +91,7 @@ uses
 constructor TFormMemoryTable.Create(AOwner: TComponent) ;
   begin
     inherited Create(AOwner) ;
-    MemoryGrid.OnUpdate := UpdateDisplay ; // wenn sich das grid ändert, muss diese Form reagieren
+    MemoryGrid.OnUpdate := UpdateDisplay ; // wenn sich das grid Ã¤ndert, muss diese Form reagieren
   end;
 
 destructor TFormMemoryTable.Destroy ;
@@ -114,7 +114,7 @@ procedure TFormMemoryTable.UpdateDisplay(Sender: TObject);
   var
     mc: TMemoryCell ;
   begin
-    if Sender <> MemoryGrid then // hat der Frame das Update ausgelöst?
+    if Sender <> MemoryGrid then // hat der Frame das Update ausgelÃ¶st?
       MemoryGrid.UpdateDisplay  // nein: update frame, er updated wieder die Form
     else begin
       mc := MemoryGrid.memorycellgroup.Cell(0) ;
@@ -123,10 +123,10 @@ procedure TFormMemoryTable.UpdateDisplay(Sender: TObject);
 
       Caption := setFormCaptionInfoField(Caption, Addr2OctalStr(mc.addr)) ;
 
-      // Das MemoryGrid ist alClient und möchte in einer bestimmten Grösse angezeigt werden,
+      // Das MemoryGrid ist alClient und mÃ¶chte in einer bestimmten GrÃ¶sse angezeigt werden,
       // tue ihm den Gefallen.
       ClientHeight :=  MemoryGrid.optimal_height + PanelT.Height ;
-      // nur vergrössern
+      // nur vergrÃ¶ssern
       // normal ist width statisch, can aber zu klein sein, wenn
       // "Windows font magnification" auf > 100% ist
       if MemoryGrid.optimal_width > CLientWidth then
@@ -179,7 +179,7 @@ procedure TFormMemoryTable.SetStartAddrButtonClick(Sender: TObject);
     // neue mcg: neu mit grid verbinden
     MemoryGrid.ConnectToMemoryCellGroup(MemoryGrid.memorycellgroup) ;
     // examine nur die zellen mit edit_value =ILLEGAL
-    // nein! auf M9312 console emulator führt jede nicht vorhandene Adresse zum stop
+    // nein! auf M9312 console emulator fÃ¼hrt jede nicht vorhandene Adresse zum stop
 //    MemoryGrid.ExamineCells({unknown_only}true) ;
     UpdateDisplay(self) ;
   end{ "procedure TFormMemoryTable.SetStartAddrButtonClick" } ;

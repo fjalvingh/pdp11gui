@@ -23,7 +23,7 @@ unit FakePDP11M9312U;
 
 
 {
-  Simuliert eine rudimentäre PDP-11 mit M9312/M9301 console emulator.
+  Simuliert eine rudimentÃ¤re PDP-11 mit M9312/M9301 console emulator.
 
   Beschreibung des console emulators mit M9301 ROMS:
   "PDP-11-34 system user's manual (Jul 1977, EK-11034-UG-001).pdf"
@@ -42,7 +42,7 @@ sondern:
   000000 174300 165212 <loaded addr>
 
 
-Der M9312 console emulator wird durch CPU aus boot ROM ausgeführt
+Der M9312 console emulator wird durch CPU aus boot ROM ausgefÃ¼hrt
 und ist unglaublich schwach:
 
 - nur "load adress", EXAM, DEPOSIT, START
@@ -55,16 +55,16 @@ und ist unglaublich schwach:
 
 - HALT bei BUS ERRORs = nicht existierenden Adressen,
 
-- nur START möglich, kein HALT, RESET oder INIT
-- bei HALT nur restart über reboot auf front panel
-- meldet sich nicht bei HALT, nur bei REBOOT über front panel
+- nur START mÃ¶glich, kein HALT, RESET oder INIT
+- bei HALT nur restart Ã¼ber reboot auf front panel
+- meldet sich nicht bei HALT, nur bei REBOOT Ã¼ber front panel
 
 
 
 Sonderfunktion:
 Bei einem simulierten HALT wird der Text ausgegben:
 "[Now press <ESC> to simulate a <Ctrl>-<BOOT> on KY11-LB programmer's console]"
-Ein ESC führt dann ein RESET durch.
+Ein ESC fÃ¼hrt dann ein RESET durch.
 
 Der echte console-treiber "ConsolePDP11M9312" muss ein timeout der Ausgabe erkennen und
 dann eine Warnmeldung ausgeben:
@@ -105,7 +105,7 @@ type
   TFakePDP11M9312 = class(TFakePDP11Generic)
     private
       // Adresse, wie mit "L" geladen
-      LoadedAddress: TMemoryAddress ; // letzte geöffnete Addresse
+      LoadedAddress: TMemoryAddress ; // letzte geÃ¶ffnete Addresse
       LastLoadedAddressUse: char ; // grund, warum LastLoadedAdress
       // benutzt wurde. 2x E oder 2x "D" bewirkt AutoInc
 
@@ -163,7 +163,7 @@ constructor TFakePDP11M9312.Create ;
 
   end;
 
-// Speicher löschen
+// Speicher lÃ¶schen
 procedure TFakePDP11M9312.PowerOn ;
   var i: integer ;
   begin
@@ -184,7 +184,7 @@ procedure TFakePDP11M9312.Reset ;
     SerialInBuff := '' ;
 
     LoadedAddress.mat := matPhysical16 ;
-    LoadedAddress.val := _165212 ; //  tatsächlich, das ist der Startwert!
+    LoadedAddress.val := _165212 ; //  tatsÃ¤chlich, das ist der Startwert!
     // und der Wert nach jedem Fehler!
     LastLoadedAddressUse := 'X' ; // invalid
 
@@ -199,7 +199,7 @@ function TFakePDP11M9312.SerialReadByte(var b: byte) : boolean ;
     if SerialOutBuff = '' then
       result := false // buffer leer: nix zu lesen da!
     else begin
-      // ältestes Zeichen zurückgeben
+      // Ã¤ltestes Zeichen zurÃ¼ckgeben
       b := byte(SerialOutBuff[1]) ;
       SerialOutBuff := Copy(SerialOutBuff, 2, maxint) ;
       result := true ;
@@ -220,7 +220,7 @@ procedure TFakePDP11M9312.doInputError(with_registers:boolean) ;
 
     doPrompt(with_registers) ; // alten addr anzeigen
 
-    LoadedAddress.val := _165212 ; //  tatsächlich, das ist der nach normalem Fehler!
+    LoadedAddress.val := _165212 ; //  tatsÃ¤chlich, das ist der nach normalem Fehler!
 
 //    Reset ;
   end;
@@ -240,7 +240,7 @@ procedure TFakePDP11M9312.doHalt ;
 
 
 // Der console emulator ist selber auf HALT gelaufen.
-// auf echter PDP-11 muss er über console panel neu gebootet werden.
+// auf echter PDP-11 muss er Ã¼ber console panel neu gebootet werden.
 procedure TFakePDP11M9312.doConsoleEmulatorErrorHALT(msg:string) ;
   begin
     print(CHAR_CR+CHAR_LF) ;
@@ -251,7 +251,7 @@ procedure TFakePDP11M9312.doConsoleEmulatorErrorHALT(msg:string) ;
 
 
 // Prompt "@" drucken, ggf mit vollem Register-output
-// keine Funktion, wenn die CPU läuft.
+// keine Funktion, wenn die CPU lÃ¤uft.
 procedure TFakePDP11M9312.doPrompt(with_registers:boolean=false) ;
   const
     // Diese Sequenz wird vor Registeroutput und vor Q ausgegeben:
@@ -259,7 +259,7 @@ procedure TFakePDP11M9312.doPrompt(with_registers:boolean=false) ;
     LONG_NEWLINE_SEQ = CHAR_LF+CHAR_CR+CHAR_CR+CHAR_CR+CHAR_CR+CHAR_CR+CHAR_CR+CHAR_CR
             +CHAR_CR+CHAR_CR+CHAR_CR+CHAR_CR+CHAR_CR+CHAR_CR ;
     //var
-    //regaddr: TMemoryAddress ; // letzte geöffnete Addresse
+    //regaddr: TMemoryAddress ; // letzte geÃ¶ffnete Addresse
     //regval: dword ;
   begin
     SerialInBuff := '' ;
@@ -315,7 +315,7 @@ procedure TFakePDP11M9312.doLoadAddress(addrexpr:string) ;
     i: integer ;
     addr: TMemoryAddress ;
   begin
-    // addrexpr ist octalstring, numerisch aber ungeprüft
+    // addrexpr ist octalstring, numerisch aber ungeprÃ¼ft
     // nur die rechten 6 Zahlen verwenden
     i := length(addrexpr) ;
     addrexpr := Copy(addrexpr, i-5, maxint) ;
@@ -325,7 +325,7 @@ procedure TFakePDP11M9312.doLoadAddress(addrexpr:string) ;
       addr.val := addr.val and $ffff ;
 
       LoadedAddress.val := addr.val ;
-      LastLoadedAddressUse := 'L' ; // vor nächstem Exam/Deposit nicht erhöhen
+      LastLoadedAddressUse := 'L' ; // vor nÃ¤chstem Exam/Deposit nicht erhÃ¶hen
     except
       doInputError({with_registers=}false) ; // keine Registeranzeige bei falscher octalzahl
     end;
@@ -341,7 +341,7 @@ function TFakePDP11M9312.isLoadedAddrValid: boolean ;
     // muss daten enthalten,
     // darf nicht im GPR-Space liegen
 
-    // Prüfung, ob Adresse verwendbar ist
+    // PrÃ¼fung, ob Adresse verwendbar ist
     if odd(LoadedAddress.val) then begin
       result := false ;
       doConsoleEmulatorErrorHALT('odd address') ;
@@ -352,7 +352,7 @@ function TFakePDP11M9312.isLoadedAddrValid: boolean ;
       doConsoleEmulatorErrorHALT('GPR space') ; // HALT wegen error
     end ;
 
-    // Ein Zugriff, als Prüfung auf Buserror->HALT
+    // Ein Zugriff, als PrÃ¼fung auf Buserror->HALT
     try
       val := getMem(LoadedAddress) ;
     except
@@ -362,7 +362,7 @@ function TFakePDP11M9312.isLoadedAddrValid: boolean ;
   end { "function TFakePDP11M9312.isLoadedAddrValid" } ;
 
 
-// ggf die Adresse um zwei erhöhen, mit rollaround von
+// ggf die Adresse um zwei erhÃ¶hen, mit rollaround von
 // 177776 nach 0
 procedure TFakePDP11M9312.doIncLoadedAddress(curuse: char) ;
   begin
@@ -374,7 +374,7 @@ procedure TFakePDP11M9312.doIncLoadedAddress(curuse: char) ;
         LoadedAddress.val := 0
       else LoadedAddress.val := LoadedAddress.val + 2 ;
     end;
-    // bei nächstem EXAM/DEPOSIT die Adresse erhöhen
+    // bei nÃ¤chstem EXAM/DEPOSIT die Adresse erhÃ¶hen
     LastLoadedAddressUse := curuse ;
   end ;
 
@@ -426,7 +426,7 @@ procedure TFakePDP11M9312.doDEPOSIT(valexpr: string) ;
     if not isLoadedAddrValid then
       Exit ; // Fehler schon ausgegeben
 
-    // valexpr ist octalstring, numerisch aber ungeprüft
+    // valexpr ist octalstring, numerisch aber ungeprÃ¼ft
     // nur die rechten 6 Zahlen verwenden
     i := length(valexpr) ;
     valexpr := Copy(valexpr, i-5, maxint) ;
@@ -460,7 +460,7 @@ procedure TFakePDP11M9312.doSTART ;
   end;
 
 
-// Kommandoeingabe prüfen, und ggf ausführne
+// Kommandoeingabe prÃ¼fen, und ggf ausfÃ¼hrne
 // result: true= OK
 // cmd wie "L 1234" oder "E " oder "D 7654" oder "S"
 function TFakePDP11M9312.doCommand(cmd:string ; check_only: boolean): boolean ;
@@ -492,8 +492,8 @@ function TFakePDP11M9312.doCommand(cmd:string ; check_only: boolean): boolean ;
   end{ "function TFakePDP11M9312.doCommand" } ;
 
 
-// checken, ob "s" ein gültiges boot command ist
-// Format: zwei chars für device,
+// checken, ob "s" ein gÃ¼ltiges boot command ist
+// Format: zwei chars fÃ¼r device,
 // dann Zahlenstring
 function TFakePDP11M9312.isBootCommand(s: string) : boolean ;
   var
@@ -513,7 +513,7 @@ function TFakePDP11M9312.isBootCommand(s: string) : boolean ;
       Exit ; // immer 2stellig
 
     // Liste wie in "M9312 bootstrap-terminator module technical manual (Mar 1981, EK-M9312-TM-003).pdf"
-    // page 3-4. ist aber abh. von ROM Bestückung
+    // page 3-4. ist aber abh. von ROM BestÃ¼ckung
     if (devicecode <> 'DL')
             and (devicecode <> 'DX')
             and (devicecode <> 'DK')
@@ -530,12 +530,12 @@ function TFakePDP11M9312.isBootCommand(s: string) : boolean ;
             and (devicecode <> 'DS')
             and (devicecode <> 'MS')
             and (devicecode <> 'DD') then
-      Exit ; // ungültiges device
+      Exit ; // ungÃ¼ltiges device
 
     try
       OctalStr2Dword(devicenumber, 16) ;
     except
-      Exit ; // ungültige nummer
+      Exit ; // ungÃ¼ltige nummer
     end;
     result := true ;
   end{ "function TFakePDP11M9312.isBootCommand" } ;
@@ -564,22 +564,22 @@ function TFakePDP11M9312.SerialWriteByte(b: byte) : boolean ;
 
     // Alle anderen States
 
-    { Eingabe an String anhängen. Danach prüfen, ob Eingabe fertig
+    { Eingabe an String anhÃ¤ngen. Danach prÃ¼fen, ob Eingabe fertig
 
       Eingabeprozessor, wie im ROM implmenetiert:
       Zeilenende nur mit ^M = #13 = CR
 
-      RUBOUT = $7f: Zeile löschen
+      RUBOUT = $7f: Zeile lÃ¶schen
 
       1. Eingabezeichen nach Prompt: wird immer geechot + gespiechert,
-         löst nie Fehler aus.
-      2. Eingabezeichen nach prompt: löst verarbeitung aus
+         lÃ¶st nie Fehler aus.
+      2. Eingabezeichen nach prompt: lÃ¶st verarbeitung aus
          Wenn nicht SPACE: Registerdump+prompt
          (auch ^J = LF)
          Wenn illegal opcode: Regsiterdump+prompt
 
          ACHTUNG: 2stellige Bootcodes hier beachten!!!!
-         "DL" -> nicht ungültiges DEPOSIT, sodnern Boot RL0
+         "DL" -> nicht ungÃ¼ltiges DEPOSIT, sodnern Boot RL0
          "DL0", "DL01", "DL000" ist erlaubt
          bei illegalem Bootcode "DC": prompt
           (mit Registerdump, wenn noch ein ROM-Sockel leer ist!!!
@@ -592,14 +592,14 @@ function TFakePDP11M9312.SerialWriteByte(b: byte) : boolean ;
       illegal char = sofort neue Prompt, aber kein Registerdump?
      }
 
-    // RUBOUT löscht die Eingabe
+    // RUBOUT lÃ¶scht die Eingabe
     if c = #$7f then begin
       SerialInBuff := '' ;
       doPrompt ;
     end else if c = CHAR_CR then begin
-      // Befehlszeile ausführen
+      // Befehlszeile ausfÃ¼hren
 
-      // das 1. CR wird einfach geechot. Das 2te führt dann zur Ausführung
+      // das 1. CR wird einfach geechot. Das 2te fÃ¼hrt dann zur AusfÃ¼hrung
       if SerialInBuff = '' then begin
         SerialInBuff := c ;
       end else if doCommand(SerialInBuff, {check=}false) then begin
@@ -614,7 +614,7 @@ function TFakePDP11M9312.SerialWriteByte(b: byte) : boolean ;
       end;
     end { "if c = CHAR_CR" }
     else if (c = ' ') and (SerialInBuff = 'E') then begin
-      // Ausnahme: 'E ' bewirkt Examin, ohne dass CR nötig ist
+      // Ausnahme: 'E ' bewirkt Examin, ohne dass CR nÃ¶tig ist
       SerialInBuff := SerialInBuff + c ;
       print(c) ;
       doEXAM ;
@@ -628,11 +628,11 @@ function TFakePDP11M9312.SerialWriteByte(b: byte) : boolean ;
         end;
         1: begin
           // 2. Zeichen in den Buffer
-          // prüfen, ob opcode oder bootcode gültig
+          // prÃ¼fen, ob opcode oder bootcode gÃ¼ltig
           SerialInBuff := SerialInBuff + c ;
           print(c) ;
           valid_command:= false ;
-          // kann das noch ein gültiger Befehl werden?
+          // kann das noch ein gÃ¼ltiger Befehl werden?
           if doCommand(SerialInBuff, {check=}true) then
             valid_command := true
           else if isBootCommand(SerialInBuff) then
@@ -641,7 +641,7 @@ function TFakePDP11M9312.SerialWriteByte(b: byte) : boolean ;
             doInputError({with_regsiters=}true) ; // leert SerialInBuff
           end;
         end{ "case length(SerialInBuff) of 1:" } ;
-        else begin // octalzeichen anfügen
+        else begin // octalzeichen anfÃ¼gen
           SerialInBuff := SerialInBuff + c ;
           print(c) ;
           if not CharInSet(c, ['0'..'7']) then

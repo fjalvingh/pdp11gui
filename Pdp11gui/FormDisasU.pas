@@ -22,9 +22,9 @@ unit FormDisasU;
 }
 
 {
-In der Maske: Start und len frei w�hlbar
+In der Maske: Start und len frei wählbar
 
-Wenn Aufruf durch Form Execution  �ber showExecutionLine():
+Wenn Aufruf durch Form Execution  über showExecutionLine():
 len auf 10, Start so setzen, dass PC mittig im listing
 
 }
@@ -111,7 +111,7 @@ uses
 // (Neuimplementierung in Pascal, oder eine .so aus derselben Quelle wie die
 // DLL). Siehe LINUX_PORT_TODO.md.
 procedure Disas11 (
-        srcbuff: PAnsiChar;        // der R�ckgabepuffer
+        srcbuff: PAnsiChar;        // der Rückgabepuffer
         srcbuff_size: integer ;
         coremem: PAnsiChar ; // array of byte, 65K
         coremem_valid: PAnsiChar; // array of flags. 1 for valid memory cells
@@ -127,7 +127,7 @@ procedure Disas11 (
 (** )
 // disable for aqtime analysis
 procedure Disas11 (
-        srcbuff: PChar;        // der R�ckgabepuffer
+        srcbuff: PChar;        // der Rückgabepuffer
         srcbuff_size: integer ;
         coremem: PChar ; // array of byte, 65K
         coremem_valid: PChar; // array of flags. 1 for valid memory cells
@@ -202,7 +202,7 @@ procedure TFormDisas.DisasSourceEditorSpecialLineColors(Sender: TObject; Line: i
     end ;
   end{ "procedure TFormDisas.DisasSourceEditorSpecialLineColors" } ;
 
-// Die gerade ausgef�hrte Zeile markieren
+// Die gerade ausgeführte Zeile markieren
 procedure TFormDisas.showExecutionLine(n:integer) ;
   begin
     dec(n) ; // Lines[] ab 0 !
@@ -213,11 +213,11 @@ procedure TFormDisas.showExecutionLine(n:integer) ;
 
 // Speicherbereich in Source umwandeln
 // input: startaddr: Anfang  des zu disassemblenden Speicherbereich.
-//    L�nge wird durch MemoryCellgroup.Count vorgegeben
-// useCodeCache: wenn m�glich, schon bekannten code nicht neu aus maschine in die memortycellgroup laden.
-// aStartAddr, aEndAddr: Einschr�nkung des disassembierten Bereichs (fine tuning)
+//    Länge wird durch MemoryCellgroup.Count vorgegeben
+// useCodeCache: wenn möglich, schon bekannten code nicht neu aus maschine in die memortycellgroup laden.
+// aStartAddr, aEndAddr: Einschränkung des disassembierten Bereichs (fine tuning)
 // aPcaddr: Position des Program counters
-// R�ckgabe: in sourcelines: assembler code
+// Rückgabe: in sourcelines: assembler code
 // pcline: zeile mit program counter in sourcelines
 //    -1, wenn not found
 procedure TFormDisas.Disassemble(aStartaddr, aEndaddr, aPcaddr: TMemoryAddress ;
@@ -239,7 +239,7 @@ procedure TFormDisas.Disassemble(aStartaddr, aEndaddr, aPcaddr: TMemoryAddress ;
     assert(aPcaddr.mat = matVirtual) ;
 
     // Memoryzellen in Coremem-Array schreiben
-    for i := 0 to coremem_size - 1 do // erstmal allen Speicher als ung�ltig markieren
+    for i := 0 to coremem_size - 1 do // erstmal allen Speicher als ungültig markieren
       coremem_valid[i] := #0 ;
 
     for i := 0 to Memorycellgroup.Count - 1 do begin
@@ -295,7 +295,7 @@ procedure TFormDisas.CheckInput ;
 procedure TFormDisas.UpdateDisplay ;
   var
     sourcelines: TStringList ;
-    codeline: integer ; // Zeile im Listing, das "codeaddr" enth�lt. -1, wenn not found
+    codeline: integer ; // Zeile im Listing, das "codeaddr" enthält. -1, wenn not found
     visibleStartAddr: TMemoryAddress ; // Startadresse des sichtabren Listings
   begin
     sourcelines := TStringList.Create ;
@@ -309,8 +309,8 @@ procedure TFormDisas.UpdateDisplay ;
       visibleStartAddr := StartAddr ;
       Disassemble(visibleStartAddr, EndAddr, CodeAddr, UseCacheCheckBox.Checked, sourcelines, codeline) ;
       // wenn der PC (CodeAddr) im Listing nicht aufzufinden ist:
-      // (zB weil Bin�rdaten davor als langer Befehl interpretiert werden)
-      // start adresse schrittweise um zwei erh�hen, nochmal probieren
+      // (zB weil Binärdaten davor als langer Befehl interpretiert werden)
+      // start adresse schrittweise um zwei erhöhen, nochmal probieren
       if CodeAddr.val <> MEMORYCELL_ILLEGALVAL then
         while (codeline < 0) and (visibleStartAddr.val < CodeAddr.val) do begin
           visibleStartAddr.val := visibleStartAddr.val+2 ;
@@ -323,7 +323,7 @@ procedure TFormDisas.UpdateDisplay ;
       showExecutionLine(codeline);
 
       StartAddrEdit.Text := Addr2OctalStr(StartAddr) ;
-      TheRegistry.Save(StartAddrEdit); // hier gepr�fte Werte
+      TheRegistry.Save(StartAddrEdit); // hier geprüfte Werte
       EndAddrEdit.Text := Addr2OctalStr(EndAddr) ;
       TheRegistry.Save(EndAddrEdit);
 
@@ -344,7 +344,7 @@ procedure TFormDisas.ExamineAll(useCodeCache: boolean) ;
     assert(EndAddr.mat = matVirtual) ;
 
     // hier optimierung: memorycellgroup verschieben,
-    // un �berlappende Addesse nicht neu laden
+    // un überlappende Addesse nicht neu laden
     // ODER: alles neu laden
 
     n := (EndAddr.val - StartAddr.val) div 2 + 1 ; // calc new address count
@@ -360,7 +360,7 @@ procedure TFormDisas.UseCacheCheckBoxClick(Sender: TObject);
   end;
 
 
-// f�r externen Zugriff: Anzeige f�r bestimmte Zieladresse aufbauen
+// für externen Zugriff: Anzeige für bestimmte Zieladresse aufbauen
 // newaddr: virtuelle Adresse
 procedure TFormDisas.ShowNewPcAddr(newaddr_v: TMemoryAddress) ;
   begin
@@ -368,7 +368,7 @@ procedure TFormDisas.ShowNewPcAddr(newaddr_v: TMemoryAddress) ;
     CodeAddr := newaddr_v ;
     if CodeAddr.val = MEMORYCELL_ILLEGALVAL then
       Exit ;  // zB M9312 console emulator kennt den PC nicht: dann zeige ihn auch nicht an,
-    // und ver�ndere den angezeigten Adressbereich nicht
+    // und verändere den angezeigten Adressbereich nicht
 
     // Dargestellten Bereich an Fenster um PC herum anpassen
 
@@ -380,7 +380,7 @@ procedure TFormDisas.ShowNewPcAddr(newaddr_v: TMemoryAddress) ;
       StartAddr.val := CodeAddr.val - (2 * disas_pcaddr_window_size) div 2 ;
     EndAddr.val := StartAddr.val + (2 * disas_pcaddr_window_size) ;
 
-    // Fenster wird bei jedem Stop aktualisiert. Man muss es aber abschalten k�nnen
+    // Fenster wird bei jedem Stop aktualisiert. Man muss es aber abschalten können
     if Visible then begin
       ExamineAll(UseCacheCheckBox.Checked) ;
       UpdateDisplay ;
@@ -437,20 +437,20 @@ procedure TFormDisas.ConnectToMemoryCells(mcg: TMemoryCellGroup) ;
     while Memorycellgroup.Count < n do
       Memorycellgroup.Add(0) ; // adressen werden erst nach PC-Stop festgelegt
 
-    // callback bei Zellen�nderung
+    // callback bei Zellenänderung
     mcg.OnMemoryCellChange := memoryCellChange ;
 
   end{ "procedure TFormDisas.ConnectToMemoryCells" } ;
 
 
-// wird von der memorycellgroup aufgerufen, wenn sich eine Zelle spontan �ndert
+// wird von der memorycellgroup aufgerufen, wenn sich eine Zelle spontan ändert
 procedure TFormDisas.memoryCellChange(Sender { = memorycellgroup}: TObject; memorycell: TMemoryCell) ;
   begin
     memorycell.edit_value := memorycell.pdp_value ;
     if Visible then
       // Achtung: wenn von einem anderen Fenster ein ganzer programblock geladen wird
-      // wird dieses callback f�r jede einzelne Zelle aufgerufen.
-      // daher nicht "UpdateDisplay" (was wiederum alle Zellen abfragen w�rde).
+      // wird dieses callback für jede einzelne Zelle aufgerufen.
+      // daher nicht "UpdateDisplay" (was wiederum alle Zellen abfragen würde).
       // Aber: neues Disassembly!
       UpdateDisplay ;
   end ;

@@ -21,7 +21,7 @@ unit ConsolePDP11ODTK1630FakeU;
    CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
-// Console-Adpater für den fake.
+// Console-Adpater fÃ¼r den fake.
 // wie ConsolePDP11ODT, aber nur Examine und Deposit sind implementiert
 
 interface

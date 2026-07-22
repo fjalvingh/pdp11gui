@@ -22,7 +22,7 @@ unit ConsolePDP11M9301U;
 }
 
 {
-  Steuert über RS232 den console emulator auf dem
+  Steuert Ã¼ber RS232 den console emulator auf dem
   M9301 boot terminator an. Wird zB in PDP-11/34 benutzt.
   Die Anwendung ruft nur Deposit(), Examine(), Start auf
 

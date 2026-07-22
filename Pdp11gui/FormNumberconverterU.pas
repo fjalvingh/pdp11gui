@@ -22,7 +22,7 @@ unit FormNumberconverterU;
 }
 
 {
- Schnelle Umwandlung hex / octal / dezimal / bin‰r
+ Schnelle Umwandlung hex / octal / dezimal / bin√§r
 
  TAstten:
  'O','H', 'D'
@@ -75,7 +75,7 @@ var
 implementation
 
 {$R *.dfm}
-// Zahl nach Bin‰rstring wandeln.
+// Zahl nach Bin√§rstring wandeln.
 function DwordToBinStr(val: Dword; digits: integer): string ;
   var digit: integer ;
   begin
@@ -85,7 +85,7 @@ function DwordToBinStr(val: Dword; digits: integer): string ;
       result := Char(ord('0') + digit) + result ;
       val := val shr 1 ;
     end;
-    // links mit 0en auff¸llen
+    // links mit 0en auff√ºllen
     while length(result) < digits do
       result := '0' + result ;
   end;
@@ -118,7 +118,7 @@ function OctalStr2Int64(s:string): Int64 ;
   end;
 
 
-              // ist die Ziffer f¸r das Zahlensystem g¸ltig?
+              // ist die Ziffer f√ºr das Zahlensystem g√ºltig?
 function isValidDigit(numberbase: integer; digit: char): boolean ;
 begin
         case numberbase of
@@ -166,7 +166,7 @@ procedure TFormNumberConverter.FormShow(Sender: TObject);
     // reset state
     OctalEdit.SetFocus ;
     TheValue := 0 ;
-    // nˆtig, damit carte auch witklich von anfnag an rechts sitzt!
+    // n√∂tig, damit carte auch witklich von anfnag an rechts sitzt!
     setCurrentEditNumberBase(10) ; // start in hex edit
     Application.ProcessMessages ;
 
@@ -175,7 +175,7 @@ procedure TFormNumberConverter.FormShow(Sender: TObject);
   end;
 
 
-// welches Edit/Welche Zahlenbasis ist aktiv f¸r die Eingabe?
+// welches Edit/Welche Zahlenbasis ist aktiv f√ºr die Eingabe?
 function TFormNumberConverter.getCurrentEditNumberBase: integer ;
   begin
     result := -1 ;
@@ -300,17 +300,17 @@ procedure TFormNumberConverter.NumberEditChange(Sender: TObject);
     try
       InternalEditChange := true ; // no recursion
 
-      //ƒnderung kann ¸ber clipboard paste kommen!
+      //√Ñnderung kann √ºber clipboard paste kommen!
 //            s := stripInvalidDigits(e.Tag, e.Text) ;
       s := e.Text ;
 
-      // wenn erste Zahl nach f¸hrender 0' weg mit der 0
+      // wenn erste Zahl nach f√ºhrender 0' weg mit der 0
       if (length(s) = 2) and (s[1] = '0') then begin
         setEditText(e, s[2]) ; // nur neue ziffer stehenlassen, caret nach rechts
       end;
 
-      // auf overflow testen. Zahl links verk¸rzen, bis
-      if not updateValue then // hˆchste ziffer weg
+      // auf overflow testen. Zahl links verk√ºrzen, bis
+      if not updateValue then // h√∂chste ziffer weg
         setEditText(e,  Copy(e.Text, 2, maxint)) ;
       // update other edits
       updateEdits(TheValue, Sender as TEdit);
@@ -361,14 +361,14 @@ procedure TFormNumberConverter.updateEdits(value: Dword; sourceEdit: TEdit) ;
       // inhibit "OnChange" event
       InternalEditChange := true ;
 
-      // bin‰r
+      // bin√§r
       binstr := DwordToBinStr(TheValue, 32) ;
 
       // 1. hex
       if sourceEdit <> HexEdit then begin
         setEditText(HexEdit, Format('%x', [TheValue]));
       end;
-      // bin‰r ziffern immer setzen. spaces in 4er gruppen + header
+      // bin√§r ziffern immer setzen. spaces in 4er gruppen + header
       // '1111 0000 1111 0000 1111 0000 1111 0000'
       s := '' ;
       for i := 0 to 31 do begin
@@ -383,7 +383,7 @@ procedure TFormNumberConverter.updateEdits(value: Dword; sourceEdit: TEdit) ;
         s := DwordToOctalStr(TheValue) ;
         setEditText(OctalEdit, s) ;
       end;
-      // bin‰r ziffern immer setzen. spaces in 3er gruppen + header
+      // bin√§r ziffern immer setzen. spaces in 3er gruppen + header
       // '  00  111  000  111  000  111  000  111  000  111  000'
       s := '' ;
       for i := 0 to 31 do begin

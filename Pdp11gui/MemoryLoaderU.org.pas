@@ -47,9 +47,9 @@ type
 // Beschreibung der verschiedenen Inputfiles
   TMemoryloaderFile = class(TCollectionItem)
     public
-      regkey: string ; // suffix für Registry
-      prompt: string ; // für caption
-      loaderfmtidx: integer ; // für multi-file formats: 0=low byte, 1 = high byte
+      regkey: string ; // suffix fÃ¼r Registry
+      prompt: string ; // fÃ¼r caption
+      loaderfmtidx: integer ; // fÃ¼r multi-file formats: 0=low byte, 1 = high byte
       filename: string ; // letzter bekannter Filename, registry
       control_filenameprompt : TLabel ;
       control_filenameedit : TEdit ;
@@ -181,7 +181,7 @@ destructor TMemoryLoader_BytestreamLH.Destroy ;
   end;
 
 
-// alle bytes der binärdate in die memorycellgroup.
+// alle bytes der binÃ¤rdate in die memorycellgroup.
 procedure TMemoryLoader_BytestreamLH.Load(memorycellgroup: TMemoryCellgroup ; startaddr: dword) ;
   var
     stream: TFileStream ;
@@ -213,7 +213,7 @@ procedure TMemoryLoader_BytestreamLH.Load(memorycellgroup: TMemoryCellgroup ; st
     end{ "try" } ;
   end{ "procedure TMemoryLoader_BytestreamLH.Load" } ;
 
-// alle bytes der binärdate in die memorycellgroup.
+// alle bytes der binÃ¤rdate in die memorycellgroup.
 procedure TMemoryLoader_BytestreamLH.Save(memorycellgroup: TMemoryCellgroup) ;
   var
     stream: TFileStream ;
@@ -299,7 +299,7 @@ procedure TMemoryLoader_LowByteFileHighByteFile.Load(memorycellgroup: TMemoryCel
       try
         wordcount := stream_l.Size div 2 ;
 
-        // MemoryCellgroup für Bytes aufbauen
+        // MemoryCellgroup fÃ¼r Bytes aufbauen
         memorycellgroup.Clear ;
         memorycellgroup.Add(startaddr, wordcount) ;
         assert(wordcount = memorycellgroup.Count) ;
@@ -420,7 +420,7 @@ procedure TMemoryLoader_TextfileOneAddrPerLine.Load(memorycellgroup: TMemoryCell
           // word 1 = addresse
           s := ExtractWord(1, line, [' ']) ;
           addr := OctalStr2Dword(s, 0) ;
-          // word 2.. n = Werte für diese und die folgenden Adressen
+          // word 2.. n = Werte fÃ¼r diese und die folgenden Adressen
           for i := 2 to n do begin
             s := ExtractWord(i, line, [' ']) ;
             value := OctalStr2Dword(s, 0) ;
@@ -735,7 +735,7 @@ diaglog_put('address', address.val, 2) ;
                 Log('Empty block with addr = %s, size=%d', [Addr2OctalStr(address), block_byte_size]);
                 state := 0 ; // no chksum ?
               end else begin
-                // MemoryCellgroup für Bytes aufbauen
+                // MemoryCellgroup fÃ¼r Bytes aufbauen
                 Log('Starting data block with addr = %s, block_byte_size=%d, datawordcount=%d', [
                         Addr2OctalStr(address), block_byte_size, block_dataword_count]);
                 //assert(block_dataword_count = memorycellgroup.Count) ;

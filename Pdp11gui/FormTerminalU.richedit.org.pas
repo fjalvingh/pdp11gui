@@ -83,7 +83,7 @@ type
       procedure Hello ;
 
       procedure AppendText(outputstyle: TTerminalOutputStyle ; chars:string) ;
-      // wird von aussen aufgerufen, wenn das Terminal was empfängt
+      // wird von aussen aufgerufen, wenn das Terminal was empfÃ¤ngt
       procedure OnSerialRcvData(curdata: string) ;
 
     end{ "TYPE TFormTerminal = class(TFormChild)" } ;
@@ -147,7 +147,7 @@ procedure TFormTerminal.SetStyle(outputstyle: TTerminalOutputStyle) ;
         tosUser: begin
           SelAttributes.Color := clWhite ;
         end;
-        tosSystem: begin // automatische Ausgabe etwas gedämpfter
+        tosSystem: begin // automatische Ausgabe etwas gedÃ¤mpfter
           SelAttributes.Color := clGray ;
         end;
       end;
@@ -165,7 +165,7 @@ procedure TFormTerminal.Clear1Click(Sender: TObject);
     RichEdit1.Lines.Clear ;
   end;
 
-// Text an die ausgabe in einem bestimmten Stil anhängen
+// Text an die ausgabe in einem bestimmten Stil anhÃ¤ngen
 // #13 als EOLN benutzen!
 // unsichtbare Zeichen ausser #13 in \x.. Notation wandeln
 
@@ -230,7 +230,7 @@ procedure TFormTerminal.Hello ;
   begin
     with RichEdit1 do begin
       // SelStart ist der cursor
-//      AppendText(tosPDP, '*** Terminal für PDP-11/44 console***'
+//      AppendText(tosPDP, '*** Terminal fÃ¼r PDP-11/44 console***'
 //              +#13 + '>>> So wird Ausgabe der PDP-11 angezeigt!' + #13
 //              + '>>>') ;
 
@@ -251,7 +251,7 @@ procedure TFormTerminal.Hello ;
 
 
 
-// Tastendrücke gehen direkt an die Konsole
+// TastendrÃ¼cke gehen direkt an die Konsole
 procedure TFormTerminal.RichEdit1KeyDown(Sender: TObject; var Key: Word;
         Shift: TShiftState);
   begin
@@ -288,7 +288,7 @@ procedure TFormTerminal.RichEdit1MouseUp(Sender: TObject; Button: TMouseButton;
   end;
 
 
-// wird von aussen aufgerufen, wenn das Terminal was empfängt
+// wird von aussen aufgerufen, wenn das Terminal was empfÃ¤ngt
 procedure TFormTerminal.OnSerialRcvData(curdata: string) ;
   begin
 //Log('TFormTerminal.OnSerialRcvData: "%s"', [curdata]);

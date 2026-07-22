@@ -23,8 +23,8 @@ unit SerialXferU;
 
 
 {
-  Klasse, um Daten zwischen PDP11 und PDP11GUI �ber ein
-  serielles Protokoll zu �bertragen.
+  Klasse, um Daten zwischen PDP11 und PDP11GUI über ein
+  serielles Protokoll zu übertragen.
   Ein spezieller Treiber muss in die PDP-11 geladen wurden sein.
 
   Layout der Datenblocks siehe pdp11gui_main.mac:
@@ -41,10 +41,10 @@ uses
   MemoryCellU ;
 
 const 
-  max_charbuffer_len = $10000 ; // 64K ist genug f�r eine 16 bit machine
+  max_charbuffer_len = $10000 ; // 64K ist genug für eine 16 bit machine
   max_xmitbuffer_len = $8000 ; // halb so gross, immer noch viel zu viel
 
-  // die Opcodes f�r den Treiber, wie in pdp11gui_main
+  // die Opcodes für den Treiber, wie in pdp11gui_main
   // see OpcodeAsText
   SerialTransferDriver_opecho  = 1 ; // echo block, with inverted data.
   SerialTransferDriver_opinit  = 2 ; // init disk controller
@@ -72,7 +72,7 @@ const
 
 type 
 
-  // Fehler in der �bertragung
+  // Fehler in der Übertragung
   ESerialTransferHardError = class(Exception) ; 
 
   // Vom Driver gemeldeter Fehler. msg = "error xxxx, parm=yyy zzzz"
@@ -84,12 +84,12 @@ type
     private 
 
       // Charbuffer: speichert den Zeichenstrom, der XmitBuffer entspricht
-      CharBufferLen: integer ; // soviele Zeichen sind zur �bertragung des Buffers n�tig (inkl patch)
+      CharBufferLen: integer ; // soviele Zeichen sind zur Übertragung des Buffers nötig (inkl patch)
       CharBuffer: array[0..max_charbuffer_len+1] of char ; 
 
-      XmitBufferLen: integer ; //  buffer l�nge in word. Ohne Aufrundung auf Vielfaches von 3
+      XmitBufferLen: integer ; //  buffer länge in word. Ohne Aufrundung auf Vielfaches von 3
       XmitBufferLenRoundedUp: integer ; // bei Senden: aufgerundet auf vielfaches von 3
-      // Word buffer: speichert die �bertragenen Words aus dem
+      // Word buffer: speichert die übertragenen Words aus dem
       XmitBuffer: TArrayOfWord ; 
 
       class procedure WordTriplet2CharOctet(aXmitBuffer: TArrayOfWord ; var WordReadPos: integer ; 
@@ -109,13 +109,13 @@ type
 
       Aborted: boolean ; // kann vom caller auf true gesetzt werden, um sofort zu stoppen
 
-      // die Datenbl�cke 0 und 1. L�ngen dynamisch
+      // die Datenblöcke 0 und 1. Längen dynamisch
       // Block 0: request = parameter
       //    response: error data, oder disk data
       // Block1 : bei opcode opwrite: disk data
       // reponse: never used
-      // Anwendung setzt L�nge (SetLength(), die L�nge wird direkt �bertragen.
-      // in reponse wird wieder L�nge gesetzt
+      // Anwendung setzt Länge (SetLength(), die Länge wird direkt übertragen.
+      // in reponse wird wieder Länge gesetzt
       XmitBlock0Data: TArrayOfWord ; 
       XmitBlock1Data: TArrayOfWord ; 
 
@@ -123,7 +123,7 @@ type
       constructor Create ; 
       procedure Execute ( 
               pdp11ProcTimeout_ms: dword ; 
-              var opcode: word // Funktion, die ausgef�hrt werden soll/ Status f�r R�ckgabe
+              var opcode: word // Funktion, die ausgeführt werden soll/ Status für Rückgabe
               ) ;// throws ESerialTransferHardError
 
       procedure ReceiveCharBuffer(timeout_ms: dword) ; // throws ESerialTransferHardError
@@ -318,12 +318,12 @@ procedure TSerialTransfer.EncodeWordBuffer2CharBuffer ; // WordBuffer -> CharBuf
     rle_word_count, rle_pattern_1, rle_pattern_2: word ; // rle = run length encoding
     char_delay_us, rle_delay_us : integer ; 
   begin 
-    // CharBuffer hat feste L�nge, ist nicht dynamisch
+    // CharBuffer hat feste Länge, ist nicht dynamisch
     i_w := 0 ; 
     i_c := 0 ; 
     while i_w < XmitBufferLen do begin 
       // encode a word triplett to a byte octet
-      // RLE encoding m�glich?
+      // RLE encoding möglich?
       // finde block mit word folge: pattern_1, pattern_2, pattern_1, pattern_2, ...
       rle_word_count := 0 ; 
       if (i_w+1) < XmitBufferLen then begin 
@@ -342,7 +342,7 @@ procedure TSerialTransfer.EncodeWordBuffer2CharBuffer ; // WordBuffer -> CharBuf
         // count and value as 3 words -> 48 bit. words[0] ist MSB
         CharBuffer[i_c] := '|' ; // output RLE marker before char octett
         inc(i_c) ; 
-        // rle daten in buffer r�ckschreiben
+        // rle daten in buffer rückschreiben
         i_w := i_w + rle_word_count - 3; // skip to last 3 words of rle sequence
         // after regular 3->8 conversion, i_w+=3 is on next unprocessed data word
         assert(not odd(rle_word_count)) ; 
@@ -350,7 +350,7 @@ procedure TSerialTransfer.EncodeWordBuffer2CharBuffer ; // WordBuffer -> CharBuf
         XmitBuffer[i_w+1] := rle_pattern_1 ; 
         XmitBuffer[i_w+2] := rle_pattern_2  ; 
       end{ "if EnableRLECompression and (rle_word_count > 3)" } ; 
-      // die n�chsten 3 worte sind entweder RLE sequenz oder daten worte
+      // die nächsten 3 worte sind entweder RLE sequenz oder daten worte
       // kodiere sie und gib sie in den Charbuffer aus.
       // i_w+=3, i_c +=8
       WordTriplet2CharOctet(XmitBuffer, i_w, CharBuffer, i_c) ; 
@@ -389,11 +389,11 @@ procedure TSerialTransfer.DecodeCharBuffer2WordBuffer ; // CharBuffer -> WordBuf
     SetLength(rle_triplett, 3) ; 
     SetLength(XmitBuffer, max_xmitbuffer_len) ; 
 
-    // XmitBuffer auf die richtige L�nge bringen
+    // XmitBuffer auf die richtige Länge bringen
     // charbufflen vielfaches von 8?
 //    if (CharBufferLen mod 8) <> 0 then
 //      raise Exception.CreateFmt('Internal error in DecodeCharBuffer2WordBuffer(): CharBufferlen =%d .. not a multiple of 8!', [CharBufferLen]) ;
-    // G�ltigkeitsheck in CharOctet2WordTriplet()
+    // Gültigkeitsheck in CharOctet2WordTriplet()
 
 //    XmitBufferLenRoundedUp := (CharBufferLen * 6) div 16 ;
 //    SetLength(XmitBuffer,XmitBufferLenRoundedUp) ;
@@ -430,7 +430,7 @@ procedure TSerialTransfer.DecodeCharBuffer2WordBuffer ; // CharBuffer -> WordBuf
 
 
 // Block empfangen.
-// buffer muss allokiert sein, wird aber in der l�nge ver�ndert
+// buffer muss allokiert sein, wird aber in der länge verändert
 // NB: alle Zeichen in CharBuff, RLE Sequenz noch unverarbeitet
 // throws ESerialTransferHardError
 procedure TSerialTransfer.ReceiveCharBuffer(timeout_ms: dword) ; 
@@ -447,7 +447,7 @@ procedure TSerialTransfer.ReceiveCharBuffer(timeout_ms: dword) ;
     // characters empfangen.
     CharBufferLen := 0 ; 
 
-    // Abbruch, wenn solange Block�bertragung nicht beginnt
+    // Abbruch, wenn solange Blockübertragung nicht beginnt
     timeout_ticks := GetTickCount + timeout_ms ; 
 
     assert(FormMain.SerialIoHub.Physical_Poll_Disable > 0) ; // caller muss sperren
@@ -461,9 +461,9 @@ procedure TSerialTransfer.ReceiveCharBuffer(timeout_ms: dword) ;
       // Application.ProcessMessages ;
 
       // 100% busy loop:
-      // kleinste moegliche Wartepause w�re 1ms, das ist f�r 38400 baud zu lange!
+      // kleinste moegliche Wartepause wäre 1ms, das ist für 38400 baud zu lange!
 
-      // Bsp f�r Laufdauer: 512 byte -> 258 words -> 688 chars
+      // Bsp für Laufdauer: 512 byte -> 258 words -> 688 chars
       // bei 9600 -> 960 char/sec -> 688/960= 0.72 sec
       if not FormMain.SerialIoHub.Physical_ReadByte(b,'SerTransferRcvBlock.'+IntToStr(ord(state))) then 
         sleep(100) // kann lange sein, serial port und telnet puffern
@@ -484,7 +484,7 @@ procedure TSerialTransfer.ReceiveCharBuffer(timeout_ms: dword) ;
           end ; 
 
           state1: begin 
-            // Beginn der �bertragung: ab jetzt nur 1 Sek zwischen Zeichen erlaubt
+            // Beginn der Übertragung: ab jetzt nur 1 Sek zwischen Zeichen erlaubt
             timeout_ticks := GetTickCount + 1000 ; 
 //            if assigned(OnStatusChange) then OnStatusChange('Receiving data') ;
 // Log(' TSerialTransfer.ReceiveCharBuffer,state1: char="%s", bits=0x%x', [char(b), b-$20]);
@@ -552,15 +552,15 @@ procedure TSerialTransfer.TransmitCharBuffer ;
 // Execute()
 // Lauf einer procedure auf der PDP11.
 // 1. Sendet request: opcode und daten blocks
-// 2. PDP11 f�hrt operation aus
-// 3. PDP11 sendet response zur�ck, Ergebnis oder Fehler in block 0
+// 2. PDP11 führt operation aus
+// 3. PDP11 sendet response zurück, Ergebnis oder Fehler in block 0
 //  von "XmitBuffer"
-// Benutzt FormExecute zum Code ausf�hren.
-// benutzt und �ndert XmtBlock*Data[]
+// Benutzt FormExecute zum Code ausführen.
+// benutzt und ändert XmtBlock*Data[]
 
 procedure TSerialTransfer.Execute ( 
         pdp11ProcTimeout_ms: dword ; 
-        var opcode: word // Funktion, die ausgef�hrt werden soll/ Status f�r R�ckgabe
+        var opcode: word // Funktion, die ausgeführt werden soll/ Status für Rückgabe
         ) ;// throws ESerialTransferHardError
 
 // alles ab XmitBuffer[2] aufsummieren: 0 = len, 1 = checksum
@@ -592,8 +592,8 @@ procedure TSerialTransfer.Execute (
     // mit : <block> <len> <data, data,...>
 
     // Word transmssion montieren
-    // block0 in request immer �bertragen, auch, wenn len=0
-    // block1 �bertragen, wenn len=0!
+    // block0 in request immer übertragen, auch, wenn len=0
+    // block1 übertragen, wenn len=0!
 
     // checksum und register davor schreiben
     XmitBufferLen := 1 + 1 + 1 // totallen, checksum, opcode
@@ -601,7 +601,7 @@ procedure TSerialTransfer.Execute (
     if length(XmitBlock1Data) > 0 then 
       XmitBufferLen := XmitBufferLen + (1 + length(XmitBlock1Data)) ;  // block 1
 
-    // n�tiger Platz im charbuffer:
+    // nötiger Platz im charbuffer:
     // word zahl auf vielfaches von drei bringen
     XmitBufferLenRoundedUp := XmitBufferLen ; 
     while (XmitBufferLenRoundedUp mod 3) <> 0 do inc(XmitBufferLenRoundedUp) ; 
@@ -611,7 +611,7 @@ procedure TSerialTransfer.Execute (
 
     // Daten in den Transmissionbuffer montieren
     XmitBuffer[0] := XmitBufferLen - 1 ; // len itself at [0] does not count
-    XmitBuffer[1] := 0 ; // checksum, kommt sp�ter
+    XmitBuffer[1] := 0 ; // checksum, kommt später
     XmitBuffer[2] := opcode ; 
     // Block 0
     n := length(XmitBlock0Data) ; // blocklen
@@ -629,7 +629,7 @@ procedure TSerialTransfer.Execute (
         XmitBuffer[idx+i+1] := XmitBlock1Data[i] ; 
       idx := idx + 1 + n ; // start word von block 0
     end ; 
-    assert(idx = XmitBufferLen) ; // Buffer vollst�ndig gef�llt?
+    assert(idx = XmitBufferLen) ; // Buffer vollständig gefüllt?
 
     checksum := calcChecksum ; 
 
@@ -662,13 +662,13 @@ procedure TSerialTransfer.Execute (
       FormMain.FormExecute.doSetPCandContinue(pdp11ProcAddr) ;
 
 //      if FormMain.PDP11Console is TConsolePDP1144 then begin
-//        // Nach Continue: Wartepause n�tig f�r 11/44: Console processor hang up?
+//        // Nach Continue: Wartepause nötig für 11/44: Console processor hang up?
 //        // sleep(250) ist nicht immer OK, sleep(300) scheint OK
 //        sleep(350) ;
 //      end;
     end ;
-    // "350" n�tig f�r 11/44
-    // "250" n�tig f�r 11/23: Sichtbarkeit der Startanweisung in ODT
+    // "350" nötig für 11/44
+    // "250" nötig für 11/23: Sichtbarkeit der Startanweisung in ODT
     WaitAndProcessMessages(350) ;
 
     *)
@@ -682,18 +682,18 @@ procedure TSerialTransfer.Execute (
       if Aborted then Exit ; 
 
       if assigned(OnStatusChange) then OnStatusChange('Processing') ; 
-      // max. Wartezeit bis Beginn der R�ck�bertragung berechnen.
-      // Dabei unbekannt: die erwartete L�nge der Antwort.
+      // max. Wartezeit bis Beginn der Rückübertragung berechnen.
+      // Dabei unbekannt: die erwartete Länge der Antwort.
 
-      // Telnet: Sendedaten k�nnen noch in Telnet/Netzwerkstack-Puffern stehen
-      // D.h., senden l�uft in high-speed, die PDP-11 empf�ngt es viel langsamer.
+      // Telnet: Sendedaten können noch in Telnet/Netzwerkstack-Puffern stehen
+      // D.h., senden läuft in high-speed, die PDP-11 empfängt es viel langsamer.
       // => die PDP-11 ist JETZT noch nicht mit dem Empfangen fertig!
-      // Die Wartepause f�r ReceiveCharBuffer ber�cksichtigt das.
+      // Die Wartepause für ReceiveCharBuffer berücksichtigt das.
       if FormMain.SerialIoHub.connectionType = connectionTelnet then 
         timeout_ms := (XmitBufferLen * FormMain.SerialIoHub.getXmtCharTransmissionMicros) div 1000 
       else timeout_ms := 0 ; 
       timeout_ms := timeout_ms + 1000 ; // 1 Sek reserve
-      // Zeit f�r die Abarbeitung des Codes mit einplanen
+      // Zeit für die Abarbeitung des Codes mit einplanen
       // retries des I/O subsystems im worst case!
       timeout_ms := timeout_ms + pdp11ProcTimeout_ms ; 
       Log('TSerialTransfer.Execute: start ReceiveCharBuffer(). Timeout=%d+%d+%d=%d ms', 
@@ -702,9 +702,9 @@ procedure TSerialTransfer.Execute (
       dec(FormMain.SerialIoHub.Physical_Poll_Disable) ; 
     end{ "try" } ; 
 
-    // Sonderlogic f�r HALT:
+    // Sonderlogic für HALT:
     if opcode = SerialTransferDriver_ophalt then begin 
-      // keine R�ckgabe, aber check console HALT
+      // keine Rückgabe, aber check console HALT
       Log('TSerialTransfer.Execute: waiting for CPU halt.'); 
 
       // jetzt soll die PDP11 auf ein HALT gerannt sein
@@ -801,9 +801,9 @@ procedure TSerialTransfer.Execute (
 
 
 {
-  �bertr�gt einen Block zur PDP11,
+  Überträgt einen Block zur PDP11,
   ide Function "doecho" jedes word
-  und sendet es zur�ck
+  und sendet es zurück
   testpatterns:
   0 = random data
   1 = random with constant byte block
@@ -829,26 +829,26 @@ procedure TSerialTransfer.SelfTest(wordcount: integer; testpattern: integer) ;
 
   begin { "procedure TSerialTransfer.SelfTest" } 
 
-    // muster erzeugen: Zuf�llig, mit einem block gleicher words
+    // muster erzeugen: Zufällig, mit einem block gleicher words
     // zum testen der RLE kodierung
     SetLength(pattern, wordcount) ; 
 
     case testpattern of 
       0: begin 
-        // alle Werte zuf�llig
+        // alle Werte zufällig
         for i := 0 to wordcount-1 do 
-          pattern[i] := Random($10000) ; // zuf�llige 16 bit Werte
+          pattern[i] := Random($10000) ; // zufällige 16 bit Werte
         Log('TSerialTransfer.Selftest with random pattern: %d data words', 
                 [wordcount]) ; 
       end; 
       1: begin 
-        // alle Werte zuf�llig, mit grossem block aus constante WORD Daten
+        // alle Werte zufällig, mit grossem block aus constante WORD Daten
         for i := 0 to wordcount-1 do 
 //      pattern[i] := i ;
-          pattern[i] := Random($10000) ; // zuf�llige 16 bit Werte
-        // zuf�lliger Block mit konstanten Werten
-        i0 := Random(wordcount) ; // zuf�llige Lage des Blocks
-        n := Random(wordcount) ;  // zuf�llige L�nge des Blocks
+          pattern[i] := Random($10000) ; // zufällige 16 bit Werte
+        // zufälliger Block mit konstanten Werten
+        i0 := Random(wordcount) ; // zufällige Lage des Blocks
+        n := Random(wordcount) ;  // zufällige Länge des Blocks
 
         if i0+n >= wordcount then // Der Block soll oft am End des patterns sitzen, realismus!
           n := wordcount-i0 ; 
@@ -858,13 +858,13 @@ procedure TSerialTransfer.SelfTest(wordcount: integer; testpattern: integer) ;
                 [wordcount, n, i0, i0+n-1]) ; 
       end{ "case testpattern of 1:" } ; 
       2: begin 
-        // alle Werte zuf�llig, mit grossem block aus constante DWORD Daten
+        // alle Werte zufällig, mit grossem block aus constante DWORD Daten
         for i := 0 to wordcount-1 do 
 //      pattern[i] := i ;
-          pattern[i] := Random($10000) ; // zuf�llige 16 bit Werte
-        // zuf�lliger Block mit konstanten Werten
-        i0 := 2*Random(wordcount div 2) ; // zuf�llige Lage des Blocks, start address even
-        n := Random(wordcount) ;  // zuf�llige L�nge des Blocks
+          pattern[i] := Random($10000) ; // zufällige 16 bit Werte
+        // zufälliger Block mit konstanten Werten
+        i0 := 2*Random(wordcount div 2) ; // zufällige Lage des Blocks, start address even
+        n := Random(wordcount) ;  // zufällige Länge des Blocks
 
         if i0+n >= wordcount then // Der Block soll oft am End des patterns sitzen, realismus!
           n := wordcount-i0 ; 
@@ -879,8 +879,8 @@ procedure TSerialTransfer.SelfTest(wordcount: integer; testpattern: integer) ;
       end{ "case testpattern of 2:" } ; 
 
       3: begin 
-        // nur ein zuf�lliges Zecihen, maximale Blocklen
-        pattern[0] := Random($10000) ; // zuf�lliger 16 bit Wert
+        // nur ein zufälliges Zecihen, maximale Blocklen
+        pattern[0] := Random($10000) ; // zufälliger 16 bit Wert
         for i := 0 to wordcount-1 do 
           pattern[i] := pattern[0] ; 
         Log('TSerialTransfer.Selftest with constant data: %d data words', 
@@ -914,14 +914,14 @@ procedure TSerialTransfer.SelfTest(wordcount: integer; testpattern: integer) ;
     // Testprozedur aufrufen
     // BUS reset, wg. 11/23
     Execute( 
-            1000, // Zeit f�r block daten �ndern in ms.
+            1000, // Zeit für block daten ändern in ms.
             opcode 
             ) ; // throws ESerialTransferAppError
 
 
     // Verify: von jeder Zelle wurde das complement gebildet
     // in delphi: com(x) = x XOR $ffff (0er Bits -> 1, 1er Bits->0)
-    // bei receive wird der buffer auf triplets verl�ngert -> auf patternlen testen
+    // bei receive wird der buffer auf triplets verlängert -> auf patternlen testen
     if length(XmitBlock0Data) < length(pattern)  then 
       raise Exception.CreateFmt('Error: pattern is %d words, received only %d words!', 
               [length(pattern), length(XmitBlock0Data)]) ; 

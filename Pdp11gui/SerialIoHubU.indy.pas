@@ -50,7 +50,7 @@ unit SerialIoHubU;
 
 // Physikalische Verbindung zu einer PDP-11
 // wird von Console* zur Ansteuerung benutzt
-// Serials IO über COM oder über den PDP-11/44-Simulator, oder Telnet
+// Serials IO Ã¼ber COM oder Ã¼ber den PDP-11/44-Simulator, oder Telnet
 }
 interface
 
@@ -69,7 +69,7 @@ uses
 
 
 type
-  // und über welches Medium?
+  // und Ã¼ber welches Medium?
   TSerialIoHubPhysicalConnectionType = (connectionNone, connectionInternal, connectionSerial, connectionTelnet) ;
 
 
@@ -78,10 +78,10 @@ type
       Comm : TComm ; // der COM-Port
 
       Physical_PollTimer: TTimer ;
-      // es darf nicht gepollt werden, während Zeichen von Console/terminal verarbeitet werden:
+      // es darf nicht gepollt werden, wÃ¤hrend Zeichen von Console/terminal verarbeitet werden:
       // dauert die Verarbeitung zu lange, wird sonst neu gepollt, und neuere Zeichen werden
-      // vor älteren verarbeitet!
-      Transmission_TotalChars: longint ; // soviele Zeichen wurden insgesamt übertragen
+      // vor Ã¤lteren verarbeitet!
+      Transmission_TotalChars: longint ; // soviele Zeichen wurden insgesamt Ã¼bertragen
       Transmission_TotalWait_us: int64 ; // soviele microsecs wurde insgasamt geartet
 
       Telnet_connected : boolean ;
@@ -105,19 +105,19 @@ type
 
       FakePDP11: TFakePDP11Generic; // kann 11/44 oder 11/ODT sein
 
-      Physical_Poll_Disable: integer ; // 0 = callback läuft, sonst nicht.
+      Physical_Poll_Disable: integer ; // 0 = callback lÃ¤uft, sonst nicht.
 
-      // Baudraten, werden für jede Verbindung defineirt, für timeouts
+      // Baudraten, werden fÃ¼r jede Verbindung defineirt, fÃ¼r timeouts
       RcvBaudrate: integer ;
       XmtBaudrate: integer ;
 
       constructor Create ;
       destructor Destroy ; override ;
 
-      // Wartepause für eine Anzahl von Zeichen, gemäss Baudrate
+      // Wartepause fÃ¼r eine Anzahl von Zeichen, gemÃ¤ss Baudrate
       procedure TransmissionWait(charcount: integer) ;
       // Zeit im Millisekuden, die die angegeben Zeichen zahl in Abh
-      // von Rcv oder Xmtbaudrate benötigt
+      // von Rcv oder Xmtbaudrate benÃ¶tigt
       function getXmtTransmissionMillis(charcount: integer): integer ;
       function getRcvTransmissionMillis(charcount: integer): integer ;
 
@@ -129,7 +129,7 @@ type
       procedure Physical_InitForFakePDP11ODT(baud: integer; physicaladdresswidth: TMemoryAddressType) ;
       procedure Physical_InitForTelnet(host:string ; port: integer) ;
 
-      // für Anzeigen: "COM1 @ 9600 baud" oder "localhost:9922"
+      // fÃ¼r Anzeigen: "COM1 @ 9600 baud" oder "localhost:9922"
       function Physical_getInfoString: string ;
 
       // Interface zur Conole-Logic:
@@ -232,14 +232,14 @@ procedure TSerialIoHub.Physical_InitForCOM(comport: integer ; baud: integer) ;
     Physical_Poll_Disable := 0 ;
   end{ "procedure TSerialIoHub.Physical_InitForCOM" } ;
 
-// baudrate für simuliertes Warten
+// baudrate fÃ¼r simuliertes Warten
 procedure TSerialIoHub.Physical_InitForFakePDP11M9312(baud: integer) ;
   begin
     Physical_Poll_Disable := 1 ;
     connectionType := connectionInternal ;
     RcvBaudrate := baud ;
     XmtBaudrate := baud ;
-    // nur freigeben, wenn Änderung, damit die Maschine ihren Zustand möglichst behält
+    // nur freigeben, wenn Ã„nderung, damit die Maschine ihren Zustand mÃ¶glichst behÃ¤lt
     if (FakePDP11 = nil) or (FakePDP11.ClassType <> TFakePDP11M9312) then begin
       if FakePDP11 <> nil then FakePDP11.Free ;
       FakePDP11 := TFakePDP11M9312.Create ;
@@ -249,14 +249,14 @@ procedure TSerialIoHub.Physical_InitForFakePDP11M9312(baud: integer) ;
   end{ "procedure TSerialIoHub.Physical_InitForFakePDP1144" } ;
 
 
-// baudrate für simuliertes Warten
+// baudrate fÃ¼r simuliertes Warten
 procedure TSerialIoHub.Physical_InitForFakePDP1144(baud: integer) ;
   begin
     Physical_Poll_Disable := 1 ;
     connectionType := connectionInternal ;
     RcvBaudrate := baud ;
     XmtBaudrate := baud ;
-    // nur freigeben, wenn Änderng, damit die Maschine ihren Zustand möglichst behält
+    // nur freigeben, wenn Ã„nderng, damit die Maschine ihren Zustand mÃ¶glichst behÃ¤lt
     if (FakePDP11 = nil) or (FakePDP11.ClassType <> TFakePDP1144) then begin
       if FakePDP11 <> nil then FakePDP11.Free ;
       FakePDP11 := TFakePDP1144.Create ;
@@ -265,14 +265,14 @@ procedure TSerialIoHub.Physical_InitForFakePDP1144(baud: integer) ;
     Physical_Poll_Disable := 0 ;
   end{ "procedure TSerialIoHub.Physical_InitForFakePDP1144" } ;
 
-// baudrate für simuliertes Warten
+// baudrate fÃ¼r simuliertes Warten
 procedure TSerialIoHub.Physical_InitForFakePDP11ODT(baud: integer; physicaladdresswidth: TMemoryAddressType) ;
   begin
     Physical_Poll_Disable := 1 ;
     connectionType := connectionInternal ;
     RcvBaudrate := baud ;
     XmtBaudrate := baud ;
-    // nur freigeben, wenn Änderung, damit die Maschine ihren Zustand möglichst behält
+    // nur freigeben, wenn Ã„nderung, damit die Maschine ihren Zustand mÃ¶glichst behÃ¤lt
     if (FakePDP11 = nil)
             or (FakePDP11.ClassType <> TFakePDP11ODT)
             or (FakePDP11.mat <> physicaladdresswidth)
@@ -285,7 +285,7 @@ procedure TSerialIoHub.Physical_InitForFakePDP11ODT(baud: integer; physicaladdre
     Physical_Poll_Disable := 0 ;
   end{ "procedure TSerialIoHub.Physical_InitForFakePDP11ODT" } ;
 
-// verbinde über Telnet .. damit automatisch SimH ... nicht gerade logisch
+// verbinde Ã¼ber Telnet .. damit automatisch SimH ... nicht gerade logisch
 procedure TSerialIoHub.Physical_InitForTelnet(host:string ; port: integer) ;
   begin
     Physical_Poll_Disable := 1 ;
@@ -324,7 +324,7 @@ procedure TSerialIoHub.Physical_InitForTelnet(host:string ; port: integer) ;
 
 
 // Zeit im Millisekuden, die die angegeben Zeichen zahl in Abh
-// von Rcv oder Xmtbaudrate benötigt
+// von Rcv oder Xmtbaudrate benÃ¶tigt
 function TSerialIoHub.getXmtTransmissionMillis(charcount: integer): integer ;
   begin
     result := charcount * {bits/char} 10 * {ms/sec} 1000 div XmtBaudrate;
@@ -336,9 +336,9 @@ function TSerialIoHub.getRcvTransmissionMillis(charcount: integer): integer ;
   end;
 
 
-// wartet solange, wie die Übertragung von "charcount" Zeichen dauert
+// wartet solange, wie die Ãœbertragung von "charcount" Zeichen dauert
 // warte NICHT "per char", sondern wartet,so
-// das immer die "total transmission time" für alle Zeichen bisher
+// das immer die "total transmission time" fÃ¼r alle Zeichen bisher
 //   stimmt
 procedure TSerialIoHub.TransmissionWait(charcount: integer) ;
   var
@@ -351,13 +351,13 @@ procedure TSerialIoHub.TransmissionWait(charcount: integer) ;
       Exit ;
 
     Transmission_TotalChars := Transmission_TotalChars + charcount ;
-    // Überlauf erst nach 10 Mrd Zeichen
+    // Ãœberlauf erst nach 10 Mrd Zeichen
     planned_Transmission_TotalWait_us :=
             int64(1000000) * (Transmission_TotalChars * {bit sper char}10) div XmtBaudrate ;
     // also zu warten?
     wait_period_us := planned_Transmission_TotalWait_us - Transmission_TotalWait_us ;
 
-    // warten mit dem unpräzisen "sleep(). Messen, wie lange es wirklich dauerte
+    // warten mit dem unprÃ¤zisen "sleep(). Messen, wie lange es wirklich dauerte
     QueryPerformanceCounter(wait_starttime_us) ;
     wait_endtime_us := wait_starttime_us ;
     while wait_endtime_us < (wait_starttime_us + wait_period_us) do begin
@@ -365,7 +365,7 @@ procedure TSerialIoHub.TransmissionWait(charcount: integer) ;
       QueryPerformanceCounter(wait_endtime_us) ;
     end;
 
-    // Tatsächlich insgesamt gewartete Zeit speichern
+    // TatsÃ¤chlich insgesamt gewartete Zeit speichern
     Transmission_TotalWait_us := Transmission_TotalWait_us +
             (wait_endtime_us - wait_starttime_us) ;
   end{ "procedure TSerialIoHub.TransmissionWait" } ;
@@ -404,7 +404,7 @@ function TSerialIoHub.Physical_ReadByte(var curbyte: byte ; dbglocation: string)
 //      if not Telnet_Connected then raise Exception.Create('Telnet not connected') ;
 
           if length(Telnet_InputBuffer) > 0 then begin
-            // nimm nächstes gepuffertes Zeichen
+            // nimm nÃ¤chstes gepuffertes Zeichen
             curbyte := byte(Telnet_InputBuffer[1]) ;
             Telnet_InputBuffer := Copy(Telnet_InputBuffer, 2, maxint) ;
             result := true ;
@@ -475,7 +475,7 @@ procedure TSerialIoHub.Physical_Poll(Sender:TObject) ;
   end{ "procedure TSerialIoHub.Physical_Poll" } ;
 
 
-// für Anzeigen: "COM1 @ 9600 baud" oder "localhost:9922"
+// fÃ¼r Anzeigen: "COM1 @ 9600 baud" oder "localhost:9922"
 function TSerialIoHub.Physical_getInfoString: string ;
   begin
     result := 'unknown Connection' ;

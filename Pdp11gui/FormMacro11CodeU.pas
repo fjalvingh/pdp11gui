@@ -76,7 +76,7 @@ uses
 constructor TFormMacro11Code.Create(AOwner: TComponent) ;
   begin
     inherited Create(AOwner) ;
-    MemoryGrid.OnUpdate := UpdateDisplay ; // wenn sich das grid ändert, muss diese Form reagieren
+    MemoryGrid.OnUpdate := UpdateDisplay ; // wenn sich das grid Ã¤ndert, muss diese Form reagieren
     StartAddrEdit.ReadOnly := true ;
 
   end;
@@ -94,7 +94,7 @@ procedure TFormMacro11Code.UpdateDisplay(Sender: TObject);
     mc: TMemoryCell ;
     h, w: integer ;
   begin
-    if Sender <> MemoryGrid then // hat der Frame das Update ausgelöst?
+    if Sender <> MemoryGrid then // hat der Frame das Update ausgelÃ¶st?
       MemoryGrid.UpdateDisplay  // nein: update frame, er updated wieder die Form
     else begin
       // Editierte Memoryinhalte behalten, auch wenn Pdp durch callbacks neu abgefragt wird.
@@ -104,9 +104,9 @@ procedure TFormMacro11Code.UpdateDisplay(Sender: TObject);
       StartAddrEdit.Text := Addr2OctalStr(mc.addr) ; // 1. Zelle = Startaddr
       Caption := setFormCaptionInfoField(Caption, Addr2OctalStr(mc.addr)) ;
 
-      // Das MemoryGrid ist alClient und möchte in einer bestimmten Grösse angezeigt werden,
+      // Das MemoryGrid ist alClient und mÃ¶chte in einer bestimmten GrÃ¶sse angezeigt werden,
       // tue ihm den Gefallen.
-      // Wilde ad hoc Logik: das Codewindow kann extrem hoch werden, dann kürzer anzeigen
+      // Wilde ad hoc Logik: das Codewindow kann extrem hoch werden, dann kÃ¼rzer anzeigen
       h := MemoryGrid.optimal_height + PanelT.Height ;
       w := MemoryGrid.optimal_width ;
       if h > (FormMain.ClientHeight-100) then

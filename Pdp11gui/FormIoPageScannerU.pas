@@ -164,10 +164,10 @@ procedure TFormIopageScanner.StartScanButtonClick(Sender: TObject);
     TheState := iopsScanning ;
     UpdateDisplay ;
 
-    // 1) memory cells für alle io-adressen anlegen
+    // 1) memory cells fÃ¼r alle io-adressen anlegen
     n := iopageSize div 2; // nur gerade adressen
 
-    mcg.Clear ; // alle adressen löschen
+    mcg.Clear ; // alle adressen lÃ¶schen
     for i := 0 to n-1 do
       mcg.Add(iopagebase + 2*i) ;
     mcg.calcAddrRange ;
@@ -178,7 +178,7 @@ procedure TFormIopageScanner.StartScanButtonClick(Sender: TObject);
       Application.ProcessMessages ;
 
       // 2) examine all, aber nicht list-optimiert, sondern einzel-Zugriffe
-      // grund: sehr viele Adressen, sehr viele ungültige Adressen
+      // grund: sehr viele Adressen, sehr viele ungÃ¼ltige Adressen
       for i := 0 to n-1 do begin
         if TheState = iopsScanning then begin
           mc := mcg.Cell(i) ;
@@ -191,7 +191,7 @@ procedure TFormIopageScanner.StartScanButtonClick(Sender: TObject);
         end;
       end;
 
-      // 3) undefinierte adressen löschen
+      // 3) undefinierte adressen lÃ¶schen
       i := 0 ;
       while i < mcg.Count do begin
         if mcg.Cell(i).pdp_value = MEMORYCELL_ILLEGALVAL then
@@ -212,12 +212,12 @@ procedure TFormIopageScanner.StartScanButtonClick(Sender: TObject);
         end;
       end;
 
-      // 4.2 wenn nicht: zusammenhängende Blöcke erkennen, so tun, als ob
-      // es devices wären.
+      // 4.2 wenn nicht: zusammenhÃ¤ngende BlÃ¶cke erkennen, so tun, als ob
+      // es devices wÃ¤ren.
       // dabei alle schon bekannten memory cells ignorieren!
       i := 0 ;
       while (i < mcg.Count ) do begin
-        // nächster Block ab mc[i]
+        // nÃ¤chster Block ab mc[i]
         i_blockstart := i ; // _blockend+1 ;
         mc_blockstart := mcg.Cell(i_blockstart) ;
         if mc_blockstart.name <> '' then begin

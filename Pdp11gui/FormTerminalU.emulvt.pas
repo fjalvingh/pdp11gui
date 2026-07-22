@@ -88,7 +88,7 @@ type
       procedure Hello ;
 
       procedure AppendText(outputstyle: TTerminalOutputStyle ; chars:string) ;
-      // wird von aussen aufgerufen, wenn das Terminal was empfängt
+      // wird von aussen aufgerufen, wenn das Terminal was empfÃ¤ngt
       procedure OnSerialRcvData(curdata: string) ;
 
     end{ "TYPE TFormTerminal = class(TFormChild)" } ;
@@ -139,7 +139,7 @@ procedure TFormTerminal.FormCreate(Sender: TObject);
     EmulVT.Cols := 80 ;
     EmulVT.Rows := 50 ; // maximum MAX_ROWS in OverbyteIcsEmulVT.pas
 //    EmulVT.Rows := 25 ;
-    EmulVT.LeftMargin := 3 ; // Schwarzer Rahmen und Schriftfläche
+    EmulVT.LeftMargin := 3 ; // Schwarzer Rahmen und SchriftflÃ¤che
     EmulVT.RightMargin := 3 ;
 
     EmulVT.TabStop := false ;
@@ -203,7 +203,7 @@ procedure TFormTerminal.SetStyle(outputstyle: TTerminalOutputStyle) ;
         tosUser: begin
           SelAttributes.Color := clWhite ;
         end;
-        tosSystem: begin // automatische Ausgabe etwas gedämpfter
+        tosSystem: begin // automatische Ausgabe etwas gedÃ¤mpfter
           SelAttributes.Color := clGray ;
         end;
       end;
@@ -223,7 +223,7 @@ procedure TFormTerminal.Clear1Click(Sender: TObject);
     EmulVT.UpdateScreen ;
   end;
 
-// Text an die ausgabe in einem bestimmten Stil anhängen
+// Text an die ausgabe in einem bestimmten Stil anhÃ¤ngen
 // #13 als EOLN benutzen!
 // unsichtbare Zeichen ausser #13 in \x.. Notation wandeln
 
@@ -326,7 +326,7 @@ procedure TFormTerminal.Hello ;
   begin
     with EmulVT do begin
       // SelStart ist der cursor
-//      AppendText(tosPDP, '*** Terminal für PDP-11/44 console***'
+//      AppendText(tosPDP, '*** Terminal fÃ¼r PDP-11/44 console***'
 //              +#13 + '>>> So wird Ausgabe der PDP-11 angezeigt!' + #13
 //              + '>>>') ;
 //      Application.ProcessMessages ;
@@ -346,7 +346,7 @@ procedure TFormTerminal.Hello ;
   end{ "procedure TFormTerminal.Hello" } ;
 
 
-// Tastendrücke gehen direkt an die Konsole
+// TastendrÃ¼cke gehen direkt an die Konsole
 //procedure TFormTerminal.TerminalWindowKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 
 // wenn umgewandelete VT characters durc PC eingabe produziert wurder (ESC sequneces.
@@ -409,7 +409,7 @@ procedure TFormTerminal.EmulVTMouseUp(Sender: TObject; Button: TMouseButton;
   end;
 
 
-// wird von aussen aufgerufen, wenn das Terminal was empfängt
+// wird von aussen aufgerufen, wenn das Terminal was empfÃ¤ngt
 procedure TFormTerminal.OnSerialRcvData(curdata: string) ;
   begin
     Log('TFormTerminal.OnSerialRcvData: "%s"', [StringVisible(curdata)]);

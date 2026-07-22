@@ -23,7 +23,7 @@ unit FormBusyU;
 
 {
   Form mit progressbar und ABORT Button.
-  Erscheint erst nach Verz�gerung auf, wenn lange Laufdauer zu erwarten ist
+  Erscheint erst nach Verzögerung auf, wenn lange Laufdauer zu erwarten ist
 }
 
 interface
@@ -67,7 +67,7 @@ implementation
 
 
 const
-  sampletime_ms = 1000 ; // sample tocks 1 sekunde, bevor �ber pop-up entschieden wird
+  sampletime_ms = 1000 ; // sample tocks 1 sekunde, bevor über pop-up entschieden wird
   displayThreshold_ms = 5000 ; // pop up, wenn vorgang mindestens solange dauert
 
 
@@ -86,7 +86,7 @@ procedure TBusyForm.Start(info:string; total: integer; enabled: boolean) ;
     ProgressBar1.Position := 0 ;
     fSteps := 0 ;
     fStartticks := GetTickCount ;
-    // show erst nach Anfangswartepause, wenn Vorgaang l�nger dauern wird
+    // show erst nach Anfangswartepause, wenn Vorgaang länger dauern wird
   end;
 
 function TBusyForm.Aborted: boolean ;
@@ -110,7 +110,7 @@ procedure TBusyForm.StepIt(n: integer) ;
     if Visible then
       BringToFront
     else begin
-      // show erst nach Anfangswartepause, wenn Vorgang l�nger dauern wird
+      // show erst nach Anfangswartepause, wenn Vorgang länger dauern wird
       if (getRunningTime_ms > sampletime_ms)
 //      and ( getExpectedEndTime_ms > (fStartticks + displayThreshold_ms)) then
         then
@@ -143,7 +143,7 @@ function TBusyForm.getRunningTime_ms: dword ;
   end;
 
 // Hochrechnung: wann werden 100% erriecht?
-// 0: nicht m�glich
+// 0: nicht möglich
 function TBusyForm.getExpectedEndTime_ms: dword ;
   begin
     if fSteps = 0 then

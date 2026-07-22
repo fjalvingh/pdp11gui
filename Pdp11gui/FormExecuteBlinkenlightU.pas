@@ -41,7 +41,7 @@ uses
 type
 
   TExecuteState = (esUnknown,
-      esCompiling, // programm wird übersetzt
+      esCompiling, // programm wird Ã¼bersetzt
       esShow // instructions werden angezeigt
     ) ;
 
@@ -111,7 +111,7 @@ procedure TFormExecuteBlinkenlight.NewPgmButtonClick(Sender: TObject);
 
     try
       UpdateDisplay ;
-      // wenn kein gültiger File da: User zum Wählen auffordern!
+      // wenn kein gÃ¼ltiger File da: User zum WÃ¤hlen auffordern!
       FormMain.FormMacro11Source.Show ; // immer aufpoppen
       if not FormMain.FormMacro11Source.CanTranslate then begin
         FormMain.FormMacro11Source.LoadButtonClick(nil) ;
@@ -121,7 +121,7 @@ procedure TFormExecuteBlinkenlight.NewPgmButtonClick(Sender: TObject);
       else begin
         FormMain.FormMacro11Source.CompileButtonClick(nil);
         if FormMain.FormMacro11Source.Translated then begin // nicht laden, wenn error
-          // Binärcode jetzt in FormMain.FormMacro11Listing.memorycellgroup
+          // BinÃ¤rcode jetzt in FormMain.FormMacro11Listing.memorycellgroup
           TheState := esShow ;
           // Anzeige mit Listing und Anleitung zum Programmstart
           bi.Generate(
@@ -161,7 +161,7 @@ procedure TFormExecuteBlinkenlight.UpdateDisplay ;
 
     StartPCEdit.Text := Addr2OctalStr(StartPc_v) ;
 
-    // Das Enable der Controls hängt ab von den
+    // Das Enable der Controls hÃ¤ngt ab von den
     // - features der Console (und damit von Run/Halt mode)
     // - vom State der Execution form
     // Es sind auf jeden Fall nur die Controls aktiv, die features der console entsprechen

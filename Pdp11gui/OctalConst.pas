@@ -21,7 +21,7 @@ unit OctalConst;
    CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
-// da Delphi keine Notation für oktale Konstanten hat,
+// da Delphi keine Notation fÃ¼r oktale Konstanten hat,
 // werden sie alle hier definiert und so benutzt:
 // "_17777776"
 

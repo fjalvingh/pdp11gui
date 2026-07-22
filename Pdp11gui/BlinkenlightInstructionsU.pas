@@ -22,8 +22,8 @@ unit BlinkenlightInstructionsU;
 }
 
 { erzeugt aus einer memorycellgroup
-  eine Anweisung, wie der Speicher über eine DEC blinkenlight console zu
-  füllen ist
+  eine Anweisung, wie der Speicher Ã¼ber eine DEC blinkenlight console zu
+  fÃ¼llen ist
 }
 
 interface
@@ -116,7 +116,7 @@ function Bit2UpDown(bit: boolean): string ;
 function Octal2Switches(value: dword ; switchcount: integer): string ;
   var
     searchbitval: boolean ; // zeige liste von 0en, oder von 1en an?
-    searchbitcount: integer ; // soviele Bits der gewählten Sorte sind in "value"
+    searchbitcount: integer ; // soviele Bits der gewÃ¤hlten Sorte sind in "value"
     i : integer ;
     i0: integer ; // block start
     i1: integer ; // block end
@@ -202,7 +202,7 @@ function ConsoleLEDPicture(linecode: integer ; value: dword ; ledcount: integer)
     end;
 
     if linecode in [1,2] then
-      // die LED Zustände an die richtigen Stellen im picture string schreiben
+      // die LED ZustÃ¤nde an die richtigen Stellen im picture string schreiben
       // (da, wo die '+' stehen).
       for i := 0 to ledcount - 1 do begin
         if getBit(value, i) then

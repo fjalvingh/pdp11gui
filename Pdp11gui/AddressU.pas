@@ -69,7 +69,7 @@ function OctalStr2Addr(s: string; mat: TMemoryAddressType): TMemoryAddress ; inl
 // "Constructor"
 // function MemoryAddress(mat: TMemoryAddressType ; val: dword) : TMemoryAddress ;
 
-// Adresse in ein anderes L�ngenmodell umrechnen
+// Adresse in ein anderes Längenmodell umrechnen
 function ChangePhysicalAddressBitWidth(
         addr: TMemoryAddress ; newMat:TMemoryAddressType): TMemoryAddress ;
 
@@ -77,9 +77,9 @@ function ChangePhysicalAddressBitWidth(
 function PhysicalIopageBaseAddr(mat: TMemoryAddressType): dword ; // Startadresse der I/O-page, abh von ThePhysicalAddressWidth
 
 //var
-// globale Einstellung der physikalischen Adressbreite f�r die
+// globale Einstellung der physikalischen Adressbreite für die
 // aktuelle Maschine.
-// Wird von Conosle.get�hysicalAddressWidth definiert,
+// Wird von Conosle.getÜhysicalAddressWidth definiert,
 // und wird von allen Forms in PDP11GUI benutzt.
 
 //  ThePhysicalAddressWidth: byte ;
@@ -125,9 +125,9 @@ function OctalStr2Addr(s: string; mat: TMemoryAddressType): TMemoryAddress ; inl
   end;
 
 
-// Adresse in ein anderes L�ngenmodell umrechnen
+// Adresse in ein anderes Längenmodell umrechnen
 // Adressen kleiner als die IpgeBase bleiben erhalten.
-// Adresse in ein anderes L�ngenmodell umrechnen
+// Adresse in ein anderes Längenmodell umrechnen
 function ChangePhysicalAddressBitWidth(
         addr: TMemoryAddress ; newMat:TMemoryAddressType): TMemoryAddress ;
   begin

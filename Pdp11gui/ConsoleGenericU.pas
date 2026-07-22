@@ -22,7 +22,7 @@ unit ConsoleGenericU;
 }
 
 {
-  Abstrakte Basisklasse für die Ansteuerung verschiedener PDP-11-Consol-Terminals.
+  Abstrakte Basisklasse fÃ¼r die Ansteuerung verschiedener PDP-11-Consol-Terminals.
   Konkrete Consolen-Implementationen sind
   - PDP-11 M9312-Style
   - PDP-11/44-Style
@@ -30,7 +30,7 @@ unit ConsoleGenericU;
   - SimH
 
   Jede konkrete Console muss folgende Methoden implementieren:
-  ClearState - Wissen über Status löschen
+  ClearState - Wissen Ã¼ber Status lÃ¶schen
   Examine - Memory lesen
   Deposit - Memory schreiben
 }
@@ -80,7 +80,7 @@ type
       phOtherLine // nicht-interpretierte Zeile
     ) ;
 
-// Record, der eine geparste Antwort enthält
+// Record, der eine geparste Antwort enthÃ¤lt
 // Union.
   TConsoleAnswerPhrase = class(TCollectionItem)
     public
@@ -107,8 +107,8 @@ type
 
   TConsoleScanner = class(TObject)
     public
-      CurInputLine: string ; // das parst und verkürzt er!
-      nxtcharidx: integer ; // nächstes unverarbeites Zeichen aus CurInputLine
+      CurInputLine: string ; // das parst und verkÃ¼rzt er!
+      nxtcharidx: integer ; // nÃ¤chstes unverarbeites Zeichen aus CurInputLine
       CurSymTxt: string ;
       CurSymType: integer ; // eines der symtype*
 
@@ -132,20 +132,20 @@ type
   // was kann eine konkrete Console alles?
   // verschiedene '11s haben da verschiedene Logiken
 
-  // Für eine '11 hängen die Features ausserdem noch vom Schalter
+  // FÃ¼r eine '11 hÃ¤ngen die Features ausserdem noch vom Schalter
   // "RunMode" ab
 
   // A console can "implement" an action also by popping up a message to
   // tell the user wich swithc he should operate.
 
   TConsoleFeatures = (
-      // examine/deposit können sie alle!
-      cfNonFatalHalt, // console läuft nach HALT weiter, Maschine bleibt nicht stehen (M9312!)
-      cfNonFatalUNIBUStimeout, // console läuft nach UNIBUS timeout weiter
+      // examine/deposit kÃ¶nnen sie alle!
+      cfNonFatalHalt, // console lÃ¤uft nach HALT weiter, Maschine bleibt nicht stehen (M9312!)
+      cfNonFatalUNIBUStimeout, // console lÃ¤uft nach UNIBUS timeout weiter
       cfSwitchEnableOrHalt, // console has a physical "Enable/Halt switch,
       // so featuresSet depends on "RunMode"
       // implemented commands
-      cfActionResetMachine, // reset unabhängig von run, PC set
+      cfActionResetMachine, // reset unabhÃ¤ngig von run, PC set
       cfActionResetMaschineAndStartCpu, // weiterlaufen mit Init
       cfActionContinueCpu, // weiterlaufen ohne Init
       cfActionHaltCpu, // Console kann Program stoppen
@@ -160,13 +160,13 @@ type
   TConsoleRunMode = (crmUnknown, crmRun, crmHalt) ;
 
 
-// wird ausgelöst, wenn die überwachte CPU anhält
+// wird ausgelÃ¶st, wenn die Ã¼berwachte CPU anhÃ¤lt
   TConsoleCPUStopEvent = procedure(Sender: TObject ; pc: TMemoryAddress) of object ;
 
   TConsoleGeneric = class(TObject)
     private
       CriticalSectionLevel: integer ; // > 0 wenn der User gerade kein Zuriff auf die
-      // Console erlauben, weil eine geschlossene Sequenz abläuft
+      // Console erlauben, weil eine geschlossene Sequenz ablÃ¤uft
       MonitorTimer: TTimer ;
       procedure MonitorTimerCallback(Sender: TObject) ;
 
@@ -201,7 +201,7 @@ type
 
       OnExecutionStop: TConsoleCPUStopEvent ;
 
-      // für die Umrechnung virtual->physical Addresse
+      // fÃ¼r die Umrechnung virtual->physical Addresse
       MMU: TPdp11Mmu ;
 
       constructor Create ;
@@ -227,7 +227,7 @@ type
       // low level io
       procedure OnSerialRcv(curdata: string) ;
 
-      // gib die letzte Antwort eines gewissen Typs zurück
+      // gib die letzte Antwort eines gewissen Typs zurÃ¼ck
       function GetLastAnswer(phrasetype: TConsoleAnswerPhraseType): TConsoleAnswerPhrase ;
       function WaitForAnswer(phrasetype: TConsoleAnswerPhraseType; waitmillis: dword): TConsoleAnswerPhrase ;
 //      function ReadLineFromPDP(var buff:string): boolean ;
@@ -237,8 +237,8 @@ type
 //      procedure TerminalPollPDP(var s:string) ;
 
 
-      // damit können konkrete Consolen den Output der
-      // PDP überwachen, zB um selbständigen Stop der Simulation zu erkennen
+      // damit kÃ¶nnen konkrete Consolen den Output der
+      // PDP Ã¼berwachen, zB um selbstÃ¤ndigen Stop der Simulation zu erkennen
       procedure MonitorPdpOutput(curchar: char) ; virtual ; abstract ;
 
       // name der angeschlossenen Console liefern
@@ -254,10 +254,10 @@ type
       // Laufkontrolle. Siehe auch OnSimulationStop. PC ist virtuelle Adresse
       procedure ResetMachine(newpc_v: TMemoryAddress) ; virtual ; abstract ; // CPU+UNIBUS reset
       procedure ResetMachineAndStartCpu(newpc_v: TMemoryAddress) ; virtual ; abstract ; // CPU starten, Reset vorher
-//      function IsRunning: boolean ; virtual ; abstract ; // läuft die CPU (noch?)
+//      function IsRunning: boolean ; virtual ; abstract ; // lÃ¤uft die CPU (noch?)
       procedure ContinueCpu ; virtual ; abstract ; // CPU weiter laufen lassen, kein Reset
-      procedure HaltCpu(var newpc_v: TMemoryAddress) ; virtual ; abstract ; // CPU anhalten, neuer PC zurück
-      procedure SingleStep ; virtual ; abstract ; // einen Zyklus ausführen, neuer PC zurück
+      procedure HaltCpu(var newpc_v: TMemoryAddress) ; virtual ; abstract ; // CPU anhalten, neuer PC zurÃ¼ck
+      procedure SingleStep ; virtual ; abstract ; // einen Zyklus ausfÃ¼hren, neuer PC zurÃ¼ck
 
 
     end{ "TYPE TConsoleGeneric = class(TObject)" } ;
@@ -302,7 +302,7 @@ procedure TConsoleScanner.Clear ;
   begin
     CurInputLine := '' ;
     nxtcharidx := 1 ;
-    // abgeleitete Klassen müssen selbst das erste Symbol mit "NxtSym" fetchen.
+    // abgeleitete Klassen mÃ¼ssen selbst das erste Symbol mit "NxtSym" fetchen.
   end;
 
 // Add serial input to the parser.
@@ -318,7 +318,7 @@ procedure TConsoleScanner.MoreInput(s:string) ;
 
 procedure TConsoleScanner.CleanupInput ;
   begin
-    // gescannten Teil des Inputbuffers löschen
+    // gescannten Teil des Inputbuffers lÃ¶schen
     CurInputLine := Copy(CurInputLine, nxtcharidx, maxint) ;
     nxtcharidx := 1 ;
   end;
@@ -385,9 +385,9 @@ procedure TConsoleGeneric.ClearState ;
 
 
 
-// Begin/Ende von zusammenhängendem  Console/IO markieren.
+// Begin/Ende von zusammenhÃ¤ngendem  Console/IO markieren.
 // der SimualtionStopEvent wird erst nach Ende
-// einer CriticalSection ausgelöst.
+// einer CriticalSection ausgelÃ¶st.
 procedure TConsoleGeneric.BeginCriticalSection(location:string) ;
   begin
     inc(CriticalSectionLevel) ;
@@ -407,7 +407,7 @@ function TConsoleGeneric.InCriticalSection: boolean ;
   end;
 
 
-// String ausgeben. Anwendung muss \n selbst ergänzen!
+// String ausgeben. Anwendung muss \n selbst ergÃ¤nzen!
 // Ausgabe in Logfenster mit Farbe 2
 procedure TConsoleGeneric.WriteToPDP(buff:string) ;
   begin
@@ -425,7 +425,7 @@ procedure TConsoleGeneric.OnSerialRcv(curdata: string) ;
   end;
 
 
-// gib die letzte Antwort eines gewissen Typs zurück
+// gib die letzte Antwort eines gewissen Typs zurÃ¼ck
 function TConsoleGeneric.GetLastAnswer(phrasetype: TConsoleAnswerPhraseType): TConsoleAnswerPhrase ;
   var i: integer ;
     answerline: TConsoleAnswerPhrase ;

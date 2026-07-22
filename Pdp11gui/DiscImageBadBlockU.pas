@@ -270,7 +270,7 @@ destructor TBadBlockList.Destroy ;
     inherited ;
   end;
 
-// löschen und Länge setzen
+// lÃ¶schen und LÃ¤nge setzen
 procedure TBadBlockList.Init(len: integer ; aGrid: TStringGrid) ;
   var i: integer ;
   begin
@@ -296,7 +296,7 @@ procedure TBadBlockList.InternClear ;
       end;
   end;
 
-// alle Items löschen
+// alle Items lÃ¶schen
 procedure TBadBlockList.Clear ;
   begin
     InternClear ;
@@ -321,7 +321,7 @@ procedure TBadBlockList.Show ;
     Grid.Cells[4,0] := 'Info' ;
     Grid.Cells[5,0] := 'First' ;
     Grid.Cells[6,0] := 'Last' ;
-    // zähle blocks
+    // zÃ¤hle blocks
     n := 0 ;
     for i := 0 to Length(Items) - 1 do
       if Items[i] <> nil then
@@ -360,7 +360,7 @@ procedure TBadBlockList.registerBadBlock(aBlockNr, aCylinder, aHead, aSector: in
   var
     badblock: TBadBlock ;
   begin
-    // neuen block anlegen, oder bestehenden ändern
+    // neuen block anlegen, oder bestehenden Ã¤ndern
     if Items[aBlockNr] = nil then
       Items[aBlockNr] := TBadBlock.Create ;
     badblock := Items[aBlockNr] as TBadBlock ;
@@ -449,10 +449,10 @@ procedure TBadBlockList.LoadFromFile(filename:string) ;
 ///  Bad sector file ("BSF") nach DEC Std 144 lesen/schreiben
 ///  Anforderung:
 ///  Wiederholtes Lesen und Schreiben des bsf soll mit
-///  Scan-vorgängen kombinierbar sein, so dass der BSF stabil bleibt.
+///  Scan-vorgÃ¤ngen kombinierbar sein, so dass der BSF stabil bleibt.
 ///  Daher:
 ///  Scans von PDP11GUI werden wie DEC "Manufacturing" behandelt
-///  - Gelesener BSF ergänzt bad sector list
+///  - Gelesener BSF ergÃ¤nzt bad sector list
 ///  - gescannte bad sectors werden in die Manufactoring list eingetragen
 ///  - Bad sectors aus der "field" list werden wieder in die field list geschreiben,
 ///    ausser, sie fallen bei einem Scan wieder negativ auf.
@@ -553,8 +553,8 @@ procedure TBadBlockList.Std144_LoadFromImage(discimage: TMediaImage_Buffer) ;
   var discdevice: TMediaImage_DiscDevice_Std ;
     // bad block management only on standard discs
 
-// result: gültiger sector
-// source: gehört der last track sector "sectornr" zu "manufacturing" oder "field"?
+// result: gÃ¼ltiger sector
+// source: gehÃ¶rt der last track sector "sectornr" zu "manufacturing" oder "field"?
   function readBadSectorFile(badsectorfilenr:integer ; source: TBadBlockSource): boolean ;
     var
       w0, w1, w2: word ;
@@ -609,7 +609,7 @@ procedure TBadBlockList.Std144_LoadFromImage(discimage: TMediaImage_Buffer) ;
           badsectorentry_sector := w1 and $ff ;
           badsectorentry_blocknr := discdevice.DiscAddr2Blocknr(badsectorentry_cylinder, badsectorentry_head, badsectorentry_sector) ;
           // Bad block in Liste eintragen.
-          // nicht überschreiben, wenn er schon drin steht!
+          // nicht Ã¼berschreiben, wenn er schon drin steht!
           if Items[badsectorentry_blocknr] = nil then
             registerBadBlock(badsectorentry_blocknr,
                     badsectorentry_cylinder, badsectorentry_head, badsectorentry_sector,
@@ -634,7 +634,7 @@ procedure TBadBlockList.Std144_LoadFromImage(discimage: TMediaImage_Buffer) ;
       // read only even bad sector files, odd are for 18-bit systems
       if not odd(badsectorfilenr) then begin
         good_sector := readBadSectorFile(badsectorfilenr, bbsFileFactory) ;
-        // daten aus niedrigstem bad sector file übernehmen!
+        // daten aus niedrigstem bad sector file Ã¼bernehmen!
         // RL02 XXDP ZRMLB1 setzt nur file #0!
         if good_sector then
           Break ; // Fertig
@@ -647,7 +647,7 @@ procedure TBadBlockList.Std144_LoadFromImage(discimage: TMediaImage_Buffer) ;
       // read only even bad sector files, odd are for 18-bit systems
       if not odd(badsectorfilenr) then begin
         good_sector := readBadSectorFile(badsectorfilenr, bbsFileField) ;
-        // daten aus niedrigstem bad sector file übernehmen!
+        // daten aus niedrigstem bad sector file Ã¼bernehmen!
         // RL02 XXDP ZRMLB1 setzt nur file #0!
         if good_sector then
           Break ; // Fertig
@@ -680,13 +680,13 @@ procedure TBadBlockList.Std144_WriteToImage(discimage: TMediaImage_Buffer) ;
 
       if odd(badsectorfilenr) then begin
         // Sonderlogik: Alle ungeraden sectoren 1,3,5,7,9,...
-        // sind für das 20-sector-18-bit-format reserviert und
-        // werden hier mit "All-Ones" gefüllt.
+        // sind fÃ¼r das 20-sector-18-bit-format reserviert und
+        // werden hier mit "All-Ones" gefÃ¼llt.
         // See RL02-spec: EK-RL012-UG-005 RL02 User Guide, pages 1-8 ff
         for i := 0 to 255 do
           Std144_SetLastTrackBadSectorFileWord(discimage, badsectorfilenr, i, $ffff) ;
       end else begin
-        // gerade sector nummer: gültiger bad sector file
+        // gerade sector nummer: gÃ¼ltiger bad sector file
 
         // write Cartridge Serial Number
         w0 := CartridgeSerialNumber shr 16 ;

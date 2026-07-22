@@ -28,7 +28,7 @@ unit FormPdp1170PanelU;
   Wenn ein echtes Panel (USB) eingesteckt ist, wird
   dynamisch darauf umgeschaltet. Das  on-screen-Panel
   zeugt dann nur noch den Zustand des physiaklsichen Panels an.
-  Ist kein echtes Panel angeschlossen, kann das on-screen-Panelö benutzt werden.
+  Ist kein echtes Panel angeschlossen, kann das on-screen-PanelÃ¶ benutzt werden.
 }
 
 interface
@@ -56,15 +56,15 @@ type
       { Private-Deklarationen }
 
       // der zuletzt aktivierte Switch.
-      // für Entscheiung, wann eine Adresse auto inc kriegt.
-      // true für aufeinanderfolgende EXAM/DEPOSITs, reset durch LOAD ADDR
+      // fÃ¼r Entscheiung, wann eine Adresse auto inc kriegt.
+      // true fÃ¼r aufeinanderfolgende EXAM/DEPOSITs, reset durch LOAD ADDR
       LastAddrIncCtrl: Tpdp1170PanelControl ;
 
       // die USB-Logik
       pdp1170panelImplementorPhysical: Tpdp1170PanelImplementorPhysical;
 
       TheScreenPanel: Tpdp1170Panel ; // die Simulation
-      ThePhysicalPanel: Tpdp1170Panel ; // das echte panel, über USB
+      ThePhysicalPanel: Tpdp1170Panel ; // das echte panel, Ã¼ber USB
 
       procedure ThePanelSwitchChanged(Sender: TObject) ;
 
@@ -78,18 +78,18 @@ type
 
       function getNextAddress(oldaddr: TMemoryAddress): TMemoryAddress ;
 
-      // wenn von aussen eine MemoryCell geändert wird.
-      // nur für Abfangen von Write auf DisplayRegsiter interessant
+      // wenn von aussen eine MemoryCell geÃ¤ndert wird.
+      // nur fÃ¼r Abfangen von Write auf DisplayRegsiter interessant
       procedure OnMemoryCellChange(Sender: TObject; memorycell: TMemoryCell) ;
 
 
     public
       { Public-Deklarationen }
       memorycellgroup: TMemoryCellgroup ;
-      TheMemorycell: TMemoryCell ; // die eine memorycell, über die Deposit/Examine läuft
+      TheMemorycell: TMemoryCell ; // die eine memorycell, Ã¼ber die Deposit/Examine lÃ¤uft
 
 
-      // Panel, das PDP11GUI tatsächlich steuert:
+      // Panel, das PDP11GUI tatsÃ¤chlich steuert:
       // ThePhysicalPanel, wenn eingesteckt, sonst TheScreenPanel
       ThePanel: Tpdp1170Panel ;
 
@@ -104,8 +104,8 @@ type
 
       // Regsiter des Panels:
       AddressRegisterVal: TMemoryAddress ;
-      DataRegisterVal: dword ; // MEMORYCELL_ILLEGAL, wenn ungütlige adresse
-      DisplayRegisterVal: dword ; // wird bei Änderung von DisplayRegisterMemoryCell
+      DataRegisterVal: dword ; // MEMORYCELL_ILLEGAL, wenn ungÃ¼tlige adresse
+      DisplayRegisterVal: dword ; // wird bei Ã„nderung von DisplayRegisterMemoryCell
       // und bei HALT gesetzt.
 
       AddressSelectState: Tpdp1170PanelControlState ; // Stand des ADDRESS SELECT Drehknopfes
@@ -114,9 +114,9 @@ type
 
       procedure ConnectToMemoryCells(mcg:TMemoryCellgroup) ;
 
-      // wird von ausserhalb aufgerufen, wenn die Codeausführung startet
+      // wird von ausserhalb aufgerufen, wenn die CodeausfÃ¼hrung startet
       procedure OnCpuStart(Sender: TObject) ;
-      // wird von ausserhalb aufgerufen, wenn die Codeausführung stoppt
+      // wird von ausserhalb aufgerufen, wenn die CodeausfÃ¼hrung stoppt
       procedure OnCpuHalt(Sender: TObject) ;
     end{ "TYPE TFormPdp1170Panel = class(TFormChild)" } ;
 
@@ -141,7 +141,7 @@ procedure TFormPdp1170Panel.FormCreate(Sender: TObject);
     TheScreenPanel := pdp1170panelImplementorFrame1.pdp1170panel ;
     ThePhysicalPanel := pdp1170panelImplementorPhysical.pdp1170panel ;
 
-    // Event-Handler für Änderungsereignisse
+    // Event-Handler fÃ¼r Ã„nderungsereignisse
     TheScreenPanel.OnControlStateChanged := TheScreenPanelSwitchOrLEDChanged ;
     ThePhysicalPanel.OnControlStateChanged := ThePhysicalPanelSwitchChanged ;
 
@@ -151,7 +151,7 @@ procedure TFormPdp1170Panel.FormCreate(Sender: TObject);
 
 
     // Drehschalter auf Standardeinstellungen. Falls physikal Panel,
-    //wird das sofort überschrieben. Bei simuliertem Panel bleibt es gültig
+    //wird das sofort Ã¼berschrieben. Bei simuliertem Panel bleibt es gÃ¼ltig
     ctrl := ThePanel.getControlByID(_Switch, pdp1170Sw_ADDRESS_SELECT, 0) ;
     assert(ctrl <> nil) ;
     state := ctrl.getStateByName('CONS PHY') ;
@@ -211,7 +211,7 @@ procedure TFormPdp1170Panel.Timer1Timer(Sender: TObject);
     ctrl: Tpdp1170PanelControl ;
     //curpcval: TMemoryAddress  ;
   begin
-    if ThePanel = nil then Exit ; // noch zu früh!
+    if ThePanel = nil then Exit ; // noch zu frÃ¼h!
     if not Visible then Exit ; // disabled?
 
 
@@ -260,7 +260,7 @@ Execution_laststate := esStopped ; // verhidnere Rekurion, wenn das hier zu lang
         TheMemorycell.Examine ;
         DisplayRegisterVal := TheMemorycell.pdp_value ;
 
-      except // alle Fehler unterdrücken .. wir sind in Timer, er käme immer wieder!
+      except // alle Fehler unterdrÃ¼cken .. wir sind in Timer, er kÃ¤me immer wieder!
 
       end;
 
@@ -276,7 +276,7 @@ Execution_laststate := esStopped ; // verhidnere Rekurion, wenn das hier zu lang
 
 
 // braucht 2 cells der globalen group
-// : 1 für Examine/Deposit, eins für Update des Displayregisters
+// : 1 fÃ¼r Examine/Deposit, eins fÃ¼r Update des Displayregisters
 procedure TFormPdp1170Panel.ConnectToMemoryCells(mcg:TMemoryCellgroup) ;
   begin
     assert(mcg.Count >= 2) ;
@@ -378,7 +378,7 @@ procedure TFormPdp1170Panel.UpdateDisplay ;
       // PROG PHY: die Fomulierung ist
       // "Displays the 22-bit physical address generated by Memory Management for the
       // current Unibus or Memory cycle."
-      // nach einem HALT müsste der aktuelle Befehl, also PC-2 sein ?!
+      // nach einem HALT mÃ¼sste der aktuelle Befehl, also PC-2 sein ?!
       tmpAddr.mat := memorycellgroup.mat ;
       tmpAddr.val := FormMain.FormExecute.CurPc.edit_value - 2 ;
       showAddress(tmpAddr) ;
@@ -396,7 +396,7 @@ procedure TFormPdp1170Panel.UpdateDisplay ;
     else
       showDataAndAddrError(0) ;
 
-    // wenn CPU läuft:
+    // wenn CPU lÃ¤uft:
     // konstant, bis auf Run-Mode aus FormExecute
   end{ "procedure TFormPdp1170Panel.UpdateDisplay" } ;
 
@@ -433,7 +433,7 @@ function TFormPdp1170Panel.getNextAddress(oldaddr: TMemoryAddress): TMemoryAddre
   end ;
 
 
-// Wenn ein Switch verändert wurde
+// Wenn ein Switch verÃ¤ndert wurde
 // Verhalten wie in
 // EK-KB11C-TM-001_1170procMan.pdf, Section III, pdf page 187
 procedure TFormPdp1170Panel.ThePanelSwitchChanged(Sender: TObject) ;
@@ -504,7 +504,7 @@ procedure TFormPdp1170Panel.ThePanelSwitchChanged(Sender: TObject) ;
             end { "if ctrl.getActiveState.value > 0" } ;
           pdp1170Sw_CONT:
             if ctrl.getActiveState.value > 0 then begin
-              // CONT gedrückt. Funktion hängt von HALT/ENABLE ab:
+              // CONT gedrÃ¼ckt. Funktion hÃ¤ngt von HALT/ENABLE ab:
               if Haltswitch_active then begin
                 // wenn HALT/ENABLE = HALT: single step
                 // (eigentlich noch depending on SINST/BUS)
@@ -523,7 +523,7 @@ procedure TFormPdp1170Panel.ThePanelSwitchChanged(Sender: TObject) ;
             if (ctrl.getActiveState = state) then begin
               // HALT ist aktiv
               if not Haltswitch_active then // Switch wurde gerade auf HALT gesetzt:
-                // stoppe Program, wenn es läuft.
+                // stoppe Program, wenn es lÃ¤uft.
                 Haltswitch_active := true ;
               if FormMain.FormExecute.TheState = esRunning then
                 FormMain.FormExecute.doHalt;
@@ -538,7 +538,7 @@ procedure TFormPdp1170Panel.ThePanelSwitchChanged(Sender: TObject) ;
           pdp1170Sw_START: begin
             if ctrl.getActiveState.value > 0 then begin
               if Haltswitch_active and (FormMain.FormExecute.TheState <> esRunning) then begin
-                // wenn HALT/ENABLE = HALT: reset, nur wenn nicht ausführend
+                // wenn HALT/ENABLE = HALT: reset, nur wenn nicht ausfÃ¼hrend
 /// chaos virtual/physical!!!
                 FormMain.FormExecute.StartPCEdit.text := Addr2OctalStr(AddressRegisterVal) ;
                 FormMain.FormExecute.doResetMachineAndSetPC;
@@ -586,15 +586,15 @@ procedure TFormPdp1170Panel.ThePhysicalPanelSwitchChanged(Sender: TObject) ;
   end;
 
 
-// wenn von aussen eine MemoryCell geändert wird.
-// nur für Abfangen von Write auf DisplayRegister interessant
+// wenn von aussen eine MemoryCell geÃ¤ndert wird.
+// nur fÃ¼r Abfangen von Write auf DisplayRegister interessant
 procedure TFormPdp1170Panel.OnMemoryCellChange(Sender: TObject; memorycell: TMemoryCell) ;
   begin
     if memorycell = DisplayRegisterMemoryCell then
       DisplayRegisterVal := DisplayRegisterMemoryCell.pdp_value ;
   end;
 
-// wird von ausserhalb aufgerufen, wenn die Codeausführung started
+// wird von ausserhalb aufgerufen, wenn die CodeausfÃ¼hrung started
 procedure TFormPdp1170Panel.OnCpuStart(Sender: TObject) ;
   begin
     if not Visible then Exit ; // SR nicht setzen, wenn Display unsichtbar
@@ -605,20 +605,20 @@ procedure TFormPdp1170Panel.OnCpuStart(Sender: TObject) ;
       TheMemorycell.addr.val := MEMORYCELL_SPECIALADDR_SWITCHREG ;
       TheMemorycell.edit_value := getDataSwitches and $ffff ;
       TheMemorycell.Deposit ;
-    except // alle Fehler unterdrücken .. wir sind im Timer, er käme immer wieder!
+    except // alle Fehler unterdrÃ¼cken .. wir sind im Timer, er kÃ¤me immer wieder!
 
     end;
   end{ "procedure TFormPdp1170Panel.OnCpuStart" } ;
 
 
-// wird von ausserhalb aufgerufen, wenn die Codeausführung stoppt
+// wird von ausserhalb aufgerufen, wenn die CodeausfÃ¼hrung stoppt
 procedure TFormPdp1170Panel.OnCpuHalt(Sender: TObject) ;
 //  var curpcval: TMemoryAddress  ;
   begin
     if not Visible then Exit ; // DR nicht abfragen, wenn Display unsichtbar
 
     (*
-    Anzeige des Stopped PC wäre ein schönes feature ... ist aber nirgends dokumentiert!
+    Anzeige des Stopped PC wÃ¤re ein schÃ¶nes feature ... ist aber nirgends dokumentiert!
 
     // PC-adresse anzeigen, ist virtual
     curpcval.mat := matVirtual ;
@@ -635,7 +635,7 @@ procedure TFormPdp1170Panel.OnCpuHalt(Sender: TObject) ;
       TheMemorycell.Examine ;
       DisplayRegisterVal := TheMemorycell.pdp_value ;
 
-    except // alle Fehler unterdrücken .. wir sind im Timer, er käme immer wieder!
+    except // alle Fehler unterdrÃ¼cken .. wir sind im Timer, er kÃ¤me immer wieder!
 
     end;
 

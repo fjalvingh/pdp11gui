@@ -22,7 +22,7 @@ unit ConsolePDP11SimHU;
 }
 
 {
-  Steuert über Telnet den Emulatir SimH an
+  Steuert Ã¼ber Telnet den Emulatir SimH an
   Die Anwendung ruft nur Deposit(), Examine()
 
     Der Zugriff auf die CPU-R0..R7 wird in die besonderen Examines
@@ -98,10 +98,10 @@ type
       function DecodeNextAnswerPhrase: boolean ; override ;
       procedure ResetMachine(newpc_v: TMemoryAddress) ; override ; // Maschine reset
       procedure ResetMachineAndStartCpu(newpc_v: TMemoryAddress) ; override ; // CPU starten.
-//      function IsRunning: boolean ; virtual ; abstract ; // läuft die CPU (noch?)
+//      function IsRunning: boolean ; virtual ; abstract ; // lÃ¤uft die CPU (noch?)
       procedure ContinueCpu ;  override ; // CPU anhalten
       procedure HaltCpu(var newpc_v: TMemoryAddress) ;  override ; // CPU anhalten
-      procedure SingleStep ;  override ; // einen Zyklus ausführen
+      procedure SingleStep ;  override ; // einen Zyklus ausfÃ¼hren
 
 
     end{ "TYPE TConsolePDP11SimH = class(TConsoleGeneric)" } ;
@@ -134,9 +134,9 @@ function TConsoleSimHScanner.NxtSym(raiseIncompleteOnEof: boolean = true): strin
 
 // ermittelt den symbolischen SimH-Registernamen zu einer 22bit-UNIBUS-Adresse
 // '', wenn keiner gefunden
-// Problem: die CPU-Register addressiert SimH nicht über UNIBUS-Adressen!
+// Problem: die CPU-Register addressiert SimH nicht Ã¼ber UNIBUS-Adressen!
 
-// diese Liste hier ist Model-abhängig .. eigentlich sollte sie aus
+// diese Liste hier ist Model-abhÃ¤ngig .. eigentlich sollte sie aus
 // der .ini-Datei mit geladen werden!
 //function addr2regname(physicaladdrval:dword): string ;
 function addr2regname(addr: TMemoryAddress; use_tmpval: boolean = false): string ;
@@ -231,7 +231,7 @@ function TConsolePDP11SimH.getName: string ;
     result := 'SimH PDP-11 console' ;
   end;
 
-// Terminal-Einstellungen für SimH
+// Terminal-Einstellungen fÃ¼r SimH
 function TConsolePDP11SimH.getTerminalSettings: TTerminalSettings ;
   begin
 //    result.Receive_CRisCRLF := false ; // Unser "Enter" gibt CR
@@ -247,7 +247,7 @@ function TConsolePDP11SimH.getFeatures: TConsoleFeatureSet ;
     result := [
             cfNonFatalHalt,
             cfNonFatalUNIBUStimeout,
-            cfActionResetMachine, // reset unabhängig von run: RESET ALL
+            cfActionResetMachine, // reset unabhÃ¤ngig von run: RESET ALL
             cfActionResetMaschineAndStartCpu, // weiterlaufen mit Init: RUN.
             cfActionContinueCpu, // weiterlaufen ohne Init: GO bzw C
             cfActionHaltCpu, // Console kann Program stoppen
@@ -267,7 +267,7 @@ function TConsolePDP11SimH.getPhysicalMemoryAddressType: TMemoryAddressType ;
 
 // Aus SerialRcvDataBuffer die Antworten extrahieren
 // und in die Colection AnswerLines schreiben
-// erkennt im output von SimH die nächste Antwort phrase
+// erkennt im output von SimH die nÃ¤chste Antwort phrase
 // wird vom "onRcv"-Even aufgerufen - letztlich von SerialIoHub-PollTimer
 function TConsolePDP11SimH.DecodeNextAnswerPhrase: boolean ;
   var
@@ -313,13 +313,13 @@ function TConsolePDP11SimH.DecodeNextAnswerPhrase: boolean ;
       curanswerline.phrasetype := phPrompt ;
       curanswerline.rawtext := curline ;
 
-      // Hier nicht as OnHalt event auslösen ... das will wahrscheinlich
-      //Funktionen durchführen, (EXAMINE list), die wiederum vom background-empfang abhängig sind!
-      // war die Phrase davor ein "phHalt", wird jetzt das OnHalt-Event ausgelöst
+      // Hier nicht as OnHalt event auslÃ¶sen ... das will wahrscheinlich
+      //Funktionen durchfÃ¼hren, (EXAMINE list), die wiederum vom background-empfang abhÃ¤ngig sind!
+      // war die Phrase davor ein "phHalt", wird jetzt das OnHalt-Event ausgelÃ¶st
       if (haltanswerline <> nil) and (haltanswerline.phrasetype = phHalt) then begin
         onExecutionStopPcVal := haltanswerline.haltaddr ;
         onExecutionStopDetected := true ;
-        // MonitorTimer kann jetzt OnExecutionStop auslösen
+        // MonitorTimer kann jetzt OnExecutionStop auslÃ¶sen
       end else begin
         onExecutionStopPcVal.val := MEMORYCELL_ILLEGALVAL ;
         onExecutionStopDetected := false ;
@@ -327,7 +327,7 @@ function TConsolePDP11SimH.DecodeNextAnswerPhrase: boolean ;
     end { "if curline = SIMH_PROMPT" } ;
 
     if (curanswerline = nil) and eoln then begin
-      // Analyse der letzten vollständigen Zeile
+      // Analyse der letzten vollstÃ¤ndigen Zeile
       if (pos('SIMULATION STOPPED', Uppercase(curline)) > 0)
               or (pos('HALT', Uppercase(curline)) > 0)
               or (pos('STEP EXPIRED', Uppercase(curline)) > 0)
@@ -350,7 +350,7 @@ function TConsolePDP11SimH.DecodeNextAnswerPhrase: boolean ;
             curanswerline.phrasetype := phHalt ;
             curanswerline.rawtext := curline ;
             curanswerline.haltaddr := OctalStr2Addr(s, matVirtual) ;
-            // halt -phrase löst noch nicht das OnExecutionStop-Event aus.
+            // halt -phrase lÃ¶st noch nicht das OnExecutionStop-Event aus.
             // erst, wenn die cmd prompt erkannt wird
           end ;
         end{ "if (pos('SIMULATION STOPPED', Uppercase(curline)) > 0) or (pos('HALT', Upperc..." } ;
@@ -359,16 +359,16 @@ function TConsolePDP11SimH.DecodeNextAnswerPhrase: boolean ;
         curanswerline := Answerlines.Add as TConsoleAnswerPhrase ;
         curanswerline.phrasetype := phExamine ;
         curanswerline.rawtext := curline ;
-        try // bei Formatfehler: curanswerline wieder löschen und := nil
+        try // bei Formatfehler: curanswerline wieder lÃ¶schen und := nil
           i := pos('Address space exceeded', curline) ;
           if i > 0 then begin
-            // UNIBUS timeout ist gültige Antwort
+            // UNIBUS timeout ist gÃ¼ltige Antwort
             curanswerline.examineaddr.mat := matPhysical22 ;
             curanswerline.examineaddr.val := MEMORYCELL_ILLEGALVAL ;  // adresse ist leider unbekannt
-            curanswerline.examinevalue := MEMORYCELL_ILLEGALVAL ; // gültiges Fehlersignal
+            curanswerline.examinevalue := MEMORYCELL_ILLEGALVAL ; // gÃ¼ltiges Fehlersignal
           end else begin
 
-            // es kommt <addr>:  <val> zurück
+            // es kommt <addr>:  <val> zurÃ¼ck
             s := ExtractWord(1, curline, [' ', #9]) ; // val extrahieren
             if (s = '') or (s[length(s)] <> ':') then raise EConsoleScannerUnknownExpression.Create('no examine answer') ; //no error
 
@@ -389,7 +389,7 @@ function TConsolePDP11SimH.DecodeNextAnswerPhrase: boolean ;
           end { "if i > 0 ... ELSE" } ;
         except
           curanswerline.Free ;
-          curanswerline := nil ; // probiere nächsten Typ
+          curanswerline := nil ; // probiere nÃ¤chsten Typ
         end{ "try" } ;
       end { "if (curanswerline = nil) and eoln" } ;
 
@@ -419,7 +419,7 @@ procedure TConsolePDP11SimH.Resync ;
     try
       BeginCriticalSection ; // User sperren
 
-      examine_lastaddr.val := MEMORYCELL_ILLEGALVAL ; // ungültig, da 32 bit
+      examine_lastaddr.val := MEMORYCELL_ILLEGALVAL ; // ungÃ¼ltig, da 32 bit
       deposit_lastaddr.val := MEMORYCELL_ILLEGALVAL ;
 
       // Irgendwas eingeben, es muss die Prompt "sim>" kommen.
@@ -530,7 +530,7 @@ procedure TConsolePDP11SimH.Deposit(mcg: TMemoryCellGroup ; optimize:boolean; ab
     s, regname: string ;
     addr: TMemoryAddress ;
     tmpdir: string ;
-    foutname: string ; // temporärer file
+    foutname: string ; // temporÃ¤rer file
     fout: System.Text ;
   begin
     // simh muss auf der lokalen Machine laufen, sonst gibts keinen Zugriff auf den
@@ -588,7 +588,7 @@ procedure TConsolePDP11SimH.Deposit(mcg: TMemoryCellGroup ; optimize:boolean; ab
       CheckPrompt('DEPOSIT-DO failed, no prompt') ;
 
     finally
-      // file wieder löschen
+      // file wieder lÃ¶schen
       try Erase(fout) ;except ;end ;
     end { "try" } ;
 
@@ -665,11 +665,11 @@ function TConsolePDP11SimH.Examine(addr: TMemoryAddress): dword ;
 // SimH kann E addr,addr,addr,... auswerten.
 procedure TConsolePDP11SimH.Examine(mcg: TMemoryCellGroup ; unknown_only: boolean; abortable:boolean) ;
 
-// Examine-Commandos für eine Liste ausgeben. addr_inc: 1 für globale register, sonst 2
+// Examine-Commandos fÃ¼r eine Liste ausgeben. addr_inc: 1 fÃ¼r globale register, sonst 2
 // nur solche listmembers beachten, die tag = 0 haben (= noch nicht abgefragt sind)
 // result: true, wenn alle cells abgefragt wurden
 // register werden an bekanntem Registername erkannt
-// false: neuer Aufruf ist nötig, mindestens die erste Zelle wurde abgefragt
+// false: neuer Aufruf ist nÃ¶tig, mindestens die erste Zelle wurde abgefragt
 // UNIBUSTIMEOUTS: abbruch, mindestens die 1. Zelle ist gesetzt (mit INVALID)
 
   function examineAddrList(list: TList ; addr_inc: integer): boolean ;
@@ -692,7 +692,7 @@ procedure TConsolePDP11SimH.Examine(mcg: TMemoryCellGroup ; unknown_only: boolea
       starttime: dword ;
       answerline: TConsoleAnswerPhrase ;
       next_expected_addr: TMemoryAddress ;
-      block_failure: boolean ; // Blockabfrage ist durcheinander, address error: restart nötig
+      block_failure: boolean ; // Blockabfrage ist durcheinander, address error: restart nÃ¶tig
       ready: boolean ; // false: das frage/antwort-Spiel abbrechen
       found: boolean ;
       //lastaddr: TMemoryAddress ;
@@ -718,7 +718,7 @@ procedure TConsolePDP11SimH.Examine(mcg: TMemoryCellGroup ; unknown_only: boolea
 
       // finde alle sequentiellen Bereiche.
       // addressen physical vergleichen ... addr.tmpval!
-      // es wird nur ein Command für die ganze Liste ausgegeben:
+      // es wird nur ein Command fÃ¼r die ganze Liste ausgegeben:
       // E 0-100,230,234,r0,pc,1000-1006
       // Oder:
       // E R0,R1,R2,R3,R4
@@ -730,16 +730,16 @@ procedure TConsolePDP11SimH.Examine(mcg: TMemoryCellGroup ; unknown_only: boolea
 
           // finde einen block, in dem die Adressen um 2 aufsteigen
           // und keine Register dabei sind
-          // block darf aber nicht länger als max_block_len werden,
-          // längere blöcke werden unterbrochen.
+          // block darf aber nicht lÃ¤nger als max_block_len werden,
+          // lÃ¤ngere blÃ¶cke werden unterbrochen.
           // Register, die '?' heissen, sind immer unbekannt.
           cmd := 'E' ;
           sep := ' ' ;
-          blockend := blockstart ;  // blockend immer nächster Index NICHT im Bereich
+          blockend := blockstart ;  // blockend immer nÃ¤chster Index NICHT im Bereich
 
           // Kommaliste aus von-bis bereichen bilden
           repeat
-            blockstart1 := blockend ; // start des nächsten von-bis-Bereichs
+            blockstart1 := blockend ; // start des nÃ¤chsten von-bis-Bereichs
             blockend := blockstart1+1 ;
 
             // (A) einzelnen von-bis bereich bilden
@@ -750,12 +750,12 @@ procedure TConsolePDP11SimH.Examine(mcg: TMemoryCellGroup ; unknown_only: boolea
                     and (TMemoryCell(list[blockend-1]).tag = 0)
                     and (TMemoryCell(list[blockend-1]).addr.tmpval + 2 = TMemoryCell(list[blockend]).addr.tmpval)
                     and not is_SpecialAddrname(blockend)
-                    // blocklänge begrenzen
+                    // blocklÃ¤nge begrenzen
                     and ((blockend-blockstart) < max_block_len)
                     do
               inc(blockend) ;
 
-            // cmd für von-bis Bereich rendern
+            // cmd fÃ¼r von-bis Bereich rendern
             if blockend - blockstart1 > 1 then begin
               cmd := cmd + sep + Format('%s-%s', [
                       Dword2OctalStr(TMemoryCell(list[blockstart1]).addr.tmpval, 0),
@@ -805,14 +805,14 @@ procedure TConsolePDP11SimH.Examine(mcg: TMemoryCellGroup ; unknown_only: boolea
                 Log('list examine: processing answer');
                 Log(answerline.AsText);
                 starttime := GetTickCount ; // Timeout reset
-                // gültiges address/wert paar, oder TIMEOUT
+                // gÃ¼ltiges address/wert paar, oder TIMEOUT
                 if answerline.examinevalue = MEMORYCELL_ILLEGALVAL then begin
                   // die aktuelle Adresse verursachte einen Fehler,
                   // sie ist aber unbekannt!
                   answerline.examineaddr.val := next_expected_addr.tmpval ;
                   block_failure := true ;
                 end ;
-                // finde memorycell über adresse
+                // finde memorycell Ã¼ber adresse
                 found := false ;
                 for j := blockstart to blockend-1 do begin
                   mc := TMemoryCell(list[j]) ;
@@ -845,7 +845,7 @@ procedure TConsolePDP11SimH.Examine(mcg: TMemoryCellGroup ; unknown_only: boolea
                     [Dword2OctalStr(next_expected_addr.tmpval, 22)]) ;
             result := true ; // keine weiteren versuche, Endlos-schleife!
           end;
-          // nächster Block für neues "E" command
+          // nÃ¤chster Block fÃ¼r neues "E" command
           blockstart := blockend ;
         end { "while not BusyForm.Aborted and not block_failure and (blockstart < list.Count)" } ;
         if BusyForm.Aborted then result := true ; // do not retry
@@ -861,7 +861,7 @@ procedure TConsolePDP11SimH.Examine(mcg: TMemoryCellGroup ; unknown_only: boolea
     listcpureg: TList ; // sortierte Liste mit CPU-Regsiteradressen (inkrement 2) ;
   begin { "procedure TConsolePDP11SimH.Examine" }
     // a) memorycells sortiert auslesen
-    // b) Memory/globalregister Bereiche unterscheiden, zusammenhängende
+    // b) Memory/globalregister Bereiche unterscheiden, zusammenhÃ¤ngende
     //    Adressbereiche unterscheiden
     // c) sequentiell aufeinanderfolgende Adressen auslesen
 
@@ -908,7 +908,7 @@ procedure TConsolePDP11SimH.Examine(mcg: TMemoryCellGroup ; unknown_only: boolea
   end { "procedure TConsolePDP11SimH.Examine" } ;
 
 
-// sagt der TPDP-Console, dass sie nix mehr über SimH weiss
+// sagt der TPDP-Console, dass sie nix mehr Ã¼ber SimH weiss
 procedure TConsolePDP11SimH.ClearState ;
   begin
     inherited ;
@@ -952,7 +952,7 @@ procedure TConsolePDP11SimH.ResetMachineAndStartCpu(newpc_v: TMemoryAddress) ;  
       Answerlines.Clear ;
       s  := Format('go %s'+ CHAR_SIMH_CR, [Dword2OctalStr(newpc_v.val, 16)]) ;
       WriteToPDP(s) ;
-      // keine Prompt, CPU läuft jetzt
+      // keine Prompt, CPU lÃ¤uft jetzt
     finally
       EndCriticalSection ;
     end{ "try" } ;
@@ -979,7 +979,7 @@ procedure TConsolePDP11SimH.HaltCpu(var newpc_v: TMemoryAddress) ; // CPU anhalt
       WriteToPDP(CHAR_SIMH_HALT) ; // ^E
 
       answerline := WaitForAnswer(phHalt, SIMH_CMD_TIMEOUT) ;
-      WriteToPDP(CHAR_SIMH_CR) ; // Störungen beseitigen
+      WriteToPDP(CHAR_SIMH_CR) ; // StÃ¶rungen beseitigen
       // if answerline = nil then begin
       //   WriteToPDP(CHAR_SIMH_CR) ;
       //   answerline := WaitForAnswer(phHalt, SIMH_CMD_TIMEOUT) ;
@@ -998,7 +998,7 @@ procedure TConsolePDP11SimH.HaltCpu(var newpc_v: TMemoryAddress) ; // CPU anhalt
 
 
 // PC ist virtuelle 16 bit Adresse
-// einen Zyklus ausführen, danach CPU-Stop-Event auslösen
+// einen Zyklus ausfÃ¼hren, danach CPU-Stop-Event auslÃ¶sen
 procedure TConsolePDP11SimH.SingleStep;
   var answerline: TConsoleAnswerPhrase ;
     pcaddr: TMemoryAddress ;

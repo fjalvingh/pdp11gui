@@ -22,7 +22,7 @@ unit FormMemoryListU;
 }
 
 {
-  Eine Reihe Speicherzellen als ausführliche Liste
+  Eine Reihe Speicherzellen als ausfÃ¼hrliche Liste
 }
 
 interface

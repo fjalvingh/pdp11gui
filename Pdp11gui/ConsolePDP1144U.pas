@@ -23,7 +23,7 @@ unit ConsolePDP1144U;
 
 
 {
-  Steuert über RS232 die PDP-11/44 Console an
+  Steuert Ã¼ber RS232 die PDP-11/44 Console an
   Die Anwendung ruft nur Deposit(), Examine()
 
   Der Zugriff auf die CPU-R0..R7 wird in die besonderen Examines
@@ -49,7 +49,7 @@ const // Zeilenumbruch der PDP-Console
   CHAR_PDP_LF = #$a ;
   CHAR_CONTROL_C = #$3 ;
   CHAR_CONTROL_P = #$10 ;
-  PDP_CMD_TIMEOUT = 1000 ; // timeout für Antwort in Millisekunden. Long for slow telnet connections
+  PDP_CMD_TIMEOUT = 1000 ; // timeout fÃ¼r Antwort in Millisekunden. Long for slow telnet connections
   PDP_PROMPT = '>>>' ;
 
 type
@@ -97,9 +97,9 @@ type
       procedure ResetMachineAndStartCpu(newpc_v: TMemoryAddress) ; override ; // CPU starten.
       procedure ContinueCpu ; override ;
 
-//      function IsRunning: boolean ; virtual ; abstract ; // läuft die CPU (noch?)
+//      function IsRunning: boolean ; virtual ; abstract ; // lÃ¤uft die CPU (noch?)
       procedure HaltCpu(var newpc_v: TMemoryAddress) ;  override ; // CPU anhalten
-      procedure SingleStep ;  override ; // einen Zyklus ausführen
+      procedure SingleStep ;  override ; // einen Zyklus ausfÃ¼hren
 
     end{ "TYPE TConsolePDP1144 = class(TConsoleGeneric)" } ;
 
@@ -115,7 +115,7 @@ uses
   FormMainU ;
 
 const
-  // die 16 globalen Register R0..R7, R10..R17 werden kürzer addressiert
+  // die 16 globalen Register R0..R7, R10..R17 werden kÃ¼rzer addressiert
   global_register_base = _17777700 ;
   global_register_blocksize = 16 ;
 
@@ -154,12 +154,12 @@ function TConsolePDP1144.getName: string ;
     result := 'PDP-11/44 console' ;
   end;
 
-// Terminal-Einstellungen für die PDP-11/44
+// Terminal-Einstellungen fÃ¼r die PDP-11/44
 function TConsolePDP1144.getTerminalSettings: TTerminalSettings ;
   begin
     result.Receive_CRisNewline := true ;
     result.Receive_LFisNewline := false ; // ignoriere LF
-    result.Backspace := #0 ; // PDP-11/44 hat das teletype-Backspace und löscht nie
+    result.Backspace := #0 ; // PDP-11/44 hat das teletype-Backspace und lÃ¶scht nie
     result.TabStop := 0 ;
   end;
 
@@ -171,7 +171,7 @@ function TConsolePDP1144.getFeatures: TConsoleFeatureSet ;
     result := [
             cfNonFatalHalt,
             cfNonFatalUNIBUStimeout,
-            cfActionResetMachine, // reset unabhängig von run: INITIALIZE
+            cfActionResetMachine, // reset unabhÃ¤ngig von run: INITIALIZE
             cfActionResetMaschineAndStartCpu, // weiterlaufen mit Init: START
             cfActionContinueCpu, // weiterlaufen ohne Init: GO bzw C
             cfActionHaltCpu, // Console kann Program stoppen
@@ -195,7 +195,7 @@ procedure TConsolePDP1144.Resync ;
     try
       BeginCriticalSection('Resync') ; // User sperren
 
-//      examine_lastaddr := MEMORYCELL_ILLEGALVAL ; // ungültig, da 32 bit
+//      examine_lastaddr := MEMORYCELL_ILLEGALVAL ; // ungÃ¼ltig, da 32 bit
       deposit_lastaddr.val := MEMORYCELL_ILLEGALVAL ;
 
       RcvScanner.Clear ; // unverarbeiteter Input weg
@@ -218,7 +218,7 @@ procedure TConsolePDP1144.Init(aConnection: TSerialIoHub) ;
     Resync ;
   end;
 
-// sagt der PDP-Console, dass sie nix mehr über die PDP-11/44 weiss
+// sagt der PDP-Console, dass sie nix mehr Ã¼ber die PDP-11/44 weiss
 procedure TConsolePDP1144.ClearState ;
   begin
     inherited ;
@@ -229,7 +229,7 @@ procedure TConsolePDP1144.ClearState ;
 
 // Aus RcvScanner.CurInputLine die Antworten extrahieren
 // und in die Colection AnswerLines schreiben
-// erkennt im output von SimH die nächste Antwort phrase
+// erkennt im output von SimH die nÃ¤chste Antwort phrase
 // wird vom "onRcv"-Even aufgerufen - letztlich von SerialIoHub-PollTimer
 function TConsolePDP1144.DecodeNextAnswerPhrase: boolean ;
   var
@@ -276,14 +276,14 @@ function TConsolePDP1144.DecodeNextAnswerPhrase: boolean ;
       curanswerline.phrasetype := phPrompt ;
       curanswerline.rawtext := curline ;
 
-      // Hier nicht das OnHalt event auslösen ... das will wahrscheinlich
-      // Funktionen durchführen, (EXAMINE list), die wiederum vom background-empfang abhängig sind!
-      // war die Phrase davor ein "phHalt", wird jetzt das OnHalt-Event ausgelöst
+      // Hier nicht das OnHalt event auslÃ¶sen ... das will wahrscheinlich
+      // Funktionen durchfÃ¼hren, (EXAMINE list), die wiederum vom background-empfang abhÃ¤ngig sind!
+      // war die Phrase davor ein "phHalt", wird jetzt das OnHalt-Event ausgelÃ¶st
       if (haltanswerline <> nil) and (haltanswerline.phrasetype = phHalt) then begin
         onExecutionStopPcVal := haltanswerline.haltaddr ;
         onExecutionStopDetected := true ;
         LogStrCol(LogCol_DecodeNextAnswerPhrase,  'prompt detected, onExecutionStopPcVal := haltanswerline.haltaddr') ;
-        // MonitorTimer kann jetzt OnExecutionStop auslösen
+        // MonitorTimer kann jetzt OnExecutionStop auslÃ¶sen
       end else begin
         onExecutionStopPcVal.val := MEMORYCELL_ILLEGALVAL ;
         onExecutionStopDetected := false ;
@@ -291,7 +291,7 @@ function TConsolePDP1144.DecodeNextAnswerPhrase: boolean ;
 
     end { "if curline = PDP_PROMPT" } ;
     if (curanswerline = nil) and eoln then begin
-      // Analyse der letzten vollständigen Zeile
+      // Analyse der letzten vollstÃ¤ndigen Zeile
       // erkenne, ob es ein CPU-stop ist. PDP-11/44 gibt
       // bei Single step und Console-Halt gibt es nur den PC aus:
       ///////////////////
@@ -337,15 +337,15 @@ function TConsolePDP1144.DecodeNextAnswerPhrase: boolean ;
       curanswerline.phrasetype := phExamine ;
       curanswerline.rawtext := curline ;
 
-      try // bei Formatfehler: curanswerline wieder löschen und := nil
+      try // bei Formatfehler: curanswerline wieder lÃ¶schen und := nil
         if isV340c then begin
           // EXAMINE  on v3.40c console
           if (pos('?Bus timeout error?', curline) > 0) then begin
             // style v3.40
-            // UNIBUS timeout ist gültige Antwort
+            // UNIBUS timeout ist gÃ¼ltige Antwort
             curanswerline.examineaddr.mat := matPhysical22 ;
             curanswerline.examineaddr.val := MEMORYCELL_ILLEGALVAL ;  // adresse ist leider unbekannt
-            curanswerline.examinevalue := MEMORYCELL_ILLEGALVAL ; // gültiges Fehlersignal
+            curanswerline.examinevalue := MEMORYCELL_ILLEGALVAL ; // gÃ¼ltiges Fehlersignal
           end else begin
             /// v340c:"    P   12345670 123456"
             ///   oder"    G   01 123456"  //R1
@@ -372,10 +372,10 @@ function TConsolePDP1144.DecodeNextAnswerPhrase: boolean ;
         end { "if isV340c" } else begin
           // EXAMINE on std console
           if (pos('?20 TRAN ERR', curline) > 0) then begin
-            // UNIBUS timeout ist gültige Antwort
+            // UNIBUS timeout ist gÃ¼ltige Antwort
             curanswerline.examineaddr.mat := matPhysical22 ;
             curanswerline.examineaddr.val := MEMORYCELL_ILLEGALVAL ;  // adresse ist leider unbekannt
-            curanswerline.examinevalue := MEMORYCELL_ILLEGALVAL ; // gültiges Fehlersignal
+            curanswerline.examinevalue := MEMORYCELL_ILLEGALVAL ; // gÃ¼ltiges Fehlersignal
           end else begin
             // std: "00000000 222222"
             s := ExtractWord(1, curline, [' ', #9]) ; // val extrahieren
@@ -394,7 +394,7 @@ function TConsolePDP1144.DecodeNextAnswerPhrase: boolean ;
         end{ "if isV340c ... ELSE" } ;
       except
         curanswerline.Free ;
-        curanswerline := nil ; // probiere nächsten Typ
+        curanswerline := nil ; // probiere nÃ¤chsten Typ
       end{ "try" } ;
 
       if (curanswerline = nil) and eoln then begin
@@ -526,7 +526,7 @@ function TConsolePDP1144.Examine(addr: TMemoryAddress): dword ;
 // Kernfunktion von PDP11GUI: schnell viele Memoryadressen auslesen
 // optimiert eine ganze Memorylist auslesen
 // nicht abbrechen, wenn ?20 TRAN ERR kommt
-// Antwort '?20 TRAN ERR' ist gültig, schnell behandeln
+// Antwort '?20 TRAN ERR' ist gÃ¼ltig, schnell behandeln
 
 // Beispiel:
 // >>>E/N:10 17772370
@@ -541,15 +541,15 @@ function TConsolePDP1144.Examine(addr: TMemoryAddress): dword ;
 // ?20 TRAN ERR
 // >>>
 
-// Die Addresse der "?20" muss aus dem Vorgänger geschlossen werden.
+// Die Addresse der "?20" muss aus dem VorgÃ¤nger geschlossen werden.
 
 
 procedure TConsolePDP1144.Examine(mcg: TMemoryCellgroup ; unknown_only: boolean ; abortable: boolean) ;
 
-// Examine-Commandos für eine Liste ausgeben. addr_inc: 1 für globale register, sonst 2
+// Examine-Commandos fÃ¼r eine Liste ausgeben. addr_inc: 1 fÃ¼r globale register, sonst 2
 // nur solche listmembers beachten, die tag = 0 haben (= noch nicht abgefragt sind)
 // result: true, wenn alle cells abgefragt wurden
-// false: neuer Aufruf ist nötig, mindestens die erste Zelle wurde abgefragt
+// false: neuer Aufruf ist nÃ¶tig, mindestens die erste Zelle wurde abgefragt
 // UNIBUSTIMEOUTS: abbruch, mindestens die 1. Zelle ist gesetzt (mit INVALID)
   function examineAddrList(list: TList ; addr_inc: integer ): boolean ;
     const
@@ -565,7 +565,7 @@ procedure TConsolePDP1144.Examine(mcg: TMemoryCellgroup ; unknown_only: boolean 
       next_expected_addr: dword ;
       timeout: boolean ;
       ready: boolean ; // false: das frage/antwort-Spiel abbrechen
-      block_failure: boolean ; // Blockabfrage ist durcheinander, UNIBUS TIMEOUT: restart nötig
+      block_failure: boolean ; // Blockabfrage ist durcheinander, UNIBUS TIMEOUT: restart nÃ¶tig
       // min. die erste Adresse hat jetzt tag = 1
     begin { "function examineAddrList" }
       // Zusicherung: pro Aufruf wird immer mindestens eine weitere
@@ -590,13 +590,13 @@ procedure TConsolePDP1144.Examine(mcg: TMemoryCellgroup ; unknown_only: boolean 
         block_failure := false ;
         while not BusyForm.Aborted and not block_failure and (blockstart < list.Count) do begin
           // finde einen block, in dem die Adressen um addr_inc aufsteigen
-          // block darf aber nicht länger als max_block_len werden,
-          // längere blöcke werden unterbrochen.
+          // block darf aber nicht lÃ¤nger als max_block_len werden,
+          // lÃ¤ngere blÃ¶cke werden unterbrochen.
           blockend := blockstart+1  ;
           while (blockend < list.Count)
                   and (TMemoryCell(list[blockend-1]).tag = 0)
                   and (TMemoryCell(list[blockend-1]).addr.tmpval + addr_inc = TMemoryCell(list[blockend]).addr.tmpval)
-                  // blocklänge begrenzen
+                  // blocklÃ¤nge begrenzen
                   and ((blockend-blockstart) < max_block_len)
                   do
             inc(blockend) ;
@@ -613,7 +613,7 @@ procedure TConsolePDP1144.Examine(mcg: TMemoryCellgroup ; unknown_only: boolean 
           if blockend - blockstart > 1 then
             cmd := cmd + Format('/N:%s %s', [Dword2OctalStr(blockend - blockstart, 0), s_addr])
           else
-            cmd := cmd + Format(' %s', [s_addr]) ; // länge 1, kein "/N:"
+            cmd := cmd + Format(' %s', [s_addr]) ; // lÃ¤nge 1, kein "/N:"
           Answerlines.Clear ;
           WriteToPDP(cmd + CHAR_PDP_CR) ;
 //Log('!!!2 cmd=%s', [cmd]) ;
@@ -637,14 +637,14 @@ procedure TConsolePDP1144.Examine(mcg: TMemoryCellgroup ; unknown_only: boolean 
               if answerline.phrasetype = phExamine then begin
                 Log('List-examine: processing answer "'+(answerline.AsText)+'"') ;
                 starttime := GetTickCount ; // Timeout reset
-                // gültiges address/wert paar, oder TIMEOUT
+                // gÃ¼ltiges address/wert paar, oder TIMEOUT
                 if answerline.examinevalue = MEMORYCELL_ILLEGALVAL then begin
                   // die aktuelle Adresse verursachte einen Fehler,
                   // sie ist aber unbekannt!
                   answerline.examineaddr.val := next_expected_addr ;
                   block_failure := true ;
                 end ;
-                // finde memorycell über adresse
+                // finde memorycell Ã¼ber adresse
                 found := false ;
                 for j := blockstart to blockend-1 do begin
                   mc := TMemoryCell(list[j]) ;
@@ -678,7 +678,7 @@ procedure TConsolePDP1144.Examine(mcg: TMemoryCellgroup ; unknown_only: boolean 
             result := true ; // keine weiteren versuche, Endlos-schleife!
           end;
 
-          // nächster Block
+          // nÃ¤chster Block
           blockstart := blockend ;
         end { "while not BusyForm.Aborted and not block_failure and (blockstart < list.Count)" } ;
         if BusyForm.Aborted then result := true ; // do not retry
@@ -693,7 +693,7 @@ procedure TConsolePDP1144.Examine(mcg: TMemoryCellgroup ; unknown_only: boolean 
     listcpureg: TList ; // sortierte Liste mit CPU-Regsiteradressen (inkrement 2) ;
   begin { "procedure TConsolePDP1144.Examine" }
     // a) memorycells sortiert auslesen
-    // b) Memory/globalregister Bereiche unterscheiden, zusammenhängende
+    // b) Memory/globalregister Bereiche unterscheiden, zusammenhÃ¤ngende
     //    Adressbereiche unterscheiden
     // c) sequentiell aufeinanderfolgende Adressen
     //    kombiniert mit pdp-11/44 "E/N" auslesen
@@ -782,7 +782,7 @@ procedure TConsolePDP1144.ResetMachineAndStartCpu(newpc_v: TMemoryAddress) ; // 
       s  := Format('S %s'+ CHAR_PDP_CR, [Dword2OctalStr(newpc_v.val, 16)]) ;
       Answerlines.Clear ;
       WriteToPDP(s) ;
-      // keine Prompt, CPU läuft jetzt
+      // keine Prompt, CPU lÃ¤uft jetzt
     finally
       EndCriticalSection('ResetCpuAndStart') ; ;
     end;
@@ -796,7 +796,7 @@ procedure TConsolePDP1144.ContinueCpu ;
 
       Answerlines.Clear ;
       WriteToPDP('C'+ CHAR_PDP_CR) ;
-      // keine Prompt, CPU läuft jetzt
+      // keine Prompt, CPU lÃ¤uft jetzt
 
     finally
       EndCriticalSection('ContinueCpu') ;
@@ -806,7 +806,7 @@ procedure TConsolePDP1144.ContinueCpu ;
 
 
 
-//      function IsRunning: boolean ; virtual ; abstract ; // läuft die CPU (noch?)
+//      function IsRunning: boolean ; virtual ; abstract ; // lÃ¤uft die CPU (noch?)
 // PC ist virtuelle 16 bit Adresse
 procedure TConsolePDP1144.HaltCpu(var newpc_v: TMemoryAddress) ; // CPU anhalten
   var answerline: TConsoleAnswerPhrase ;
@@ -837,7 +837,7 @@ procedure TConsolePDP1144.HaltCpu(var newpc_v: TMemoryAddress) ; // CPU anhalten
 
 
 // PC ist virtuelle 16 bit Adresse
-procedure TConsolePDP1144.SingleStep ; // einen Zyklus ausführen
+procedure TConsolePDP1144.SingleStep ; // einen Zyklus ausfÃ¼hren
   var answerline: TConsoleAnswerPhrase ;
     //pcaddr: TMemoryAddress ;
   begin

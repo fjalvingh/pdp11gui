@@ -178,7 +178,7 @@ function TComm.isOpen: boolean;
   end;
 
 // Windows kennt "COM1".."COMn"; Linux hat stattdessen Geraetepfade wie
-// /dev/ttyUSB0 (USB-Serial-Adapter, der �bliche Weg an echte PDP-11
+// /dev/ttyUSB0 (USB-Serial-Adapter, der übliche Weg an echte PDP-11
 // Hardware) oder /dev/ttyS0 (klassischer eingebauter serieller Port).
 // Bis die Settings-UI eine echte Geraetepfad-Auswahl hat (siehe
 // LINUX_PORT_TODO.md), wird die bisherige 1-basierte Portnummer heuristisch

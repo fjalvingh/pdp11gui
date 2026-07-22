@@ -97,7 +97,7 @@ type
       procedure SimulationStopped(Sender: TObject; newpc_v: TMemoryAddress) ;
       procedure UpdateDisplay ;
 
-      // Implementierung der Steuerbefehle mit den Fähigkeiten der Console.
+      // Implementierung der Steuerbefehle mit den FÃ¤higkeiten der Console.
       // Werden auch von anderen Modulen aufgerufen!
       procedure doResetMachineAndSetPC ;
       procedure doResetMachineAndSetPCandStart;
@@ -155,7 +155,7 @@ procedure TFormExecute.updateConsoleFeatures ;
   end;
 
 
-// wird von der memorycellgroup aufgerufen, wenn sich eine Zelle = der PC spontan ändert
+// wird von der memorycellgroup aufgerufen, wenn sich eine Zelle = der PC spontan Ã¤ndert
 procedure TFormExecute.curPcMemoryCellChange(Sender { = memorycellgroup}: TObject; memorycell: TMemoryCell) ;
   begin
     memorycell.edit_value := memorycell.pdp_value ;
@@ -169,7 +169,7 @@ procedure TFormExecute.NewPgmButtonClick(Sender: TObject);
     TheState := esCompiling ;
     try
       UpdateDisplay ;
-      // wenn kein gültiger File da: User zum Wählen auffordern!
+      // wenn kein gÃ¼ltiger File da: User zum WÃ¤hlen auffordern!
       FormMain.FormMacro11Source.Show ; // immer aufpoppen
       if not FormMain.FormMacro11Source.CanTranslate then begin
         FormMain.FormMacro11Source.LoadButtonClick(nil) ;
@@ -195,7 +195,7 @@ procedure TFormExecute.ConnectToMemoryCells(mcg: TMemoryCellGroup) ;
   begin
     CurPcMemorycellgroup := mcg ;
     CurPc := mcg.Cell(0) ;
-    // callback bei Zellenänderung
+    // callback bei ZellenÃ¤nderung
     mcg.OnMemoryCellChange := curPcMemoryCellChange ;
     UpdateDisplay ;
   end;
@@ -221,7 +221,7 @@ procedure TFormExecute.SetAndShowPc(newpc_v:TMemoryAddress) ;
     FormMain.MemoryCellGroups.SyncMemoryCells(CurPc) ;
     LogStrCol(LogCol_Other, 'TFormExecute.SetAndShowPc(): C') ;
 
-    // Bei Fehler die Anzeige des Listings nicht stören, Error marker!
+    // Bei Fehler die Anzeige des Listings nicht stÃ¶ren, Error marker!
     if FormMain.FormMacro11Source.Translated then begin
       // im Assemblerlisting die Zeile des PC anzeigen
       FormMain.FormMacro11Listing.setPcMark(newpc_v);
@@ -240,7 +240,7 @@ procedure TFormExecute.SetPcButtonClick(Sender: TObject);
   var newpc_v: TMemoryAddress ;
   begin
     newpc_v := OctalStr2Addr(CurPCEdit.Text, matVirtual) ;
-    // der User hat den PC geändert: Update PDP-11
+    // der User hat den PC geÃ¤ndert: Update PDP-11
     CurPc.addr.val := PhysicalIopageBaseAddr(CurPc.addr.mat) + _17707 ; // R7/PC
     CurPc.edit_value := newpc_v.val ;
     CurPc.Deposit ;
@@ -249,7 +249,7 @@ procedure TFormExecute.SetPcButtonClick(Sender: TObject);
 
 
 // wird von Console aufgerufen, wenn Halt, Stop, oder Singlestep
-// signalisiert Änderung der Memorycell "PC", dadurch update aller
+// signalisiert Ã„nderung der Memorycell "PC", dadurch update aller
 // anderen Forms
 procedure TFormExecute.SimulationStopped(Sender: TObject; newpc_v: TMemoryAddress) ;
   begin
@@ -264,9 +264,9 @@ procedure TFormExecute.SimulationStopped(Sender: TObject; newpc_v: TMemoryAddres
     SetAndShowPc(newpc_v);
     // dieses Event wird von ConsoleGeneric est aufgerufen,
     // wenn eine Critical-Section -Sequenz fertig ist.
-    // Daher sollte die Console bereit sein für
-    // neue Aktivitäten
-    // die Console ist möglicherweise noch nicht bereit für
+    // Daher sollte die Console bereit sein fÃ¼r
+    // neue AktivitÃ¤ten
+    // die Console ist mÃ¶glicherweise noch nicht bereit fÃ¼r
     // die Examines des Disas-Windows!!!
 //    end ;
   end{ "procedure TFormExecute.SimulationStopped" } ;
@@ -302,7 +302,7 @@ procedure TFormExecute.UpdateDisplay ;
     StartPCEdit.Text := Addr2OctalStr(StartPc_v) ;
     CurPCEdit.Text := Dword2OctalStr(CurPc.edit_value, 16) ;
 
-    // Das Enable der Controls hängt ab von den
+    // Das Enable der Controls hÃ¤ngt ab von den
     // - features der Console (und damit von Run/Halt mode)
     // - vom State der Execution form
     // Es sind auf jeden Fall nur die Controls aktiv, die features der console entsprechen
@@ -327,7 +327,7 @@ procedure TFormExecute.UpdateDisplay ;
         ResetButton.Enabled := false ;
         ResetAndStartButton.Enabled := false ;
         ContinueButton.Enabled := false ;
-        HaltButton.Enabled := true ; // Immer verfügbar. doHalt() improvisiert!
+        HaltButton.Enabled := true ; // Immer verfÃ¼gbar. doHalt() improvisiert!
         SingleStepButton.Enabled := false ;
 
         Caption := setFormCaptionInfoField(Caption, 'Compiling ...') ;
@@ -341,7 +341,7 @@ procedure TFormExecute.UpdateDisplay ;
         ResetButton.Enabled := cfActionResetMachine in consoleFeatures ;
         ResetAndStartButton.Enabled := cfActionResetMaschineAndStartCpu in consoleFeatures ;
         ContinueButton.Enabled := cfActionContinueCpu in consoleFeatures ;
-        HaltButton.Enabled := true ; // Immer verfügbar. doHalt() improvisiert!
+        HaltButton.Enabled := true ; // Immer verfÃ¼gbar. doHalt() improvisiert!
         SingleStepButton.Enabled := cfActionSingleStep in consoleFeatures ;
 
         Caption := setFormCaptionInfoField(Caption, 'stopped') ;
@@ -363,7 +363,7 @@ procedure TFormExecute.UpdateDisplay ;
     end{ "case TheState" } ;
 
     // Runmode aktualisieren:
-    // Wurde über "Connection settings" der Console typ gewechselt, ist der neue
+    // Wurde Ã¼ber "Connection settings" der Console typ gewechselt, ist der neue
     // Console runmode = unknown.
     if RunModeGroupBox.Visible then begin
       if FormMain.PDP11Console.RunMode = crmHalt then begin
@@ -425,7 +425,7 @@ procedure TFormExecute.doResetMachineAndSetPCandStart ;
 //    tmp_pc_v.val := CurPc.pdp_value ;
     try
       TheState := esRunning ;
-      // wenn möglich, Init benutzen
+      // wenn mÃ¶glich, Init benutzen
       with FormMain.PDP11Console do begin
         if not (cfActionResetMaschineAndStartCpu in consoleFeatures) then
           raise Exception.Create('cfActionResetCpuAndStart not implemented!') ;
@@ -439,7 +439,7 @@ procedure TFormExecute.doResetMachineAndSetPCandStart ;
   end{ "procedure TFormExecute.doResetMachineAndSetPCandStart" } ;
 
 
-// wird nicht an die Oberfläche geleitet
+// wird nicht an die OberflÃ¤che geleitet
 // Start OHNE Reset!
 procedure TFormExecute.doSetPCandContinue(newpc_v: TMemoryAddress) ;
   begin
@@ -503,7 +503,7 @@ procedure TFormExecute.doHalt ;
     updateConsoleFeatures ;
     try
       if not (cfActionHaltCpu in consoleFeatures) then begin
-        // HALT wird nicht unterstützt
+        // HALT wird nicht unterstÃ¼tzt
         if cfSwitchEnableOrHalt in consoleFeatures then
           case FormMain.PDP11Console.RunMode of
             crmHalt:

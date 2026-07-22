@@ -81,14 +81,14 @@ type
       procedure VerifyAllButtonClick(Sender: TObject);
     private
       { Private-Deklarationen }
-      // jeden möglichen Loader instanziieren
+      // jeden mÃ¶glichen Loader instanziieren
       Loader_ByteStreamLH: TMemoryLoader_BytestreamLH ;
       Loader_LowByteFileHighByteFile: TMemoryLoader_LowByteFileHighByteFile ;
       Loader_TextfileOneAddrPerLine: TMemoryLoader_TextfileOneAddrPerLine;
       Loader_StandardAbsolutePapertape : TMemoryLoader_StandardAbsolutePapertape ;
     public
       { Public-Deklarationen }
-      curLoader: TMemoryLoader ; // wie durch Combobox ausgewählt
+      curLoader: TMemoryLoader ; // wie durch Combobox ausgewÃ¤hlt
       constructor Create(AOwner: TComponent) ;
       destructor Destroy ; override ;
 
@@ -110,7 +110,7 @@ constructor TFormMemoryLoader.Create(AOwner: TComponent) ;
   begin
     inherited Create(AOwner) ;
 
-    // jeden möglichen Loader instanziieren und an Controls anschliessen
+    // jeden mÃ¶glichen Loader instanziieren und an Controls anschliessen
     Loader_ByteStreamLH := TMemoryLoader_BytestreamLH.Create ;
     with Loader_ByteStreamLH.getFile(0) do begin
       control_filenameprompt := File1Label ;
@@ -146,7 +146,7 @@ constructor TFormMemoryLoader.Create(AOwner: TComponent) ;
       control_filenamebrowse := BrowseFile1Button ;
     end;
 
-    MemoryGrid.OnUpdate := UpdateDisplay ; // wenn sich das grid ändert, muss diese Form reagieren
+    MemoryGrid.OnUpdate := UpdateDisplay ; // wenn sich das grid Ã¤ndert, muss diese Form reagieren
     TheRegistry.Load(LoaderFileFormatComboBox) ;
 
   end{ "constructor TFormMemoryLoader.Create" } ;
@@ -157,7 +157,7 @@ destructor TFormMemoryLoader.Destroy ;
   end;
 
 
-// neue Oberfläche malen,
+// neue OberflÃ¤che malen,
 // ggf ExecuteWindow Startaddress updaten
 procedure TFormMemoryLoader.UpdateDisplay(Sender: TObject);
   var
@@ -167,7 +167,7 @@ procedure TFormMemoryLoader.UpdateDisplay(Sender: TObject);
     i: integer ;
     s: string ;
   begin
-    if Sender <> MemoryGrid then begin // hat der Frame das Update ausgelöst?
+    if Sender <> MemoryGrid then begin // hat der Frame das Update ausgelÃ¶st?
       MemoryGrid.UpdateDisplay  // nein: update frame, er updated wieder die Form
     end else begin
       // Editierte Memoryinhalte behalten, auch wenn Pdp durch callbacks neu abgefragt wird.
@@ -188,7 +188,7 @@ procedure TFormMemoryLoader.UpdateDisplay(Sender: TObject);
           Caption := setFormCaptionInfoField(Caption, s) ;
         end;
       end { "with MemoryGrid.memorycellgroup" } ;
-      // ausgewählten Loader merken
+      // ausgewÃ¤hlten Loader merken
       case LoaderFileFormatComboBox.ItemIndex of
         0: curLoader := Loader_ByteStreamLH ;
         1: curLoader := Loader_LowByteFileHighByteFile ;
@@ -226,7 +226,7 @@ procedure TFormMemoryLoader.UpdateDisplay(Sender: TObject);
       EntryAddrLabel.Visible := false ;
       EntryAddrEdit.Visible := false ;
 
-      // b) controls für den aktiven Loader visible ;
+      // b) controls fÃ¼r den aktiven Loader visible ;
       for i := 0 to curLoader.Files.Count - 1 do begin
         loaderfile := curLoader.getFile(i) ;
         loaderfile.control_filenameprompt.Caption := loaderfile.prompt + ' :' ;
@@ -245,9 +245,9 @@ procedure TFormMemoryLoader.UpdateDisplay(Sender: TObject);
         EntryAddrEdit.Font.Color := clDkGray ;
       end;
 
-      // Das MemoryGrid ist alClient und möchte in einer bestimmten Grösse angezeigt werden,
+      // Das MemoryGrid ist alClient und mÃ¶chte in einer bestimmten GrÃ¶sse angezeigt werden,
       // tue ihm den Gefallen.
-      // Wilde ad hoc Logik: das Codewindow kann extrem hoch werden, dann kürzer anzeigen
+      // Wilde ad hoc Logik: das Codewindow kann extrem hoch werden, dann kÃ¼rzer anzeigen
       h := MemoryGrid.optimal_height + PanelT.Height ;
       w := MemoryGrid.optimal_width ;
       if h > (FormMain.ClientHeight-100) then
@@ -262,7 +262,7 @@ procedure TFormMemoryLoader.UpdateDisplay(Sender: TObject);
   end{ "procedure TFormMemoryLoader.UpdateDisplay" } ;
 
 
-// nach Laden eines files ggf im ExecuteWindow die Startadrresse ändern
+// nach Laden eines files ggf im ExecuteWindow die Startadrresse Ã¤ndern
 // nur EINMAL nach Laden, nicht jedesmal in UpdateDisplay()
 procedure TFormMemoryLoader.UpdateExecuteAddress;
   begin
@@ -300,9 +300,9 @@ procedure TFormMemoryLoader.BrowseFile1ButtonClick(Sender: TObject);
     i: integer ;
     loaderfile : TMemoryloaderFile ;
   begin
-    // wird für alle Browsebuttons aufgerufen
+    // wird fÃ¼r alle Browsebuttons aufgerufen
     // VB: 'Loader" schon instanziiert.
-    // finde den file, für den das browsen gilt
+    // finde den file, fÃ¼r den das browsen gilt
     // Sender als browsebutton eingetragen
     for i := 0 to curLoader.Files.Count - 1 do begin
       loaderfile := curLoader.getFile(i) ;

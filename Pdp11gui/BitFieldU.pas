@@ -40,7 +40,7 @@ type
 // ein einzelnes Bitfeld
   TBitfieldDef = class(TCollectionItem)
     public
-      // eine zusammenhängender Bitbereich
+      // eine zusammenhÃ¤ngender Bitbereich
       name:string ;
       info: string ;
       bit_lo: integer ; // niedrigstes Bit
@@ -254,8 +254,8 @@ function TBitfieldsDefs.BitFieldsDefByName(aName:string): TBitfieldsDef ;
   end;
 
 
-// während die Registerdefinitionen geladen werden, entstehen
-// auch die Verknüpfungen mit memoryadressen
+// wÃ¤hrend die Registerdefinitionen geladen werden, entstehen
+// auch die VerknÃ¼pfungen mit memoryadressen
 // result: name gefunden?
 function TBitfieldsDefs.LinkAddr2BitfieldsDef(aAddr:TMemoryAddress ; BitfieldsdefName:string): boolean ;
   var bfsd: TBitfieldsDef ;
@@ -271,7 +271,7 @@ function TBitfieldsDefs.LinkAddr2BitfieldsDef(aAddr:TMemoryAddress ; Bitfieldsde
       end;
   end;
 
-// bitfields definition über adresse suchen
+// bitfields definition Ã¼ber adresse suchen
 function TBitfieldsDefs.BitFieldsDefByAddr(aAddr: TMemoryAddress): TBitfieldsDef ;
   var i: integer ;
   begin
@@ -283,7 +283,7 @@ function TBitfieldsDefs.BitFieldsDefByAddr(aAddr: TMemoryAddress): TBitfieldsDef
         if addr.mat <> aAddr.mat then
           // Adresse in Liste in anderem Model als gesuchte adresse:
           // passe die Liste an, da sich das model der aAddr nur selten bei
-          // einer neuen Zielmashcine ändert.
+          // einer neuen Zielmashcine Ã¤ndert.
           addr := ChangePhysicalAddressBitWidth(addr, aAddr.mat) ;
         if addr.val = aAddr.val then begin
           result := bitfieldsdef ;

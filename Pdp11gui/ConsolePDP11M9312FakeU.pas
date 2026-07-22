@@ -21,7 +21,7 @@ unit ConsolePDP11M9312FakeU;
    CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
-// Console-Adpater für den fake.
+// Console-Adpater fÃ¼r den fake.
 // wie ConsolePDP11M9312.
 // Noch mehr kann man ja nicht weglassen!
 

@@ -22,7 +22,7 @@ unit FakePDP11GenericU;
 }
 
 {
-  Interface für die rudimentären PDP-11 consolen.
+  Interface fÃ¼r die rudimentÃ¤ren PDP-11 consolen.
   Sie dient nur zum Test der GUI
 
   - Deposit, , mit /n, /g
@@ -49,7 +49,7 @@ const
 //  FakePDP11_iopage_start = FakePDP11_iopage_end - FakePDP11_iopage_size ; // top 8KB
 
 type
-  // wird ausgelöst, wenn die Console einen Fehler entdeckt
+  // wird ausgelÃ¶st, wenn die Console einen Fehler entdeckt
   EFakePDP11Error = class(Exception) ;
 
 
@@ -58,7 +58,7 @@ type
     public
       name: string ;
 
-      // fiktiver RUN/HALT-Switch (für alle ausser 11/44 und SimH)
+      // fiktiver RUN/HALT-Switch (fÃ¼r alle ausser 11/44 und SimH)
       RunMode: boolean ;
 
       mat: TMemoryAddressType ; // 16, 18, 22 bit
@@ -67,7 +67,7 @@ type
       PhysicalIopageBaseAddr: dword ; // beginn der IOPage
 
       // Zustandsvariable
-      // Memory konstant und maximal für ppdp-11 architektur
+      // Memory konstant und maximal fÃ¼r ppdp-11 architektur
       Mem: array[0..FakePDP11_max_addr-1] of word ; // 0....
       IoPage: array[0..FakePDP11_iopage_size-1] of word ;
       IoPageValidMap: array[0..FakePDP11_iopage_size-1] of boolean ;
@@ -83,7 +83,7 @@ type
       constructor Create(mat: TMemoryAddressType) ; virtual ;
       destructor Destroy ; override ;
 
-      // nur die IOpage-Adressen gültig machen, die CPU register oder
+      // nur die IOpage-Adressen gÃ¼ltig machen, die CPU register oder
       // in MemoryCellgroups mit tag "iopage_usagetag" versehen sind
       procedure CalcIoPageValidMap(MemoryCellGroups: TMemoryCellGroups ; iopage_usagetag: string) ;
 
@@ -91,7 +91,7 @@ type
       procedure PowerOn ; virtual ; abstract ;
       procedure Reset ; virtual ; abstract ;
 
-      procedure RunToHalt(startpcval: dword) ; // löst nach zufalls periode "doHalt" aus
+      procedure RunToHalt(startpcval: dword) ; // lÃ¶st nach zufalls periode "doHalt" aus
       procedure OnRunToHaltTimer(Sender: TObject) ;
       function isRunning: boolean ; // true, wenn doHalt noch nicht kam
       procedure Halt ;
@@ -123,7 +123,7 @@ constructor TFakePDP11Generic.Create(mat: TMemoryAddressType) ;
     assert(mat > matAnyPhysical) ;
     // physicaladdresswidth: 18 oder 22
     self.mat := mat ;
-    // Speicher nur halb "bestücken"
+    // Speicher nur halb "bestÃ¼cken"
     case mat of
       matPhysical16: begin
         PhysicalIopageBaseAddr := _160000 ;
@@ -188,7 +188,7 @@ function TFakePDP11Generic.getMem(addr: TMemoryAddress): dword;
   end ;
 
 
-// löst nach zufalls periode "doHalt" aus
+// lÃ¶st nach zufalls periode "doHalt" aus
 procedure TFakePDP11Generic.RunToHalt(startpcval: dword) ;
   begin
     setMem(ProgramCounterAddr, startpcval); // PC setzen
@@ -227,7 +227,7 @@ procedure TFakePDP11Generic.OnRunToHaltTimer(Sender: TObject) ;
   end{ "procedure TFakePDP11Generic.OnRunToHaltTimer" } ;
 
 
-// nur die IOpage-Adressen gültig machen, die CPU regsiter oder
+// nur die IOpage-Adressen gÃ¼ltig machen, die CPU regsiter oder
 // in MemoryCellgroups mit tag "iopagetag" versehen sind
 procedure TFakePDP11Generic.CalcIoPageValidMap(MemoryCellGroups: TMemoryCellGroups ; iopage_usagetag: string) ;
   var i, j: integer ;

@@ -71,7 +71,7 @@ uses
 constructor TFormMMU.Create(AOwner: TComponent) ;
   begin
     inherited ;
-    MMU := nil ; // muss durch Anwender gef�llt werden
+    MMU := nil ; // muss durch Anwender gefüllt werden
   end;
 
 
@@ -114,7 +114,7 @@ end;
         n := n + 1 + grid.ColWidths[i] ;
       grid.ColWidths[3] := grid.Clientwidth - n ;
 
-      // Addressmap ausf�llen:
+      // Addressmap ausfüllen:
       // durch alle virtuellen 16-Bit addressen iterieren
       addr_v.mat := matVirtual ; addr_v.val := 0 ;
       blocknr := 0 ; // 1. ergebnis = 1-> zur Adressierung der Gridrows geeignet
@@ -191,7 +191,7 @@ procedure TFormMMU.RefreshButtonClick(Sender: TObject);
 
 procedure TFormMMU.MMUChanged(Sender: TObject) ;
   begin
-    // hat sich was an den Einstellungen meiner MMU ge�ndert?
+    // hat sich was an den Einstellungen meiner MMU geändert?
     if (Sender as TPDP11MMU) = MMU then
       UpdateDisplay ;
   end;

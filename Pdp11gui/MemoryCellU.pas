@@ -42,17 +42,17 @@ uses
   ;
 
 const
-  // illegaler Wert f�r PDP-11-Adressen und Werte.
+  // illegaler Wert für PDP-11-Adressen und Werte.
   MEMORYCELL_ILLEGALVAL = $ffffffff ;
 
-  // Adressen f�r spezielle interne Register, die nicht im regul�ren
+  // Adressen für spezielle interne Register, die nicht im regulären
   // Adressraum vorkommen, aber mit besonderen Consol-Befehlen abfragbar
   // sind.
   // Die hier verwendeten Adressen werden nie an die Machinen weitergeleitet.
   // die Console-Adapter kapseln sie.
   // address.mat muss matSpecialRegister sein!
   MEMORYCELL_SPECIALADDR_DISPLAYREG = 0 ;
-  // 177570 enth�lt bei lesen die Switches, schreiben geht auf die Consol-LEDs.
+  // 177570 enthält bei lesen die Switches, schreiben geht auf die Consol-LEDs.
   // SimH kann es aber trotzdem abfragen.
   MEMORYCELL_SPECIALADDR_SWITCHREG = 1 ;
 
@@ -77,7 +77,7 @@ type
       // wenn sie aus einem MACRO11-Listing stammen
       listinglinenr: integer ; // 1. zeile = 0
 
-      // Nein: zur Laufzeit �ber addr besorgen!
+      // Nein: zur Laufzeit über addr besorgen!
 //      bitfieldsdef: TBitfieldsDef ; // <> nil, wenn definition da.
 
       memorycellgroup: TMemoryCellGroup ; // uplink
@@ -94,12 +94,12 @@ type
     end{ "TYPE TMemoryCell = class(TCollectionItem)" } ;
 
 
-  // wenn eine Zelle "von alleine" = nicht durch User in �ber GUI, sondern �ber
-  // Console oder weil eine andre zelle gleicher adresse ge�ndert wurde:
+  // wenn eine Zelle "von alleine" = nicht durch User in über GUI, sondern über
+  // Console oder weil eine andre zelle gleicher adresse geändert wurde:
   TMemoryCellChangeEvent = procedure (sender { = memorycellgroup}: TObject; memorycell: TMemoryCell) of object ;
 
 
-  // Ein zusammengeh�render Satz Speicherzellen
+  // Ein zusammengehörender Satz Speicherzellen
   // zB die Register eines Controllers
   TMemoryCellGroup = class(TCollectionItem)
     private
@@ -113,9 +113,9 @@ type
 
 //      enabled: boolean ;
 
-      min_addr, max_addr: TMemoryAddress ; // kleinste und gr�sste vorkommende Adresse
+      min_addr, max_addr: TMemoryAddress ; // kleinste und grösste vorkommende Adresse
       // Zellen sind nicht sequentiell, aber doch dicht beieiander ...
-      // dient der schnellen Filterung f�r CellIndex()
+      // dient der schnellen Filterung für CellIndex()
 
       associate: TObject ; // beliebiges object
 
@@ -140,13 +140,13 @@ type
       procedure Delete(idx:integer) ;
 
       procedure Examine(unknown_only: boolean ; abortable:boolean) ; // alle aus PDP-11 laden, nach pdp_val
-      procedure Deposit(optimize: boolean ; abortable:boolean ) ; // alle in PDP-11 schreiben. ggf  nur ge�nderte
-      // fordert danach �bergeordnetes "Grous" auf, nachbar cellroups zu aktualisieren
+      procedure Deposit(optimize: boolean ; abortable:boolean ) ; // alle in PDP-11 schreiben. ggf  nur geänderte
+      // fordert danach übergeordnetes "Grous" auf, nachbar cellroups zu aktualisieren
 
       procedure calcAddrRange ;
       procedure extendAddrRange(addrval: dword) ; inline ;
 
-      function CellIndexByAddr(addr:TMemoryAddress): integer ; // Zelle �ber Adresse finden. -1: not found
+      function CellIndexByAddr(addr:TMemoryAddress): integer ; // Zelle über Adresse finden. -1: not found
 
       procedure ShiftRange(startaddr:TMemoryAddress;newsize: integer; optimize: boolean) ;
 
@@ -176,7 +176,7 @@ type
 
     end{ "TYPE TMemoryCellGroups = class(TCollection)" } ;
 
-  // Sortierfunktion f�r Listen
+  // Sortierfunktion für Listen
 function MemoryCellSortCompare(item1, item2: Pointer): integer;
 
 
@@ -207,7 +207,7 @@ constructor TMemoryCell.Create(Collection: TCollection);
     grid_c := 0 ;
   end{ "constructor TMemoryCell.Create" } ;
 
-// adresse und werte kopieren, lsiten zugeh�rigkeiten unver�ndert lassen
+// adresse und werte kopieren, lsiten zugehörigkeiten unverändert lassen
 procedure TMemoryCell.Assign(mc: TMemoryCell) ;
   begin
     addr := mc.addr ;
@@ -285,8 +285,8 @@ procedure TMemoryCellGroup.Assign(mcg: TMemoryCellGroup) ;
   var i: integer ;
     mc: TMemoryCell ;
   begin
-    memorycells.Clear ; // alle l�schen
-    mat := mcg.mat ; // Typ �bernehmen, f�r Zellkopieen
+    memorycells.Clear ; // alle löschen
+    mat := mcg.mat ; // Typ übernehmen, für Zellkopieen
     for i := 0 to mcg.Count - 1 do begin
       mc := Add(mcg.Cell(i).addr.val) ;
       mc.Assign(mcg.Cell(i));
@@ -298,7 +298,7 @@ procedure TMemoryCellGroup.Assign(mcg: TMemoryCellGroup) ;
   end{ "procedure TMemoryCellGroup.Assign" } ;
 
 
-// berechnet niedrigste und h�chste vorkommende Adresse
+// berechnet niedrigste und höchste vorkommende Adresse
 procedure TMemoryCellGroup.calcAddrRange ;
   var i: integer ;
   begin
@@ -323,11 +323,11 @@ procedure TMemoryCellGroup.calcAddrRange ;
 
   end{ "procedure TMemoryCellGroup.calcAddrRange" } ;
 
-// zu g�ltiger Cellist kommt addrval dazu
-// Schnell! F�r .Add
+// zu gültiger Cellist kommt addrval dazu
+// Schnell! Für .Add
 // Achtung: sicherstellen, dass alle
 // 'Clear'-Methoden  das unoptimierte calcAddrRange() aufrufen,
-// um den Range g�ltig zu initialisieren.
+// um den Range gültig zu initialisieren.
 procedure TMemoryCellGroup.extendAddrRange(addrval:dword) ;
   begin
     if min_addr.val = MEMORYCELL_ILLEGALVAL then
@@ -360,11 +360,11 @@ function TMemoryCellGroup.Cell(idx: integer): TMemoryCell ;
 
 function TMemoryCellGroup.Add(addrval: dword): TMemoryCell ;
   begin
-    // wenn die Cells strikt aufw�rtsz�hlend geADDed werden,
+    // wenn die Cells strikt aufwärtszählend geADDed werden,
     // ist die liste sorted.
     result := memorycells.Add as TMemoryCell ;
     assert(mat <> matUnknown) ;
-    result.addr.mat := mat ; // von group �bernehmen
+    result.addr.mat := mat ; // von group übernehmen
     result.addr.val := addrval ;
     result.memorycellgroup := self ; // uplink
     extendAddrRange(addrval) ;  // optimiert
@@ -375,8 +375,8 @@ function TMemoryCellGroup.Add(addrval: dword): TMemoryCell ;
 procedure TMemoryCellGroup.Add(startaddrval: dword ; wordcount: integer) ;
   var i: dword ;
   begin
-    // MemoryCellgroup f�r Bytes aufbauen
-//        Clear ; // alle zellen l�schen
+    // MemoryCellgroup für Bytes aufbauen
+//        Clear ; // alle zellen löschen
     for i := 0 to wordcount - 1 do
       Add(startaddrval + 2 * i) ;
 //    calcAddrRange ;
@@ -394,7 +394,7 @@ procedure TMemoryCellGroup.Delete(idx:integer) ;
 function TMemoryCellGroup.Insert(idx: integer; addrval: dword): TMemoryCell ;
   begin
     result := memorycells.Insert(idx) as TMemoryCell ;
-    result.addr.mat := mat ; // von group �bernehmen
+    result.addr.mat := mat ; // von group übernehmen
     result.addr.val := addrval ;
     extendAddrRange(addrval) ; // optimierung
 //    calcAddrRange ;
@@ -403,8 +403,8 @@ function TMemoryCellGroup.Insert(idx: integer; addrval: dword): TMemoryCell ;
 
 
 
-// Zelle �ber Adresse suchen. -1 = not found
-function TMemoryCellGroup.CellIndexByAddr(addr:TMemoryAddress): integer ; // Zelle �ber Adresse finden. -1: not found
+// Zelle über Adresse suchen. -1 = not found
+function TMemoryCellGroup.CellIndexByAddr(addr:TMemoryAddress): integer ; // Zelle über Adresse finden. -1: not found
   var i: integer ;
   begin
     result := -1 ;
@@ -441,9 +441,9 @@ procedure TMemoryCellGroup.Examine(unknown_only: boolean; abortable:boolean) ; /
   end{ "procedure TMemoryCellGroup.Examine" } ;
 
 
-// fordert danach �bergeordnetes "Groups" auf, nachbar cellgroups zu aktualisieren
+// fordert danach übergeordnetes "Groups" auf, nachbar cellgroups zu aktualisieren
 // optimize: nur ausgeben, wenn edit_value <> pdp_value
-procedure TMemoryCellGroup.Deposit(optimize: boolean; abortable:boolean) ; // alle in PDP-11 schreiben, ggf nur ge�nderte
+procedure TMemoryCellGroup.Deposit(optimize: boolean; abortable:boolean) ; // alle in PDP-11 schreiben, ggf nur geänderte
   begin
     FormMain.PDP11Console.ClearState ;
     FormMain.PDP11Console.Deposit(self, optimize, abortable) ;
@@ -453,13 +453,13 @@ procedure TMemoryCellGroup.Deposit(optimize: boolean; abortable:boolean) ; // al
 
 // setzt die addresse der ersten zelle, und inkrementiert die
 // nachfolgenden in Schritten von 2.
-// Ver�ndert alle Adresse, aber nicht die Anzahl der Zellen.
-// gedacht f�r Scrollen in einem MemoryTable, oder update
+// Verändert alle Adresse, aber nicht die Anzahl der Zellen.
+// gedacht für Scrollen in einem MemoryTable, oder update
 // des Disassembler-Speicherauszugs.
-// Optimierung: bekannte Werte f�r Adressen werden soweit wie m�glich erhalten
-// newsize: neue L�nge, ab neuem "startaddr",
-// oder -1, wenn L�nge unver�ndert bleiben soll.
-// Danach muss f�r neue Zellen "Examine" ausgef�hrt werden.
+// Optimierung: bekannte Werte für Adressen werden soweit wie möglich erhalten
+// newsize: neue Länge, ab neuem "startaddr",
+// oder -1, wenn Länge unverändert bleiben soll.
+// Danach muss für neue Zellen "Examine" ausgeführt werden.
 procedure TMemoryCellGroup.ShiftRange(startaddr:TMemoryAddress; newsize: integer ; optimize: boolean) ;
   var
     tmp_mcg: TMemoryCellGroup ; // speichert die alten Werte
@@ -472,30 +472,30 @@ procedure TMemoryCellGroup.ShiftRange(startaddr:TMemoryAddress; newsize: integer
     try
       tmp_mcg.Assign(self) ; // Kopie ziehen
 
-      // wenn vergr�sserung der Liste:
-      // erst verl�ngern, dann verschieben
-      // (falls startaddr verkleinert wird und gleichzeiig size vergr�ssert, bleibt
-      // das ende der liste g�ltig
+      // wenn vergrösserung der Liste:
+      // erst verlängern, dann verschieben
+      // (falls startaddr verkleinert wird und gleichzeiig size vergrössert, bleibt
+      // das ende der liste gültig
       // verkleinerung: NACH verschieben
       if newsize < 0 then newsize := Count ;
 
-      //  with tmp_mcg do  // Vergr�ssern vor shift
-      while newsize > Count do begin // vergr�sserung der Liste, hinten anh�ngen
+      //  with tmp_mcg do  // Vergrössern vor shift
+      while newsize > Count do begin // vergrösserung der Liste, hinten anhängen
         Insert(Count, max_addr.val+2) ; // count und max_addr wird mitgepflegt!
       end ;
 
 
-      // von allen Zellen die Adresse �ndern
-      // Name der zelle wird dadurch ung�ltig!
+      // von allen Zellen die Adresse ändern
+      // Name der zelle wird dadurch ungültig!
       for i := 0 to Count - 1 do
         with Cell(i) do begin
           addr.mat := startaddr.mat ;
           addr.val := startaddr.val + 2*i ;
           idx := tmp_mcg.CellIndexByAddr(addr) ; // suche adresse in Sicherungskopie
           if optimize and (idx >= 0) then begin
-            // die Liste enth�lt weiterhin Zelle(i): kopiere
-            Assign(tmp_mcg.Cell(idx)) ; // aktuelle zelle aus Sicherungskopie �bernehmen
-          end else begin // Zelle ist jetzt ung�ltig: neu laden
+            // die Liste enthält weiterhin Zelle(i): kopiere
+            Assign(tmp_mcg.Cell(idx)) ; // aktuelle zelle aus Sicherungskopie übernehmen
+          end else begin // Zelle ist jetzt ungültig: neu laden
             pdp_value := MEMORYCELL_ILLEGALVAL ;
             edit_value := MEMORYCELL_ILLEGALVAL ;
             name := '' ;
@@ -504,7 +504,7 @@ procedure TMemoryCellGroup.ShiftRange(startaddr:TMemoryAddress; newsize: integer
       calcAddrRange ; // neues min/maxaddr
 
       // Verkleinern nach shift , disemal NICHT tmp_mcg
-      while newsize < Count do begin // vergr�sserung der Liste, hinten anh�ngen
+      while newsize < Count do begin // vergrösserung der Liste, hinten anhängen
         Delete(Count-1) ; // Count wird mit gepflegt!
       end ;
 
@@ -571,8 +571,8 @@ destructor TMemoryCellGroups.Destroy ;
 
 
 // einen inifile durch den M4-preprocessor schicken.
-// result: Name des tempor�ren Ergebnisfiles
-// den bacthfile 'm4-bat' ausf�hren
+// result: Name des temporären Ergebnisfiles
+// den bacthfile 'm4-bat' ausführen
 function TMemoryCellGroups.PreprocessIniFile(inputfilename:string): string ;
   const timeout_millis = 5000 ; // M4 darf max 5 Sek laufen!
     // parameter  PDP11GUIEXEDIR und PDP11GUIAPPDATADIR setzen
@@ -592,7 +592,7 @@ function TMemoryCellGroups.PreprocessIniFile(inputfilename:string): string ;
   begin { "function TMemoryCellGroups.PreprocessIniFile" }
     result := '' ;
     errormsg := '' ;
-    // M4.BAT ausf�hren
+    // M4.BAT ausführen
     // macro11.bat <sourcefilename> <listingfilename>
 
     // macro11 im Verzeichnis der GUI finden
@@ -605,7 +605,7 @@ function TMemoryCellGroups.PreprocessIniFile(inputfilename:string): string ;
     SetEnvironmentVariable('PDP11GUIEXEDIR', ExtractFileDir(Application.ExeName)) ;
     SetEnvironmentVariable('PDP11GUIAPPDATADIR', FormMain.DefaultDataDirectory) ;
 
-    // tempor�rer Zielfile erzeugen
+    // temporärer Zielfile erzeugen
     outputfilename := IncludeTrailingPathDelimiter(GetTempDir) + 'tmp_pdp11gui_m4_out.ini' ;
     DeleteFile(outputfilename) ;
 
@@ -724,7 +724,7 @@ procedure TMemoryCellGroups.AddGroupsFromIniFile(aUsageTag: string ; fname:strin
                   addr_to := addr_from
                 else addr_to := OctalStr2Addr(s_addr_to, matPhysical16) ;
 
-                for k := 0 to (addr_to.val - addr_from.val) div 2 do // k: �ber alle adressen
+                for k := 0 to (addr_to.val - addr_from.val) div 2 do // k: über alle adressen
                   with Add( addr_from.val + 2 * k ) do begin
                     if addr_from.val = addr_to.val then begin
                       name := regname ;
@@ -734,9 +734,9 @@ procedure TMemoryCellGroups.AddGroupsFromIniFile(aUsageTag: string ; fname:strin
                       info := Trim(StripQuotes(words[1]))
                               + Format(' Word #%d, offset +%s', [k, Dword2OctalStr(2*k, 0)]) ;
                     end;
-                    // suche die Liste mit den Bitfelder f�r dieses Register
+                    // suche die Liste mit den Bitfelder für dieses Register
                     s := Trim(words[2]) ;
-                    if s <> ''  then // Bitfield-Definition mit Memoryadresse verkn�pfen
+                    if s <> ''  then // Bitfield-Definition mit Memoryadresse verknüpfen
                       if not bitfieldsdefs.LinkAddr2BitfieldsDef(addr, s) then
                         raise Exception.CreateFmt('Loading "%s": bitfields definition "%s" not found for "%s"',
                                 [fname, s, regname]) ;
@@ -783,13 +783,13 @@ function TMemoryCellGroups.AddSequentialMemoryCellsAsGroup(
   end{ "function TMemoryCellGroups.AddSequentialMemoryCellsAsGroup" } ;
 
 
-// die angegebene memoryCell wurde ver�ndert.
-// checke, wo �berall diese Adresse noch vorkommt
-// und aktualisiere. Rufe bei �nderung das callback
-// MemoryCellChange() auf, damit die Forms die �nderungen auch
+// die angegebene memoryCell wurde verändert.
+// checke, wo überall diese Adresse noch vorkommt
+// und aktualisiere. Rufe bei Änderung das callback
+// MemoryCellChange() auf, damit die Forms die Änderungen auch
 // anzeigen.
-// Wenn keine Editwerte ver�ndert werden sollen,
-// wird der event nicht ausgel�st
+// Wenn keine Editwerte verändert werden sollen,
+// wird der event nicht ausgelöst
 procedure TMemoryCellGroups.SyncMemoryCells(memorycell: TMemoryCell) ;
   var i, idx: integer ;
     mcg: TMemoryCellGroup ;
@@ -815,7 +815,7 @@ procedure TMemoryCellGroups.SyncMemoryCells(memorycell: TMemoryCell) ;
 // checkt alle Cells aller Cellgroups durch, ob eine mit gleicher
 // adresse dabei ist, die SymbolInfo () hat.
 // Es wird eine memorycell mit gleicheradresse und Symbolinfo
-// zur�ckgegeben!
+// zurückgegeben!
 
 function TMemoryCellGroups.getSymbolInfoCell(memorycell: TMemoryCell): TMemoryCell ;
   var i, idx: integer ;
@@ -858,7 +858,7 @@ procedure TMemoryCellGroups.ChangeAdddressWidth(newMat: TMemoryAddressType) ;
 
 
 
-// Sortierfunktion f�r Listen
+// Sortierfunktion für Listen
 function MemoryCellSortCompare(item1, item2: Pointer): integer;
   var addr1val, addr2val: dword ;
   begin

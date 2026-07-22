@@ -78,7 +78,7 @@ type
       procedure EntryAddrEditKeyPress(Sender: TObject; var Key: Char);
     private
       { Private-Deklarationen }
-      // jeden möglichen Loader instanziieren
+      // jeden mÃ¶glichen Loader instanziieren
       Loader_ByteStreamLH: TMemoryLoader_BytestreamLH ;
       Loader_LowByteFileHighByteFile: TMemoryLoader_LowByteFileHighByteFile ;
       Loader_TextfileOneAddrPerLine: TMemoryLoader_TextfileOneAddrPerLine;
@@ -86,7 +86,7 @@ type
       Loader_StandardAbsolutePapertape: TMemoryLoader_StandardAbsolutePapertape;
     public
       { Public-Deklarationen }
-      curLoader: TMemoryLoader ; // wie durch Combobox ausgewählt
+      curLoader: TMemoryLoader ; // wie durch Combobox ausgewÃ¤hlt
       constructor Create(AOwner: TComponent) ;
       destructor Destroy ; override ;
 
@@ -107,7 +107,7 @@ constructor TFormMemoryDumper.Create(AOwner: TComponent) ;
   begin
     inherited Create(AOwner) ;
 
-    // jeden möglichen Loader instanziieren und an Controls anschliessen
+    // jeden mÃ¶glichen Loader instanziieren und an Controls anschliessen
     Loader_ByteStreamLH := TMemoryLoader_BytestreamLH.Create ;
     with Loader_ByteStreamLH.getFile(0) do begin
       control_filenameprompt := File1Label ;
@@ -149,7 +149,7 @@ constructor TFormMemoryDumper.Create(AOwner: TComponent) ;
       control_filenamebrowse := BrowseFile1Button ;
     end;
 
-    MemoryGrid.OnUpdate := UpdateDisplay ; // wenn sich das grid ändert, muss diese Form reagieren
+    MemoryGrid.OnUpdate := UpdateDisplay ; // wenn sich das grid Ã¤ndert, muss diese Form reagieren
     TheRegistry.Load(DumperFileFormatComboBox) ;
 
   end{ "constructor TFormMemoryDumper.Create" } ;
@@ -160,7 +160,7 @@ destructor TFormMemoryDumper.Destroy ;
   end;
 
 
-// neue Oberfläche malen
+// neue OberflÃ¤che malen
 procedure TFormMemoryDumper.UpdateDisplay(Sender: TObject);
   var
     dumperfile: TMemoryloaderFile ;
@@ -168,7 +168,7 @@ procedure TFormMemoryDumper.UpdateDisplay(Sender: TObject);
     h, w: integer ;
     i: integer ;
   begin
-    if Sender <> MemoryGrid then // hat der Frame das Update ausgelöst?
+    if Sender <> MemoryGrid then // hat der Frame das Update ausgelÃ¶st?
       MemoryGrid.UpdateDisplay  // nein: update frame, er updated wieder die Form
     else begin
       // Editierte Memoryinhalte behalten, auch wenn Pdp durch callbacks neu abgefragt wird.
@@ -179,7 +179,7 @@ procedure TFormMemoryDumper.UpdateDisplay(Sender: TObject);
       StartAddrEdit.Text := Addr2OctalStr(mc.addr) ; // 1. Zelle = Startaddr
       Caption := setFormCaptionInfoField(Caption, Addr2OctalStr(mc.addr)) ;
 
-      // ausgewählten Loader merken
+      // ausgewÃ¤hlten Loader merken
       case DumperFileFormatComboBox.ItemIndex of
         0: curLoader := Loader_ByteStreamLH ;
         1: curLoader := Loader_LowByteFileHighByteFile ;
@@ -215,7 +215,7 @@ procedure TFormMemoryDumper.UpdateDisplay(Sender: TObject);
         //EntryAddrEdit.Font.Color := clBlack ;
       end;
 
-      // b) controls für den aktiven Loader visible ;
+      // b) controls fÃ¼r den aktiven Loader visible ;
       for i := 0 to curLoader.Files.Count - 1 do begin
         dumperfile := curLoader.getFile(i) ;
         dumperfile.control_filenameprompt.Caption := dumperfile.prompt + ' :' ;
@@ -225,9 +225,9 @@ procedure TFormMemoryDumper.UpdateDisplay(Sender: TObject);
         dumperfile.control_filenamebrowse.Visible := true ;
       end;
 
-      // Das MemoryGrid ist alClient und möchte in einer bestimmten Grösse angezeigt werden,
+      // Das MemoryGrid ist alClient und mÃ¶chte in einer bestimmten GrÃ¶sse angezeigt werden,
       // tue ihm den Gefallen.
-      // Wilde ad hoc Logik: das Codewindow kann extrem hoch werden, dann kürzer anzeigen
+      // Wilde ad hoc Logik: das Codewindow kann extrem hoch werden, dann kÃ¼rzer anzeigen
       h := MemoryGrid.optimal_height + PanelT.Height ;
       w := MemoryGrid.optimal_width ;
       if h > (FormMain.ClientHeight-100) then
@@ -290,9 +290,9 @@ procedure TFormMemoryDumper.BrowseFile1ButtonClick(Sender: TObject);
     i: integer ;
     dumperfile : TMemoryloaderFile ;
   begin
-    // wird für alle Browsebuttons aufgerufen
+    // wird fÃ¼r alle Browsebuttons aufgerufen
     // VB: 'Loader" schon instanziiert.
-    // finde den file, für den das browsen gilt
+    // finde den file, fÃ¼r den das browsen gilt
     // Sender als browsebutton eingetragen
     for i := 0 to curLoader.Files.Count - 1 do begin
       dumperfile := curLoader.getFile(i) ;

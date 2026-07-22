@@ -68,7 +68,7 @@ type
       { Public-Deklarationen }
       macro11_appcontrol: TAppControl ;
       SourceFilename: string ;
-      CanTranslate: boolean ; // true, wenn g�ltiger File geladen
+      CanTranslate: boolean ; // true, wenn gültiger File geladen
       Translated: boolean ; // true, wenn MACRO-11 Lauf erfolgreich
       constructor Create(aOwner: TComponent) ; override ;
       destructor Destroy ; override ;
@@ -101,7 +101,7 @@ constructor TFormMacro11Source.Create(aOwner: TComponent) ;
     // private events
     // die MDI-Show/Hide logik in TFormChild verursacht Windowsgehler,
     // wenn JVEditor eine lange Source geladen hat.
-    OnAfterShow := FormAfterShow ; // l�dt den letzten File
+    OnAfterShow := FormAfterShow ; // lädt den letzten File
     OnBeforeHide := FormBeforeHide ;
 
     CanTranslate := false ;
@@ -130,7 +130,7 @@ destructor TFormMacro11Source.Destroy ;
 procedure TFormMacro11Source.UpdateDisplay ;
   var i: integer ;
   begin
-    // bei �nderung:
+    // bei Änderung:
     if Changed then
       Caption := setFormCaptionInfoField(Caption, ' * ' + SourceFilename)
     else
@@ -146,7 +146,7 @@ procedure TFormMacro11Source.UpdateDisplay ;
       if Trim(Editor.Lines[i]) <> '' then
         CanTranslate := true ;
 
-    // noch ein Check: g�ltige Datei da?
+    // noch ein Check: gültige Datei da?
     if not FileExists(SourceFilename) then
       CanTranslate := false ;
 
@@ -154,7 +154,7 @@ procedure TFormMacro11Source.UpdateDisplay ;
 
     // Der CompileButton ist auch disabled, wenn neue Source eingeben wurde,
     // aber noch kein filenamen bekannt ist!
-    // (Da dann nicht f�rs compilieren gespeichert werden kann)
+    // (Da dann nicht fürs compilieren gespeichert werden kann)
 
   end{ "procedure TFormMacro11Source.UpdateDisplay" } ;
 
@@ -184,7 +184,7 @@ procedure TFormMacro11Source.EditorResize(Sender: TObject);
 
 procedure TFormMacro11Source.FormBeforeHide(Sender: TObject);
   begin
-    // source aus editor l�schen
+    // source aus editor löschen
     Editor.Lines.Clear ;
     originalFileContent.Clear ; // supress "Changed = true"
   end;
@@ -215,7 +215,7 @@ procedure TFormMacro11Source.setErrorLine(n:integer) ;
     Editor.EnsureCursorPosVisible ;
   end;
 
-// Die gerade ausgef�hrte Zeile markieren
+// Die gerade ausgeführte Zeile markieren
 procedure TFormMacro11Source.setExecutionLine(n:integer) ;
   begin
     HighlightLine := n ;
@@ -239,7 +239,7 @@ procedure TFormMacro11Source.LoadFile(fname:string);
 
     // 1. clear editor
 
-    setErrorLine(-1); // marker l�schen
+    setErrorLine(-1); // marker löschen
     setExecutionLine(-1);
     Editor.Clear ;
 
@@ -291,7 +291,7 @@ procedure TFormMacro11Source.SaveFile(fname:string);
         Rewrite(f) ;
         for i := 0 to Editor.Lines.Count - 1 do begin
           s := Editor.Lines[i] ;
-          s := entab(s, 8) ; // unn�tig, und kaputt?
+          s := entab(s, 8) ; // unnötig, und kaputt?
           writeln(f, s) ;
         end;
         originalFileContent.Assign(Editor.Lines) ;
@@ -315,7 +315,7 @@ function TFormMacro11Source.Changed: boolean ;
     result := not Editor.Lines.Equals(originalFileContent) ;
   end;
 
-// Source Im Editor mit MACRO11 �bersetzten
+// Source Im Editor mit MACRO11 übersetzten
 // Listing automatisch ins Listingfenster laden
 //
 procedure TFormMacro11Source.Compile;
@@ -330,14 +330,14 @@ procedure TFormMacro11Source.Compile;
     errormsg: string ;
     errorline: integer ;
   begin
-    // Marken l�schen
+    // Marken löschen
     setExecutionLine(-1) ;
     setErrorLine(-1);
     errormsg := '' ;
     errorline := -1 ;
     Translated := false ;
 
-    // MACRO11.BAT ausf�hren
+    // MACRO11.BAT ausführen
     // macro11.bat <sourcefilename> <listingfilename>
 
     // macro11 im Verzeichnis der GUI finden
@@ -388,15 +388,15 @@ procedure TFormMacro11Source.Compile;
         raise Exception.CreateFmt('MACRO11 timeout: running longer then %d secs', [timeout_millis div 1000]) ;
     end{ "with macro11_appcontrol" } ;
 
-    ///// M�gliche Fehlermeldungen erkennen
+    ///// Mögliche Fehlermeldungen erkennen
     ///   in der Source und im Listing rot markieren,
     ///   und im Logfenster anzeigen
     if not FileExists(listfilename) then begin
       errormsg := Format('MACRO11 failure: list file %s not found', [listfilename]) ;
     end else begin
-      // Codeform f�llen und anzeigen. Fehler im Listing finden und anzeigen
+      // Codeform füllen und anzeigen. Fehler im Listing finden und anzeigen
       with FormMain do begin
-        // listingform f�llen und anzeigen
+        // listingform füllen und anzeigen
 
         TheRegistry.Save(FormMacro11Listing) ; // jetzige position sichern
         setChildFormVisibility(FormMacro11Listing, true);

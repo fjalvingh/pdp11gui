@@ -29,8 +29,8 @@ uses
   pdp1170PanelU ;
 
 {
- Ansteuerung eines PDP11/70 Console Panels �ber eine IO-Warrior56 Schaltung
- ein IOWarrior  �bertr�gt einen HID-Report, der aus 7 BYtes besteht.
+ Ansteuerung eines PDP11/70 Console Panels über eine IO-Warrior56 Schaltung
+ ein IOWarrior  überträgt einen HID-Report, der aus 7 BYtes besteht.
  Die 7 bytes entsprechen den Ports P0..P6
 
  Verwendet werden nur 36 bits der Ports P0..P3 sowie P4.0..5
@@ -43,7 +43,7 @@ uses
      Low an IOBUS0 = tristte schalter Dten auf IOBUS
      Stteurt im wesentlichen J3
  LEDS0 (write only), IOBUS3..IOBUS36 gehen an 4x 74LS373,
-         Daten�ernahme mit fallender Flanke an, steuert J2 des Panels an)
+         Datenüernahme mit fallender Flanke an, steuert J2 des Panels an)
         p0.1 = LEDS0LATCH  geht an 4 74LS373
  LEDS1, wie LEDS0, Steuerleitung P 0.2 = LEDs1 Enable
   geht an 2x 74ls373, steueer im wesentlichen J1 des Panels an.
@@ -51,13 +51,13 @@ uses
  p0.3 is not used
 
  iobus0   p0.0  L =
- Diese steuern �ber eine Zeile Bank von Input-Tristatete
+ Diese steuern über eine Zeile Bank von Input-Tristatete
 
 }
 
 type
 
-  // Ist ein Implementor f�r pdp1170panel
+  // Ist ein Implementor für pdp1170panel
   Tpdp1170panelImplementorPhysical = class(TObject)
     private
       // Iowkit-Handles
@@ -65,7 +65,7 @@ type
       numIowkitDevices: integer ;
       iowkitApiLoaded: boolean ; // false, wenn die DLL nicht gefunden wurde
 
-      OpenDevice_NextTime: dword ; // TickCount des n�chsten OpenDevice-Versuchs
+      OpenDevice_NextTime: dword ; // TickCount des nächsten OpenDevice-Versuchs
     public
       pdp1170panel: Tpdp1170panel ; // Das Basipanel.
 
@@ -98,7 +98,7 @@ uses
   FormMainU ;
 
 
-// gibt die Bitmaske zur�ck, die die Werte 0..value halten kann
+// gibt die Bitmaske zurück, die die Werte 0..value halten kann
 // Bsp: 6 -> $07, 10 -> $0f
 function value2bitmask(val: dword): dword ;
   begin
@@ -110,7 +110,7 @@ function value2bitmask(val: dword): dword ;
   end;
 
 
-// gibt das niedrigste in "mask" gesetzt Bit zur�ck
+// gibt das niedrigste in "mask" gesetzt Bit zurück
 function bitmask2lsb(mask: dword): integer ;
   begin
     if mask = 0 then
@@ -164,12 +164,12 @@ constructor Tpdp1170panelImplementorPhysical.Create ;
     ctrl.register_nr := -1 ; // kann nicht direkt gesetzt werden
     ctrl := pdp1170panel.getControlByName(_Led, pdp1170Led_DATA_SELECT, 'BUS REG') ; assert(ctrl <> nil) ;
     ctrl.register_nr := -1 ; // kann nicht direkt gesetzt werden
-    ctrl := pdp1170panel.getControlByName(_Led, pdp1170Led_DATA_SELECT, '�ADRS FPP/CPU') ; assert(ctrl <> nil) ;
+    ctrl := pdp1170panel.getControlByName(_Led, pdp1170Led_DATA_SELECT, 'µADRS FPP/CPU') ; assert(ctrl <> nil) ;
     ctrl.register_nr := -1 ; // kann nicht direkt gesetzt werden
     ctrl := pdp1170panel.getControlByName(_Led, pdp1170Led_DATA_SELECT, 'DISPLAY REGISTER') ; assert(ctrl <> nil) ;
     ctrl.register_nr := -1 ; // kann nicht direkt gesetzt werden
 
-    // Adress-Leds: �ber Index finden
+    // Adress-Leds: über Index finden
     ctrl := pdp1170panel.getControlByID(_Led, pdp1170Led_ADDRESS, 0) ; assert(ctrl <> nil) ;
     ctrl.register_nr := 1 ; ctrl.register_mask := $00000001 ;
     ctrl := pdp1170panel.getControlByID(_Led, pdp1170Led_ADDRESS, 1) ; assert(ctrl <> nil) ;
@@ -215,7 +215,7 @@ constructor Tpdp1170panelImplementorPhysical.Create ;
     ctrl := pdp1170panel.getControlByID(_Led, pdp1170Led_ADDRESS, 21) ; assert(ctrl <> nil) ;
     ctrl.register_nr := 1 ; ctrl.register_mask := $00200000 ;
 
-    // DATA-Leds: �ber Index finden
+    // DATA-Leds: über Index finden
     ctrl := pdp1170panel.getControlByID(_Led, pdp1170Led_DATA, 0) ; assert(ctrl <> nil) ;
     ctrl.register_nr := 0 ; ctrl.register_mask := $00010000 ;
     ctrl := pdp1170panel.getControlByID(_Led, pdp1170Led_DATA, 1) ; assert(ctrl <> nil) ;
@@ -254,7 +254,7 @@ constructor Tpdp1170panelImplementorPhysical.Create ;
     ctrl := pdp1170panel.getControlByName(_Led, pdp1170Led_PARITY, 'PARITY HIGH') ; assert(ctrl <> nil) ;
     ctrl.register_nr := 0 ; ctrl.register_mask := $00000001 ;
 
-    // Diese LEDS sind einzeln in ihrer Gruppe, kein Name n�tig
+    // Diese LEDS sind einzeln in ihrer Gruppe, kein Name nötig
     ctrl := pdp1170panel.getControlByID(_Led, pdp1170Led_PAR_ERR, 0) ; assert(ctrl <> nil) ;
     ctrl.register_nr := 0 ; ctrl.register_mask := $00000008 ;
     ctrl := pdp1170panel.getControlByID(_Led, pdp1170Led_ADRS_ERR, 0) ; assert(ctrl <> nil) ;
@@ -304,8 +304,8 @@ constructor Tpdp1170panelImplementorPhysical.Create ;
     ctrl := pdp1170panel.getControlByID(_Switch, pdp1170Sw_ADDRESS_SELECT, 0) ; assert(ctrl <> nil) ;
     ctrl.register_nr := 0 ; ctrl.register_mask := $E0000000 ;
     // TODO: Schalterstellungen 0..7 auf logische States abgleichen!
-    // Hier: immer zwei Schalterstellungen f�r einen State:
-    // "getStateByName" findet den ersten State, der n�chste kommt 4 states sp�ter
+    // Hier: immer zwei Schalterstellungen für einen State:
+    // "getStateByName" findet den ersten State, der nächste kommt 4 states später
     ctrl := pdp1170panel.getControlByID(_Switch, pdp1170Sw_DATA_SELECT, 0) ; assert(ctrl <> nil) ;
     ctrl.register_nr := 1 ; ctrl.register_mask := $00000003 ;
 
@@ -409,7 +409,7 @@ procedure Tpdp1170panelImplementorPhysical.OpenDevice ;
 
       IowKitCloseDevice(nil) ; // close all ... for clean reopening
 
-      // das hier ist n�tig, um die Anzahl der devices neu zu bestimmen
+      // das hier ist nötig, um die Anzahl der devices neu zu bestimmen
       UnloadIowKitAPI ;
       iowkitApiLoaded := LoadIowKitAPI ;
 
@@ -435,7 +435,7 @@ procedure Tpdp1170panelImplementorPhysical.OpenDevice ;
 
 
 // 2*32 bit Registerwerte in den hid-report schreiben
-// problem: register 0..32 wird in iobit 3..36 �bertragen,
+// problem: register 0..32 wird in iobit 3..36 übertragen,
 // ist also um 4 bit verschoben,
 // also reg.0 liegt auf byte[0].3, etc.
 procedure Reg2hidIoReport(reg_bits0_31: dword ;
@@ -529,8 +529,8 @@ procedure hidSpecialReport2Reg(rep: IOWKIT56_SPECIAL_REPORT ;
      Kombinationssequenz, schreibt leds0reg und leds1reg,
      liest switchreg
 
-    Update() legt die LED-Zust�nde aus pdp1170panel->LEDS
-    auf die Outputregister und liest die Switchzust�nde wieder ein
+    Update() legt die LED-Zustände aus pdp1170panel->LEDS
+    auf die Outputregister und liest die Switchzustände wieder ein
     Sequenz:
     1. Report :                      input tristate, output data 0 auf iobus
        iobus0 switchenable     1
@@ -540,11 +540,11 @@ procedure hidSpecialReport2Reg(rep: IOWKIT56_SPECIAL_REPORT ;
         data    data for LEDS0-REgsiter
 
     2. Report:    input tristate, clock output data 0 into regsiter 0
-                Data f�r  leds1 auf Bus
+                Data für  leds1 auf Bus
                 (geht, da P1,2,3 vom IOWarrior erst nach P0 geschaltet werden.
        iobus0 switchenable     1
        iobus1  leds0latch     0   fallende Flanke
-        iobus2  leds1enable    1   reg1 �ffnen
+        iobus2  leds1enable    1   reg1 öffnen
         data for LED1-Register
 
     3. Report :                      input tristate, clock output data 1 into register
@@ -629,7 +629,7 @@ procedure Tpdp1170panelImplementorPhysical.WriteOutputRegisters(
 
       // Reportdefinitionen siehe oben!
       // report 1: input buffer tristate, output data 0 auf iobus
-      // m�gliche optimierung: nur ausgeben, wenn sich "leds0reg" ge�ndert hat
+      // mögliche optimierung: nur ausgeben, wenn sich "leds0reg" geändert hat
       io_rep.Bytes[0] := $03 ;
       Reg2hidIoReport(ledsreg0, 0, io_rep) ;
       if IowKitWrite(iowkitDevHandle, IOW_PIPE_IO_PINS, pchar(@io_rep), IOWKIT56_IO_REPORT_SIZE)
@@ -642,7 +642,7 @@ procedure Tpdp1170panelImplementorPhysical.WriteOutputRegisters(
               <> IOWKIT56_IO_REPORT_SIZE then raise Exception.Create('IowKitWrite failed') ;
 
       // report 2: input tristate, output data 1 auf iobus
-      // m�gliche optimierung: nur ausgeben, wenn sich "leds1reg" ge�ndert hat
+      // mögliche optimierung: nur ausgeben, wenn sich "leds1reg" geändert hat
       io_rep.Bytes[0] := $05 ;
       Reg2hidIoReport(ledsreg1, 0, io_rep) ; // Output nur 32 bit
       if IowKitWrite(iowkitDevHandle, IOW_PIPE_IO_PINS, pchar(@io_rep), IOWKIT56_IO_REPORT_SIZE)
@@ -676,7 +676,7 @@ procedure Tpdp1170panelImplementorPhysical.SyncLedsFromBasePanel(Sender: TObject
     for i := 0 to pdp1170panel.ControlCount - 1 do begin
       ctrl := pdp1170panel.Controls[i] ;
       if (ctrl.ctltype = _Led) and (ctrl.register_nr >= 0) then begin
-        // bits f�r diese LEd in das passende output register ORen
+        // bits für diese LEd in das passende output register ORen
         assert(ctrl.implementor_active_state_index < ctrl.StateCount) ;
         value := ctrl.States[ctrl.implementor_active_state_index].value ;
         value := value shl ctrl.register_lsb ;
@@ -707,7 +707,7 @@ procedure Tpdp1170panelImplementorPhysical.SyncSwitchesToBasePanel(Sender: TObje
       for i := 0 to pdp1170panel.ControlCount - 1 do begin
         ctrl := pdp1170panel.Controls[i] ;
         if (ctrl.ctltype = _Switch) and (ctrl.register_nr >= 0) then begin
-          // die richtige Bitgruppe aus dem passenden inputregister w�hlen
+          // die richtige Bitgruppe aus dem passenden inputregister wählen
           reg := cur_switch_reg[ctrl.register_nr] ;
           reg := reg and ctrl.register_mask ;
           value := reg shr ctrl.register_lsb ; // die bits von value nach bit 0 shiften

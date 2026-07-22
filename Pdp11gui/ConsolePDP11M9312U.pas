@@ -22,19 +22,19 @@ unit ConsolePDP11M9312U;
 }
 
 {
-  Steuert über RS232 den console emulator auf dem
+  Steuert Ã¼ber RS232 den console emulator auf dem
   M9312 boot terminator an. Wird zB in PDP-11/34 benutzt.
   Die Anwendung ruft nur Deposit(), Examine(), Start auf
 
-  Der M9312 console emulator läuft aus BOOTROM auf der CPU
+  Der M9312 console emulator lÃ¤uft aus BOOTROM auf der CPU
    und ist unglaublich schwach:
   - nur EXAM/DEPOSIT im 16 bit adressraum
   - nur START, kein Stop, oder single step.
   - kein Reset, oder Initialize BUS
-  - läuft ein program auf HALT, kann die Maschine nur über front panel (CTRL-BOOT)
+  - lÃ¤uft ein program auf HALT, kann die Maschine nur Ã¼ber front panel (CTRL-BOOT)
     neu gestartet werden.
-  - BUS ERROR (nicht implementierte Adressen) führen ebenfalls zum HALT
-   -> kein I/O page scan oder memory scan ist möglich
+  - BUS ERROR (nicht implementierte Adressen) fÃ¼hren ebenfalls zum HALT
+   -> kein I/O page scan oder memory scan ist mÃ¶glich
   - kein Zugriff auf die CPU Register R0..R7 1777700..1777707 !
 
   die 11/34 hat 18bit Adressen, der console emulator aber nur 16 bit.
@@ -58,7 +58,7 @@ uses
 const // Zeilenumbruch der PDP-Console
   CHAR_PDP11M9312_CR = #$d ;
   CHAR_PDP11M9312_LF = #$a ;
-  PDP11M9312_CMD_TIMEOUT = 1000 ; // timeout für Antwort in Millisekunden. Long for slow telnet connections
+  PDP11M9312_CMD_TIMEOUT = 1000 ; // timeout fÃ¼r Antwort in Millisekunden. Long for slow telnet connections
   //PDP11M9312_PROMPT = '@' ;
 
 type
@@ -76,11 +76,11 @@ type
   TConsolePDP11M9312 = class(TConsoleGeneric)
     private
       deposit_lastaddr: TMemoryAddress ; // die gesetzte Adresse
-      // der console emulator wird von CPU ausgeführt und ist nach HALT tot.
-      // der disk image driver springt statt HALT an die den Einstiegspunkt zurück
+      // der console emulator wird von CPU ausgefÃ¼hrt und ist nach HALT tot.
+      // der disk image driver springt statt HALT an die den Einstiegspunkt zurÃ¼ck
       monitor_entryaddress: TMemoryAddress ;
     public
-      Prompt: string ; // default '@', für M9301: '$'
+      Prompt: string ; // default '@', fÃ¼r M9301: '$'
 
       constructor Create(memorycellgroups: TMemoryCellGroups; // die MMU legt eigene memorycells an
               aMonitor_entryaddress: TMemoryAddress) ;
@@ -98,7 +98,7 @@ type
       function getFeatures: TConsoleFeatureSet ; override ;
       function getPhysicalMemoryAddressType: TMemoryAddressType ; override ;
 
-      // überschreibe leere Function der Basisklasse
+      // Ã¼berschreibe leere Function der Basisklasse
       function getMonitorEntryAddress: TMemoryAddress ; override ;
 
 
@@ -113,9 +113,9 @@ type
       procedure ResetMachineAndStartCpu(newpc_v: TMemoryAddress) ; override ; // CPU starten.
       procedure ContinueCpu ; override ;
 
-//      function IsRunning: boolean ; virtual ; abstract ; // läuft die CPU (noch?)
+//      function IsRunning: boolean ; virtual ; abstract ; // lÃ¤uft die CPU (noch?)
       procedure HaltCpu(var newpc_v: TMemoryAddress) ;  override ; // CPU anhalten
-      procedure SingleStep ;  override ; // einen Zyklus ausführen
+      procedure SingleStep ;  override ; // einen Zyklus ausfÃ¼hren
 
     end{ "TYPE TConsolePDP11M9312 = class(TConsoleGeneric)" } ;
 
@@ -131,7 +131,7 @@ uses
   FormMainU ;
 
 const
-  // die 16 globalen Register R0..R7, R10..R17 werden kürzer addressiert
+  // die 16 globalen Register R0..R7, R10..R17 werden kÃ¼rzer addressiert
   global_register_base = _177700 ; // 16 bit
   global_register_blocksize = 16 ;
 
@@ -228,8 +228,8 @@ function TConsolePDP11M9312Scanner.NxtSym(raiseIncompleteOnEof: boolean = true):
       nxtcharidx := nxtcharidx + symlen ;
     until not again ;
 
-    // Detailierte Ausgabe. Rest auf 32 Zeichen beschränken,
-    // falls mal der SerialXfer-Zeichenstrom in den Parser gerät.
+    // Detailierte Ausgabe. Rest auf 32 Zeichen beschrÃ¤nken,
+    // falls mal der SerialXfer-Zeichenstrom in den Parser gerÃ¤t.
     Log('{Rcved Sym = (%s, "%s"), rest="%s"} ', [
             Symtype2text(CurSymType), CurSymTxt,
             String2PrintableText(Copy(CurInputLine, nxtcharidx, 32), true)]) ;
@@ -241,7 +241,7 @@ constructor TConsolePDP11M9312.Create(memorycellgroups: TMemoryCellGroups;
   begin
     inherited Create;
     CommandTimeoutMillis := PDP11M9312_CMD_TIMEOUT ;
-    Prompt := '@' ; // default für M9312
+    Prompt := '@' ; // default fÃ¼r M9312
     MMU := TPdp11MMU.Create(memorycellgroups) ;
     RcvScanner := TConsolePDP11M9312Scanner.Create ;
     monitor_entryaddress := aMonitor_entryaddress ;
@@ -259,12 +259,12 @@ function TConsolePDP11M9312.getName: string ;
     result := 'PDP-11 M9312 console' ;
   end;
 
-// Terminal-Einstellungen für die PDP-11 M9312
+// Terminal-Einstellungen fÃ¼r die PDP-11 M9312
 function TConsolePDP11M9312.getTerminalSettings: TTerminalSettings ;
   begin
-    result.Receive_CRisNewline := false ;  // CR wird als Füllzecihen eingesetzt
+    result.Receive_CRisNewline := false ;  // CR wird als FÃ¼llzecihen eingesetzt
     result.Receive_LFisNewline := true ; //  LF macht Zeilenumbruch
-    result.Backspace := #0 ; // M9312 console emulator löscht nie
+    result.Backspace := #0 ; // M9312 console emulator lÃ¶scht nie
     result.TabStop := 0 ;
   end;
 
@@ -272,10 +272,10 @@ function TConsolePDP11M9312.getTerminalSettings: TTerminalSettings ;
 function TConsolePDP11M9312.getFeatures: TConsoleFeatureSet ;
   begin
     // der M9312 console emulator kann nur Starten.
-    // Nach HALT kann nur über das front panel wieder gestartet werden.
+    // Nach HALT kann nur Ã¼ber das front panel wieder gestartet werden.
     // ich erstmal nicht!
     result := [
-//            cfActionResetMachine, // reset unabhängig von run: INITIALIZE
+//            cfActionResetMachine, // reset unabhÃ¤ngig von run: INITIALIZE
             cfActionResetMaschineAndStartCpu // weiterlaufen mit Init: START
 //            cfActionContinueCpu, // weiterlaufen ohne Init: GO bzw C
 //            cfActionHaltCpu, // Console kann Program stoppen
@@ -299,7 +299,7 @@ procedure TConsolePDP11M9312.Resync ;
     try
       BeginCriticalSection('Resync') ; // User sperren
 
-//      examine_lastaddr := MEMORYCELL_ILLEGALVAL ; // ungültig, da 32 bit
+//      examine_lastaddr := MEMORYCELL_ILLEGALVAL ; // ungÃ¼ltig, da 32 bit
       deposit_lastaddr.mat := matPhysical16 ;
       deposit_lastaddr.val := MEMORYCELL_ILLEGALVAL ;
 
@@ -333,7 +333,7 @@ procedure TConsolePDP11M9312.Init(aConnection: TSerialIoHub) ;
     Resync ;
   end;
 
-// sagt der PDP-Console, dass sie nix mehr über den M9312 console emulator weiss
+// sagt der PDP-Console, dass sie nix mehr Ã¼ber den M9312 console emulator weiss
 procedure TConsolePDP11M9312.ClearState ;
   begin
     inherited ;
@@ -345,7 +345,7 @@ procedure TConsolePDP11M9312.ClearState ;
 
 // Aus RcvScanner.CurInputLine die Antworten extrahieren
 // und in die Colection AnswerLines schreiben
-// erkennt im output von SimH die nächste Antwort phrase
+// erkennt im output von SimH die nÃ¤chste Antwort phrase
 // wird vom "onRcv"-Even aufgerufen - letztlich von SerialIoHub-PollTimer
 function TConsolePDP11M9312.DecodeNextAnswerPhrase: boolean ;
 
@@ -360,19 +360,19 @@ function TConsolePDP11M9312.DecodeNextAnswerPhrase: boolean ;
       curAnswerLine.phrasetype := phPrompt ;
 
       // wenn vor der Prompt ein HALT kam, ist es jetzt die LETZTE Zeile
-      // Achtung eben wurde gerade die Prompt eingefügt
+      // Achtung eben wurde gerade die Prompt eingefÃ¼gt
       if Answerlines.Count > 1 then
         haltAnswerline := Answerlines.Items[Answerlines.Count-2] as TConsoleAnswerPhrase
       else haltAnswerline := nil ;
 
-      // Hier nicht das OnHalt event auslösen ... das will wahrscheinlich
-      //Funktionen durchführen, (EXAMINE list), die wiederum vom background-empfang abhängig sind!
-      // war die Phrase davor ein "phHalt", wird jetzt das OnHalt-Event ausgelöst
+      // Hier nicht das OnHalt event auslÃ¶sen ... das will wahrscheinlich
+      //Funktionen durchfÃ¼hren, (EXAMINE list), die wiederum vom background-empfang abhÃ¤ngig sind!
+      // war die Phrase davor ein "phHalt", wird jetzt das OnHalt-Event ausgelÃ¶st
       if (haltAnswerline <> nil) and (haltAnswerline.phrasetype = phHalt) then begin
         onExecutionStopPcVal := haltAnswerline.haltaddr ;
         onExecutionStopDetected := true ;
 
-        // MonitorTimer kann jetzt OnExecutionStop auslösen
+        // MonitorTimer kann jetzt OnExecutionStop auslÃ¶sen
         assert(onExecutionStopPcVal.mat = matVirtual) ;
       end else begin
         onExecutionStopPcVal.val := MEMORYCELL_ILLEGALVAL ;
@@ -380,7 +380,7 @@ function TConsolePDP11M9312.DecodeNextAnswerPhrase: boolean ;
       end;
     end{ "procedure makePrompt" } ;
 
-  // 4x Octalzahl. Die Registerausgabe gibt nur über den console emulator selber Auskunft
+  // 4x Octalzahl. Die Registerausgabe gibt nur Ã¼ber den console emulator selber Auskunft
   // kommt nach reboot und nach viele Fehler.
   // wegen reboot wird es als halt interpretiert
   procedure makeHalt ;
@@ -390,7 +390,7 @@ function TConsolePDP11M9312.DecodeNextAnswerPhrase: boolean ;
       curAnswerLine.rawtext := '????' ;
       curAnswerLine.haltaddr.mat := matVirtual ;
       curAnswerLine.haltaddr.val := MEMORYCELL_ILLEGALVAL ; // PC ist unbekannt
-      // halt -phrase löst noch nicht das OnExecutionStop-Event aus.
+      // halt -phrase lÃ¶st noch nicht das OnExecutionStop-Event aus.
       // erst, wenn die nachfolgende cmd prompt erkannt wird
     end;
 
@@ -414,12 +414,12 @@ function TConsolePDP11M9312.DecodeNextAnswerPhrase: boolean ;
 //      end ;
       // bei UNIBUS timeout gibts kein "?" oder sowas, der ganze console emualtor bleibt dann stehen!
 //      else if valtxt = '?' then begin
-//        // UNIBUS timeout ist gültige Antwort
+//        // UNIBUS timeout ist gÃ¼ltige Antwort
 //        CurAnswerline := Answerlines.Add as TConsoleAnswerPhrase ;
 //        CurAnswerline.phrasetype := phExamine ;
 //        CurAnswerline.examineaddr.mat := mat ;
 //        CurAnswerline.examineaddr.val := MEMORYCELL_ILLEGALVAL ;  // adresse ist leider unbekannt
-//        CurAnswerline.examinevalue := MEMORYCELL_ILLEGALVAL ; // gültiges Fehlersignal
+//        CurAnswerline.examinevalue := MEMORYCELL_ILLEGALVAL ; // gÃ¼ltiges Fehlersignal
 //      end else
 //        raise EConsoleScannerUnknownExpression.Create('EConsoleScannerIllegalExpression 3') ;
     end{ "procedure makeExamine" } ;
@@ -447,7 +447,7 @@ function TConsolePDP11M9312.DecodeNextAnswerPhrase: boolean ;
     with RcvScanner do begin
       MarkParsePosition ;
       try
-        // Eingabe-Ende vom letzten Scan löschen
+        // Eingabe-Ende vom letzten Scan lÃ¶schen
         if CurSymType = symtypeEof then NxtSym ; // Incomplete, wenn nichts weiter da!
 
         // NextSym() erzeugt EConsoleScannerInputIncomplete, wenn Ende des Inputs
@@ -461,7 +461,7 @@ function TConsolePDP11M9312.DecodeNextAnswerPhrase: boolean ;
           // 2) "E " <adr> val>             phExam
           // andere opcodes: ignorieren
 
-          // EOLN: alle zu ignorierenden Phrasen ausdrücklich hier eintragen!
+          // EOLN: alle zu ignorierenden Phrasen ausdrÃ¼cklich hier eintragen!
           NxtSym ;
           if CurSymTxt = Prompt then begin // <CR>@
             makePrompt ;
@@ -494,7 +494,7 @@ function TConsolePDP11M9312.DecodeNextAnswerPhrase: boolean ;
               raise EConsoleScannerUnknownExpression.Create('Space after 4th octal const expected for HALT');
             makeHalt ;
             NxtSym ; // input processed
-            // alle octal constanten sind jetzt weggelesen: ClenupInput läuft,
+            // alle octal constanten sind jetzt weggelesen: ClenupInput lÃ¤uft,
             // wenn keine Exception oder EConsoleScannerUnknownExpression kommt.
           end { "if CurSymType = symtypeOctal" }
         end { "if CurSymType = symtypeEoln" } else // E <addr> val wid ach erkannt, wenn kein @ davor kommt
@@ -519,7 +519,7 @@ function TConsolePDP11M9312.DecodeNextAnswerPhrase: boolean ;
             makeExamine(addr_s, val_s);
             NxtSym ; // input processed
           end { "if (CurSymType = symtypeOpcode) and (CurSymTxt = 'E')" } else begin
-            // ? alles bis nächstes EOL ist unverstandene "OTHERLINE"
+            // ? alles bis nÃ¤chstes EOL ist unverstandene "OTHERLINE"
             s := CurSymTxt ;
             NxtSym ; // raises "Incomplete" on Eof
             while CurSymType <> symtypeEoln do begin
@@ -529,7 +529,7 @@ function TConsolePDP11M9312.DecodeNextAnswerPhrase: boolean ;
             makeOtherLine(s);
             // kein NxtSym: EOLN stehen lassen
           end ;
-        // Verarbeiteten String abknipsen. NxtSym bleibt gültig
+        // Verarbeiteten String abknipsen. NxtSym bleibt gÃ¼ltig
         CleanupInput ;
 
         if curAnswerLine <> nil then begin // eine der make*() ist gelaufen.
@@ -543,14 +543,14 @@ function TConsolePDP11M9312.DecodeNextAnswerPhrase: boolean ;
           CleanupInput ;
           // JETZT nochmal versuchen!!!
           result := true ;
-          // oder: nochmal ab nächstem Symbol probieren?
+          // oder: nochmal ab nÃ¤chstem Symbol probieren?
           // RestoreParsePosition ;
           // NxtSym
         end;
         on E: EConsoleScannerInputIncomplete do begin
-          // NxtSym ist auf ein unvollständiges Symbol gestossen,
+          // NxtSym ist auf ein unvollstÃ¤ndiges Symbol gestossen,
           // oder ein NxtSym konnte nichts mehr liefern
-          // nix zurückgeben, diese Funktion SPÄTER nochmal aufrufen, mit
+          // nix zurÃ¼ckgeben, diese Funktion SPÃ„TER nochmal aufrufen, mit
           // mehr input.
           RestoreParsePosition ;
           result := false ;
@@ -591,23 +591,23 @@ function TConsolePDP11M9312.DecodeNextAnswerPhrase: boolean ;
       curanswerline.phrasetype := phPrompt ;
       curanswerline.rawtext := curline ;
 
-      // Hier nicht das OnHalt event auslösen ... das will wahrscheinlich
-      // Funktionen durchführen, (EXAMINE list), die wiederum vom background-empfang abhängig sind!
-      // war die Phrase davor ein "phHalt", wird jetzt das OnHalt-Event ausgelöst
+      // Hier nicht das OnHalt event auslÃ¶sen ... das will wahrscheinlich
+      // Funktionen durchfÃ¼hren, (EXAMINE list), die wiederum vom background-empfang abhÃ¤ngig sind!
+      // war die Phrase davor ein "phHalt", wird jetzt das OnHalt-Event ausgelÃ¶st
       if (haltanswerline <> nil) and (haltanswerline.phrasetype = phHalt) then begin
         onExecutionStopPcVal := haltanswerline.haltaddr ;
         LogStrCol(LogCol_DecodeNextAnswerPhrase,  'prompt detected, onExecutionStopPcVal := haltanswerline.haltaddr') ;
-        // MonitorTimer kann jetzt OnExecutionStop auslösen
+        // MonitorTimer kann jetzt OnExecutionStop auslÃ¶sen
       end else
         onExecutionStopPcVal.val := MEMORYCELL_ILLEGALVAL ;
 
     end { "if curline = PDP_PROMPT" } ;
     if (curanswerline = nil) and eoln then begin
-      // Analyse der letzten vollständigen Zeile.
+      // Analyse der letzten vollstÃ¤ndigen Zeile.
       // erkenne, ob es ein CPU-stop ist. Das heisst beim M9312 console emulator:
       // Wurde nach HALT der consolue emulator neu gebootetet?
       // -> dann gibt es den Register dump xxxxxx xxxxxxx xxxxxxx xxxxx
-      // Den gibt allerdings auch so ständig!
+      // Den gibt allerdings auch so stÃ¤ndig!
       //
       // wichtig: phHalt muss die VORLETZTE Zeile werden, damit das folgende Prompt
       // dem phHalt zugeordnet wird.
@@ -636,13 +636,13 @@ function TConsolePDP11M9312.DecodeNextAnswerPhrase: boolean ;
       curanswerline.phrasetype := phExamine ;
       curanswerline.rawtext := curline ;
 
-      try // bei Formatfehler: curanswerline wieder löschen und := nil
+      try // bei Formatfehler: curanswerline wieder lÃ¶schen und := nil
         i := pos('?20 TRAN ERR', curline) ;
         if i > 0 then begin
-          // UNIBUS timeout ist gültige Antwort
+          // UNIBUS timeout ist gÃ¼ltige Antwort
           curanswerline.examineaddr.mat := matPhysical16 ;
           curanswerline.examineaddr.val := MEMORYCELL_ILLEGALVAL ;  // adresse ist leider unbekannt
-          curanswerline.examinevalue := MEMORYCELL_ILLEGALVAL ; // gültiges Fehlersignal
+          curanswerline.examinevalue := MEMORYCELL_ILLEGALVAL ; // gÃ¼ltiges Fehlersignal
         end else begin
           s := ExtractWord(1, curline, [' ', #9]) ; // val extrahieren
           if s = ''  then raise EConsoleScannerUnknownExpression.Create('no examine answer') ; //no error
@@ -658,7 +658,7 @@ function TConsolePDP11M9312.DecodeNextAnswerPhrase: boolean ;
         end { "if i > 0 ... ELSE" } ;
       except
         curanswerline.Free ;
-        curanswerline := nil ; // probiere nächsten Typ
+        curanswerline := nil ; // probiere nÃ¤chsten Typ
       end{ "try" } ;
 
       if (curanswerline = nil) and eoln then begin
@@ -698,13 +698,13 @@ procedure TConsolePDP11M9312.Deposit(addr: TMemoryAddress ; val: dword) ;
         addr := MMU.Virtual2PhysicalInstruction(addr) ;
       assert(addr.mat = matPhysical16) ;
 
-      // die "globalen Register" R0..R7 können nicht geschrieben werden.
+      // die "globalen Register" R0..R7 kÃ¶nnen nicht geschrieben werden.
       if (addr.val >= global_register_base) and (addr.val < global_register_base + global_register_blocksize) then begin
         // erfolglos!
         deposit_lastaddr.val := MEMORYCELL_ILLEGALVAL ;
       end else begin
         if (deposit_lastaddr.val = MEMORYCELL_ILLEGALVAL) or (addr.val <> deposit_lastaddr.val+2) then begin
-          // Adresse für Deposit mus explizit geladen werden.
+          // Adresse fÃ¼r Deposit mus explizit geladen werden.
           Answerlines.Clear ;
           WriteToPDP(Format('L %s' + CHAR_PDP11M9312_CR, [Dword2OctalStr(addr.val)])) ;
           CheckPrompt('LOAD ADRESS failed, no prompt') ;
@@ -790,10 +790,10 @@ function TConsolePDP11M9312.Examine(addr: TMemoryAddress): dword ;
 
 procedure TConsolePDP11M9312.Examine(mcg: TMemoryCellgroup ; unknown_only: boolean ; abortable: boolean) ;
 
-// Examine-Commandos für eine Liste ausgeben. addr_inc: 1 für globale register, sonst 2
+// Examine-Commandos fÃ¼r eine Liste ausgeben. addr_inc: 1 fÃ¼r globale register, sonst 2
 // nur solche listmembers beachten, die tag = 0 haben (= noch nicht abgefragt sind)
 // result: true, wenn alle cells abgefragt wurden
-// false: neuer Aufruf ist nötig, mindestens die erste Zelle wurde abgefragt
+// false: neuer Aufruf ist nÃ¶tig, mindestens die erste Zelle wurde abgefragt
 // UNIBUSTIMEOUTS: abbruch, mindestens die 1. Zelle ist gesetzt (mit INVALID)
   function examineAddrList(list: TList ; addr_inc: integer ): boolean ;
     const
@@ -804,14 +804,14 @@ procedure TConsolePDP11M9312.Examine(mcg: TMemoryCellgroup ; unknown_only: boole
       mc: TMemoryCell ;
       s_addr: string ;
       answerline: TConsoleAnswerPhrase ;
-      block_failure: boolean ; // Blockabfrage ist durcheinander, UNIBUS TIMEOUT: restart nötig
+      block_failure: boolean ; // Blockabfrage ist durcheinander, UNIBUS TIMEOUT: restart nÃ¶tig
       // min. die erste Adresse hat jetzt tag = 1
     begin
       // Zusicherung: pro Aufruf wird immer mindestens eine weitere
       // Adresse mit tag = 1  markiert!
       result := false ;
 
-      // Default: alle ungelesenen Adressen ungültig setzen
+      // Default: alle ungelesenen Adressen ungÃ¼ltig setzen
       // Bei Zugriff auf unlesbare GPR R0..R7 kann dann einfach abgebrochen werdem.
       for i := 0 to list.Count - 1 do
         with TMemoryCell(list[i]) do
@@ -835,13 +835,13 @@ procedure TConsolePDP11M9312.Examine(mcg: TMemoryCellgroup ; unknown_only: boole
       block_failure := false ;
       while not block_failure and (blockstart < list.Count) do begin
         // finde einen block, in dem die Adressen um addr_inc aufsteigen
-        // block darf aber nicht länger als max_block_len werden,
-        // längere blöcke werden unterbrochen.
+        // block darf aber nicht lÃ¤nger als max_block_len werden,
+        // lÃ¤ngere blÃ¶cke werden unterbrochen.
         blockend := blockstart+1  ;
         while (blockend < list.Count)
                 and (TMemoryCell(list[blockend-1]).tag = 0)
                 and (TMemoryCell(list[blockend-1]).addr.tmpval + addr_inc = TMemoryCell(list[blockend]).addr.tmpval)
-                // blocklänge begrenzen
+                // blocklÃ¤nge begrenzen
                 and ((blockend-blockstart) < max_block_len)
                 do
           inc(blockend) ;
@@ -850,8 +850,8 @@ procedure TConsolePDP11M9312.Examine(mcg: TMemoryCellgroup ; unknown_only: boole
 
 
         // Addresse vor jedem Block neu laden.
-        // Sie könnte zwar zwischen zwei Blöcken gemerkt werden,
-        // aber der User könnte sie ja über das Terminalwindow verstellen.
+        // Sie kÃ¶nnte zwar zwischen zwei BlÃ¶cken gemerkt werden,
+        // aber der User kÃ¶nnte sie ja Ã¼ber das Terminalwindow verstellen.
 
         // Die GPR R0..R7 sind nicht abfragbar: INVALID_VALUE stehen lassen
         if addr_inc = 1 then begin // KEIN register space
@@ -894,7 +894,7 @@ procedure TConsolePDP11M9312.Examine(mcg: TMemoryCellgroup ; unknown_only: boole
           end{ "for i" } ;
         end{ "if addr_inc = 2" } ;
 
-        // nächster Block
+        // nÃ¤chster Block
         blockstart := blockend ;
       end { "while not block_failure and (blockstart < list.Count)" } ;
     end{ "function examineAddrList" } ;
@@ -905,7 +905,7 @@ procedure TConsolePDP11M9312.Examine(mcg: TMemoryCellgroup ; unknown_only: boole
     listcpureg: TList ; // sortierte Liste mit CPU-Regsiteradressen (inkrement 2) ;
   begin { "procedure TConsolePDP11M9312.Examine" }
     // a) memorycells sortiert auslesen
-    // b) Memory/globalregister Bereiche unterscheiden, zusammenhängende
+    // b) Memory/globalregister Bereiche unterscheiden, zusammenhÃ¤ngende
     //    Adressbereiche unterscheiden
     // c) sequentiell aufeinanderfolgende Adressen
     //    kombiniert mit pdp-11/44 "E/N" auslesen
@@ -977,10 +977,10 @@ procedure TConsolePDP11M9312.ResetMachine(newpc_v: TMemoryAddress) ; // Maschine
 procedure TConsolePDP11M9312.ResetMachineAndStartCpu(newpc_v: TMemoryAddress) ; // CPU starten.
   var s: string ;
   begin
-    // START. Program läuft bis HALT.
+    // START. Program lÃ¤uft bis HALT.
     // console emulator nur durch "reboot" wieder aktivierbar
 
-    // keine Prompt, CPU läuft jetzt
+    // keine Prompt, CPU lÃ¤uft jetzt
     try
       BeginCriticalSection('ResetCpuAndStart') ;
       assert(newpc_v.mat = matVirtual) ;
@@ -1008,7 +1008,7 @@ procedure TConsolePDP11M9312.ContinueCpu ;
 
 
 
-//      function IsRunning: boolean ; virtual ; abstract ; // läuft die CPU (noch?)
+//      function IsRunning: boolean ; virtual ; abstract ; // lÃ¤uft die CPU (noch?)
 // PC ist virtuelle 16 bit Adresse
 procedure TConsolePDP11M9312.HaltCpu(var newpc_v: TMemoryAddress) ; // CPU anhalten
   begin
@@ -1017,7 +1017,7 @@ procedure TConsolePDP11M9312.HaltCpu(var newpc_v: TMemoryAddress) ; // CPU anhal
 
 
 // PC ist virtuelle 16 bit Adresse
-procedure TConsolePDP11M9312.SingleStep ; // einen Zyklus ausführen
+procedure TConsolePDP11M9312.SingleStep ; // einen Zyklus ausfÃ¼hren
   begin
     raise Exception.Create('TConsolePDP11M9312.SingleStep() not supported by PDP-11 M9312 console emulator') ;
   end;
