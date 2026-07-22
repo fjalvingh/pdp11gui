@@ -15,6 +15,14 @@ PDP11GUI is a Lazarus/Free Pascal GUI application (targeting MS Windows) that se
 - **Build:** Open `pdp11GUI.lpi` in Lazarus and use Build/Compile menu; there is no standalone CLI build script.
 - **External tools at runtime:** `macro11.bat` (invokes MACRO11.exe assembler), `m4.bat` (M4 preprocessor for driver templates)
 
+## Linux/Qt5 HiDPI Notes
+
+The app must be built with the Qt5 widgetset (`lazbuild --ws=qt5 pdp11GUI.lpi`) — GTK2 (lazbuild's default) has no HiDPI support at all, and GTK3 crashes on startup. Run via `run.sh`, which computes `QT_SCALE_FACTOR` from the desktop's `Xft.dpi` and also sets `QT_FONT_DPI=96`.
+
+`QT_FONT_DPI=96` works around a Qt5/X11 double-scaling bug: popup menus (`TMenuItem` dropdowns, rendered as native `QMenu` windows) resolve their font from the logical font DPI, which already reflects the real `Xft.dpi` (e.g. 192 at 200% scaling), and then get `QT_SCALE_FACTOR` applied again on top when rasterized — roughly doubling just the dropdown text. The menu bar and other LCL-drawn widgets use an explicit pixel-sized font that only scales once, so only dropdowns were affected. Pinning the font DPI to the unscaled 96 baseline makes `QT_SCALE_FACTOR` the sole source of scaling.
+
+For headless UI testing (screenshots, driving menus) on a box without `xdotool`/`wmctrl`/`xte` and no network access to install them, use `tools/x11_click.c` (move + click via XTest) and `tools/x11_raise.c` (raise/focus a window by ID from `xwininfo -root -tree`). Build with `gcc -o x11_click tools/x11_click.c -lX11 -lXtst` (needs `libxtst-dev`, usually already present).
+
 ## Architecture
 
 The application is a Lazarus MDI (Multi-Document Interface) application. `FormMainU.pas` is the MDI parent that manages all tool windows.
