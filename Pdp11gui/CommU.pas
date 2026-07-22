@@ -25,10 +25,9 @@ unit CommU;
 //
 // Linux port: reimplemented on termios (BaseUnix/termio) instead of the
 // Win32 COM-port API (CreateFile/ReadFile/WriteFile/SetCommState/...).
-// See LINUX_PORT_TODO.md for the device-naming caveat: "Port" is still a
-// 1-based integer for compatibility with the rest of the app (which still
-// presents a Windows-style "COM1".."COMn" picker), and gets mapped to a
-// Linux device path heuristically - see DeviceName() below.
+// Addressed directly by its Linux device path (e.g. /dev/ttyUSB0), see
+// the Device property below. EnumerateSerialDevices() lists the actual
+// serial devices present under /dev, for UI pickers.
 
 interface
 
@@ -63,7 +62,7 @@ type
     private
       { Private declarations }
       fFd: cint; { Unix file descriptor, -1 = geschlossen }
-      fPort: Integer; { port #, 1-based }
+      fDevice: string; { Linux device path, e.g. /dev/ttyUSB0 }
       fBaud: LongInt; { baud rate }
       fDataBits: Byte ; { one of 5,6,7,8 }
       fParity: Byte ; { one of NOPARITY, ODD..., EVEN... MARK..., SPACE... }
@@ -77,13 +76,12 @@ type
       procedure setDataBits(DatabitsToSet: Byte);
       procedure setParity(ParityToSet: Byte);
       procedure setStopBits(StopBitsToSet: Byte);
-      procedure setPort(PortToSet: Integer);
+      procedure setDevice(DeviceToSet: string);
       procedure setRtsOn(OnOff: boolean);
       procedure setDtrOn(OnOff: boolean);
       function getInCount: LongInt;
       function getOutCount: LongInt;
 
-      function DeviceName: string;
       procedure ApplyTermios;
       procedure setModemLine(bit: cint; OnOff: boolean);
 
@@ -104,7 +102,7 @@ type
 
     published
       { Published declarations }
-      property Port: Integer read fPort write setPort;
+      property Device: string read fDevice write setDevice;
       property Baud: LongInt read fBaud write setBaud;
       property DataBits: Byte read fDataBits write setDataBits;
       property Parity: Byte read fParity write setParity;
@@ -120,6 +118,10 @@ type
 
 function MsecTime: LongInt;
 procedure Delay(msec: LongInt);
+
+// Lists the serial devices actually present under /dev (ttyUSB*, ttyACM*,
+// ttyS*), for use by device-path pickers in the UI.
+function EnumerateSerialDevices: TStringList;
 
 implementation
 
@@ -148,13 +150,37 @@ procedure Delay(msec: LongInt);
       Application.ProcessMessages();
   end;
 
+// Appends all /dev entries matching "pattern" (a shell glob, e.g.
+// '/dev/ttyUSB*') to "list".
+procedure AppendMatchingDevices(const pattern: string; list: TStrings);
+  var
+    sr: TSearchRec;
+  begin
+    if FindFirst(pattern, faAnyFile, sr) = 0 then begin
+      repeat
+        if (sr.Name <> '.') and (sr.Name <> '..') then
+          list.Add('/dev/' + sr.Name);
+      until FindNext(sr) <> 0;
+      FindClose(sr);
+    end;
+  end;
+
+function EnumerateSerialDevices: TStringList;
+  begin
+    Result := TStringList.Create;
+    AppendMatchingDevices('/dev/ttyUSB*', Result); // USB-Serial-Adapter (der uebliche Weg an echte PDP-11 Hardware)
+    AppendMatchingDevices('/dev/ttyACM*', Result); // USB-CDC-ACM Adapter
+    AppendMatchingDevices('/dev/ttyS*', Result);   // eingebaute serielle Ports
+    Result.Sort;
+  end;
+
 // Component constructor
 constructor TComm.Create(AOwner: TComponent);
   begin
     inherited Create(AOwner);
     // set default property values
     fFd := -1;
-    fPort := 1;
+    fDevice := '';
     fBaud := 9600;
     fDataBits := 8 ;
     fParity := NOPARITY ;
@@ -175,23 +201,6 @@ destructor TComm.Destroy;
 function TComm.isOpen: boolean;
   begin
     Result := (fFd >= 0);
-  end;
-
-// Windows kennt "COM1".."COMn"; Linux hat stattdessen Geraetepfade wie
-// /dev/ttyUSB0 (USB-Serial-Adapter, der übliche Weg an echte PDP-11
-// Hardware) oder /dev/ttyS0 (klassischer eingebauter serieller Port).
-// Bis die Settings-UI eine echte Geraetepfad-Auswahl hat (siehe
-// LINUX_PORT_TODO.md), wird die bisherige 1-basierte Portnummer heuristisch
-// auf einen dieser Pfade abgebildet.
-function TComm.DeviceName: string;
-  var
-    usbdev: string;
-  begin
-    usbdev := Format('/dev/ttyUSB%d', [fPort - 1]);
-    if FileExists(usbdev) then
-      result := usbdev
-    else
-      result := Format('/dev/ttyS%d', [fPort - 1]);
   end;
 
 // Set the baud rate property
@@ -251,11 +260,11 @@ procedure TComm.setStopBits(StopBitsToSet: Byte);
     end;
   end;
 
-// Set the Port property
-procedure TComm.setPort(PortToSet: Integer);
+// Set the Device property
+procedure TComm.setDevice(DeviceToSet: string);
   begin
-    if PortToSet <> fPort then begin
-      fPort := PortToSet;
+    if DeviceToSet <> fDevice then begin
+      fDevice := DeviceToSet;
       // if port was open, then close and reopen it
       if isOpen then begin
         Close;
@@ -361,14 +370,19 @@ procedure TComm.ApplyTermios;
     TCSetAttr(fFd, TCSANOW, tios) ;
   end{ "procedure TComm.ApplyTermios" } ;
 
-// Opens the COM port, returns True if ok
+// Opens the serial port, returns True if ok
 function TComm.Open: boolean;
   begin
     // close port if open already
     if isOpen then Close;
 
+    if fDevice = '' then begin
+      Result := false;
+      Exit;
+    end;
+
     // try to open the port
-    fFd := fpOpen(DeviceName, O_RDWR or O_NOCTTY or O_NONBLOCK) ;
+    fFd := fpOpen(fDevice, O_RDWR or O_NOCTTY or O_NONBLOCK) ;
 
     if fFd >= 0 then begin
       ApplyTermios ;

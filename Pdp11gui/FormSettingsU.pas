@@ -34,7 +34,8 @@ uses
   FormChildU,
   AddressU,
   ConsoleGenericU,
-  SerialIoHubU ;
+  SerialIoHubU,
+  CommU ;
 
 type
 
@@ -89,7 +90,7 @@ type
       connectionType: TSerialIoHubPhysicalConnectionType ;
 
       // eingestellte Properties, zur Auswertung durch caller
-      serialComport: integer ; // 0 = none
+      serialDevice: string ; // '' = none, sonst Linux Geraetepfad, z.B. /dev/ttyUSB0
       serialBaudrate: integer ;
       serialFormat: TSerialFormat ;
       telnetHostname : string ;
@@ -197,10 +198,24 @@ procedure TFormSettings.FormClose(Sender: TObject; var Action: TCloseAction);
   end;
 
 procedure TFormSettings.FormCreate(Sender: TObject);
+  var
+    devices: TStringList ;
   begin
     loadingConfigurationEditControlsFromRegistry := false ;
 
     Configurations := TCollection.Create(TFormSettingsConfiguration) ;
+
+    // populate the combobox with the serial devices actually present under
+    // /dev; the field stays freely editable (Style = csDropDown), so a
+    // device that shows up later (USB adapter plugged in after startup)
+    // can still be typed in by hand.
+    ComportComboBox.Items.Clear ;
+    devices := EnumerateSerialDevices ;
+    try
+      ComportComboBox.Items.AddStrings(devices) ;
+    finally
+      devices.Free ;
+    end;
 
     // load early, determines the PDP11 configurations
     TheRegistry.Load(ShowFakeConsolesCheckBox) ;
@@ -544,8 +559,10 @@ procedure TFormSettings.loadConfigurationEditControlsFromRegistry ;
     loadingConfigurationEditControlsFromRegistry := true ;
     try
       s := 'FormSettings.' + selectedConfiguration.registryPrefix+'.ComportComboBox' ;
-      setComboBox(ComportComboBox, TheRegistry.Load(s, 'COM1')) ;
-      if ComportComboBox.ItemIndex < 0 then ComportComboBox.ItemIndex := 0 ;
+      if ComportComboBox.Items.Count > 0 then
+        setComboBox(ComportComboBox, TheRegistry.Load(s, ComportComboBox.Items[0]))
+      else
+        setComboBox(ComportComboBox, TheRegistry.Load(s, '/dev/ttyUSB0')) ;
       s := 'FormSettings.' + selectedConfiguration.registryPrefix+'.BaudrateComboBox' ;
       setComboBox(BaudrateComboBox, TheRegistry.Load(s, '9600')) ;
       if BaudrateComboBox.ItemIndex < 0 then BaudrateComboBox.ItemIndex := 0 ;
@@ -646,8 +663,7 @@ procedure TFormSettings.UpdateProperties ;
 
 
     // 2) Controls auswerten
-    selectedConfiguration.serialComport := ComportComboBox.ItemIndex+1 ;
-    if selectedConfiguration.serialComport < 0 then selectedConfiguration.serialComport := 1 ;
+    selectedConfiguration.serialDevice := Trim(ComportComboBox.text) ;
 
     if not TryStrToInt(BaudrateComboBox.text, selectedConfiguration.serialBaudrate) then
       selectedConfiguration.serialBaudrate := 9600 ;

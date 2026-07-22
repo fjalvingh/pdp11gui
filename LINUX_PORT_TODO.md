@@ -285,17 +285,20 @@ instead of the Win32 COM-port API
 (`CreateFile`/`ReadFile`/`WriteFile`/`SetCommState`/`GetCommState`/`DCB`/
 `EscapeCommFunction`/`PurgeComm`/`ClearCommError`).
 
-**Device naming caveat**: the rest of the app (`FormSettingsU.pas`'s
-`ComportComboBox`) still presents a Windows-style `"COM1".."COM11"`
-dropdown, stored as a 1-based integer (`TComm.Port`). Linux has no
-`"COM1"` convention — real devices are paths like `/dev/ttyUSB0` (USB
-serial adapter — the realistic way to hook up real PDP-11 hardware today)
-or `/dev/ttyS0` (built-in serial port). `TComm.DeviceName` heuristically
-maps `Port=N` to `/dev/ttyUSB<N-1>` if that device file exists, else
-`/dev/ttyS<N-1>`. **Follow-up**: replace the settings UI's fixed
-`"COM1".."COMn"` list with either a real enumeration of `/dev/tty*`
-devices, or a free-text device-path field — the current numeric mapping
-is a workable stopgap, not a good long-term UX.
+**Device naming (fixed)**: the app used to plumb a Windows-style
+`"COM1".."COM11"` picker down to a 1-based `TComm.Port` integer, then
+heuristically guess `/dev/ttyUSB<N-1>` or `/dev/ttyS<N-1>` from it. This is
+now addressed end-to-end with real Linux device paths: `TComm.Port` was
+replaced with `TComm.Device: string`, opened directly via `fpOpen`.
+`FormSettingsU.pas`'s `ComportComboBox` (`Device:` field, `Style =
+csDropDown`) is populated at form-create time from
+`CommU.EnumerateSerialDevices` (a scan of `/dev/ttyUSB*`, `/dev/ttyACM*`,
+`/dev/ttyS*`), but stays freely editable so a path can be typed by hand —
+e.g. for a device plugged in after the dialog opened, or a non-standard
+path. The selected path flows as a plain string through
+`TFormSettingsConfiguration.serialDevice` ->
+`TSerialIoHub.Physical_InitForCOM` -> `TComm.Device`, and the registry
+persists the path string itself instead of a `"COM1"`-style label.
 
 Also note: `MARKPARITY`/`SPACEPARITY` (mark/space parity) are accepted by
 the `Parity` property for API compatibility but are treated the same as
@@ -380,7 +383,7 @@ out further runtime issues — only the main window + startup path has been
 verified so far. Also still open: everything listed above under "Known
 NOT-yet-ported" and "Still open" (Telnet, real serial hardware, USB panel,
 disassembler engine, macro11.bat/m4.bat Linux equivalents, path-separator
-sweep, `.dfm`->`.lfm` conversion, serial-device-picker UI).
+sweep, `.dfm`->`.lfm` conversion).
 
 ## HiDPI: switched build to the Qt5 widgetset, 2026-07-22
 

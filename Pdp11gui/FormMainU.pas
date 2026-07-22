@@ -775,7 +775,7 @@ procedure TFormMain.RenewPDP11ConsoleAndConnection(settings: TFormSettingsConfig
           end;
         end{ "case settings.ConsoleType" } ;
       connectionSerial:
-        SerialIoHub.Physical_InitForCOM(settings.serialComport, settings.serialBaudrate, settings.serialFormat) ;
+        SerialIoHub.Physical_InitForCOM(settings.serialDevice, settings.serialBaudrate, settings.serialFormat) ;
       connectionTelnet:
         SerialIoHub.Physical_InitForTelnet(settings.telnetHostname, settings.telnetPort) ; // SimH nur über telnet
       else

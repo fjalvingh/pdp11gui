@@ -22,7 +22,7 @@ object FormSettings: TFormSettings
     Top = 121
     Width = 51
     Height = 13
-    Caption = 'COM-Port:'
+    Caption = 'Device:'
   end
   object BaudrateLabel: TLabel
     Left = 62
@@ -69,43 +69,11 @@ object FormSettings: TFormSettings
   object ComportComboBox: TComboBox
     Left = 122
     Top = 118
-    Width = 103
+    Width = 189
     Height = 21
-    Style = csDropDownList
+    Style = csDropDown
     TabOrder = 0
     OnChange = ComportComboBoxChange
-    Items.Strings = (
-      'COM1'
-      'COM2'
-      'COM3'
-      'COM4'
-      'COM5'
-      'COM6'
-      'COM7'
-      'COM8'
-      'COM9'
-      'COM10'
-      'COM11'
-      'COM12'
-      'COM13'
-      'COM14'
-      'COM15'
-      'COM16'
-      'COM17'
-      'COM18'
-      'COM19'
-      'COM21'
-      'COM22'
-      'COM23'
-      'COM24'
-      'COM25'
-      'COM26'
-      'COM27'
-      'COM28'
-      'COM29'
-      'COM30'
-      'COM31'
-      'COM32')
   end
   object OKButton: TButton
     Left = 154

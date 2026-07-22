@@ -177,7 +177,7 @@ TConnectionSettingsSerial = class(TConnectionSettings)
       ////// Schnittstelle zur Aussenwelt
       // Wahl der Init-Routine bestinmmt Ein/Ausgabeziel
 
-      procedure Physical_InitForCOM(comport: integer ; aBaudrate: integer; aSerialFormat: TSerialFormat) ; 
+      procedure Physical_InitForCOM(device: string ; aBaudrate: integer; aSerialFormat: TSerialFormat) ;
       procedure Physical_InitForFakePDP11( 
               newFakePDP11: TFakePDP11Generic ; // link to instantiated object
               baud: integer) ; 
@@ -189,7 +189,7 @@ TConnectionSettingsSerial = class(TConnectionSettings)
       procedure Physical_InitForFakePDP11ODTK1630(baud: integer) ; 
       procedure Physical_InitForTelnet(aHost:string ; aPort: integer) ; 
 
-      // für Anzeigen: "COM1 @ 9600 baud" oder "localhost:9922"
+      // für Anzeigen: "/dev/ttyUSB0 @ 9600 baud" oder "localhost:9922"
       function Physical_getInfoString: string ; 
 
       // Interface zur Conole-Logic:
@@ -296,14 +296,14 @@ destructor TSerialIoHub.Destroy ;
     inherited ; 
   end; 
 
-procedure TSerialIoHub.Physical_InitForCOM(comport: integer ; aBaudrate: integer ; aSerialFormat: TSerialFormat) ; 
-  begin 
-    Physical_Poll_Disable := 1 ; 
-    connectionType := connectionSerial ; 
+procedure TSerialIoHub.Physical_InitForCOM(device: string ; aBaudrate: integer ; aSerialFormat: TSerialFormat) ;
+  begin
+    Physical_Poll_Disable := 1 ;
+    connectionType := connectionSerial ;
 
-    Comm.Close ; 
-    Comm.port := comport ; 
-    Comm.baud := aBaudrate ; 
+    Comm.Close ;
+    Comm.Device := device ;
+    Comm.baud := aBaudrate ;
     case aSerialFormat of 
       serformat8N1, serformat87N1: begin // physical 8 bits, but MSB always 0
         Comm.DataBits := 8 ; 
@@ -332,8 +332,8 @@ procedure TSerialIoHub.Physical_InitForCOM(comport: integer ; aBaudrate: integer
     XmtBaudrate := aBaudrate ; 
     serialFormat := aSerialFormat ; 
 
-    Log('Trying to open COM%d with %d baud ...', [comport, aBaudrate]) ; 
-    Comm.Open ; 
+    Log('Trying to open %s with %d baud ...', [device, aBaudrate]) ;
+    Comm.Open ;
     Log('... OK') ; 
 
     Transmission_TotalChars := 0 ; 
@@ -681,15 +681,15 @@ procedure TSerialIoHub.Physical_Poll(Sender:TObject) ;
   end{ "procedure TSerialIoHub.Physical_Poll" } ; 
 
 
-// für Anzeigen: "COM1 @ 9600 baud" oder "localhost:9922"
-function TSerialIoHub.Physical_getInfoString: string ; 
-  begin 
-    result := 'unknown Connection' ; 
-    case connectionType of 
-      connectionInternal: 
-        result := 'internal connection' ; 
-      connectionSerial: 
-        result := Format('COM%d @ %d baud', [Comm.port, Comm.baud]) ; 
+// für Anzeigen: "/dev/ttyUSB0 @ 9600 baud" oder "localhost:9922"
+function TSerialIoHub.Physical_getInfoString: string ;
+  begin
+    result := 'unknown Connection' ;
+    case connectionType of
+      connectionInternal:
+        result := 'internal connection' ;
+      connectionSerial:
+        result := Format('%s @ %d baud', [Comm.Device, Comm.baud]) ;
       connectionTelnet: 
 //        result := Format('%s:%d', [IdTelnet.host, IdTelnet.port]) ;
         result := Format('%s:%s', [TelnetConnection.host, TelnetConnection.port]) ; 
