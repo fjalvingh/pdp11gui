@@ -47,7 +47,13 @@ type
       destructor Destroy; override;
 
       // startet imagefilename mit args im Verzeichnis workingdir.
-      procedure StartApplication(imagefilename, args, workingdir: string);
+      procedure StartApplication(imagefilename, args, workingdir: string); overload;
+      // wie oben, aber jedes Element von args wird als eigenes argv[]-Element
+      // uebergeben (kein Windows-CommandLine-String, der erst wieder
+      // aufgesplittet werden muss). Das ist fuer echte (nicht ueber eine Shell
+      // gestartete) Programme wie das Linux-"macro11" die einzig korrekte Art,
+      // Argumente mit Leerzeichen im Dateinamen sicher zu uebergeben.
+      procedure StartApplication(imagefilename: string; args: array of string; workingdir: string); overload;
       // false, wenn die von StartApplication() gestartete Anwendung nicht
       // mehr laeuft (oder nie gestartet wurde).
       function ApplicationContact: boolean;
@@ -84,6 +90,29 @@ procedure TAppControl.StartApplication(imagefilename, args, workingdir: string);
       fProcess.Executable := imagefilename;
       if args <> '' then
         fProcess.Parameters.Add(args); // Original uebergab args ebenfalls als 1 String (Windows CommandLine-Konvention)
+      fProcess.CurrentDirectory := workingdir;
+      fProcess.Options := [];
+      fProcess.ShowWindow := swoShowNormal;
+      fProcess.Execute;
+    except
+      on E: Exception do begin
+        FreeAndNil(fProcess);
+        raise Exception.CreateFmt('Could not start application from "%s": %s', [imagefilename, E.Message]);
+      end;
+    end;
+  end{ "procedure TAppControl.StartApplication" } ;
+
+procedure TAppControl.StartApplication(imagefilename: string; args: array of string; workingdir: string);
+  var
+    i: integer ;
+  begin
+    ApplicationTerminate; // vorherigen Prozess ggf. beenden
+
+    fProcess := TProcess.Create(nil);
+    try
+      fProcess.Executable := imagefilename;
+      for i := low(args) to high(args) do
+        fProcess.Parameters.Add(args[i]);
       fProcess.CurrentDirectory := workingdir;
       fProcess.Options := [];
       fProcess.ShowWindow := swoShowNormal;

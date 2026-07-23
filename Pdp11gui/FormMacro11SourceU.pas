@@ -26,6 +26,7 @@ interface
 uses
   SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, SynEdit, ExtCtrls,
+  FileUtil,
   FormChildU,
   AppControlU,
   JH_Utilities;
@@ -323,12 +324,40 @@ procedure TFormMacro11Source.Compile;
   var
     macro11_path: string ;
     listfilename: string ;
-    args: string ;
     workdir: string ;
-    starttime: dword ;
-    timeout: boolean ;
     errormsg: string ;
     errorline: integer ;
+
+  // Startet macro11 mit den gegebenen argv[]-Elementen und wartet bis
+  // Ende oder Timeout. "args" landen 1:1 als eigene Kommandozeilen-
+  // Argumente (kein Shell-String, siehe AppControlU.StartApplication).
+  procedure RunMacro11(const args: array of string) ;
+    var starttime: dword ;
+      timeout: boolean ;
+      i: integer ;
+      argsStr: string ;
+    begin
+      argsStr := '' ;
+      for i := low(args) to high(args) do
+        argsStr := argsStr + args[i] + ' ' ;
+      Log('Starting MACRO11:') ;
+      Log('  Path    : %s', [macro11_path]) ;
+      Log('  args    : %s', [argsStr]) ;
+      Log('  work dir: %s', [workdir]) ;
+      with macro11_appcontrol do begin
+        starttime := GetTickCount ;
+        StartApplication(macro11_path, args, workdir) ;
+        // warte, bis timeout, oder macro11 fertig
+        repeat
+          Application.ProcessMessages ;
+          sleep(50) ;
+          timeout :=  GetTickCount > (starttime+timeout_millis) ;
+        until timeout or not ApplicationContact ;
+        if timeout then
+          raise Exception.CreateFmt('MACRO11 timeout: running longer then %d secs', [timeout_millis div 1000]) ;
+      end{ "with macro11_appcontrol" } ;
+    end{ "procedure RunMacro11" } ;
+
   begin
     // Marken löschen
     setExecutionLine(-1) ;
@@ -337,22 +366,12 @@ procedure TFormMacro11Source.Compile;
     errorline := -1 ;
     Translated := false ;
 
-    // MACRO11.BAT ausführen
-    // macro11.bat <sourcefilename> <listingfilename>
-
-    // macro11 im Verzeichnis der GUI finden
-    macro11_path := ExtractFilePath(Application.ExeName) + 'macro11.bat' ;
-    if not FileExists(macro11_path) then
-      raise Exception.CreateFmt('MACRO11.bat not found, must be "%s"', [macro11_path]) ;
-
-    // Variable PDP11GUIEXEDIR setzen, damit in MACRO11.BAT der
-    // Installationspath bekannt ist.
-    SetEnvironmentVariable('PDP11GUIEXEDIR', ExtractFileDir(Application.ExeName)) ;
-    SetEnvironmentVariable('PDP11GUIAPPDATADIR', FormMain.DefaultDataDirectory) ;
-
-    if not IsDirectoryWriteable(FormMain.DefaultDataDirectory) then
-      raise Exception.CreateFmt('Can not write to directory "%s". Perhaps it''s read-only flag or you must "Run as Admin".',
-              [FormMain.DefaultDataDirectory]) ;
+    // macro11 auf dem PATH suchen (Linux: siehe ~/bin/macro11,
+    // https://github.com/rhefner1/macro11 - ersetzt das alte, Windows-
+    // spezifische macro11.bat/macro11.exe).
+    macro11_path := FindDefaultExecutablePath('macro11') ;
+    if macro11_path = '' then
+      raise Exception.Create('"macro11" not found on PATH. Install it and make sure it is on the PATH.') ;
 
     workdir := ExtractFileDir(SourceFilename) ;
     if not IsDirectoryWriteable(workdir) then
@@ -366,27 +385,21 @@ procedure TFormMacro11Source.Compile;
     listfilename := ChangeFileExt(SourceFilename, '.lst') ; // same directory
     DeleteFile(listfilename) ;
 
+    // wie macro11.bat: normaler Lauf, Listing in Oktal
+    // "-e AMA" (absolute statt PC-relative Adressierung) ist in macro11.bat
+    // auskommentiert, wird daher hier auch nicht benutzt.
+    RunMacro11([SourceFilename, '-l', listfilename]) ;
 
-    args := Format('"%s" "%s"', [SourceFilename, listfilename]) ;
-    Log('Starting MACRO11:') ;
-    Log('  Path    : %s', [macro11_path]) ;
-    Log('  args    : %s', [args]) ;
-    Log('  work dir: %s', [workdir]) ;
-    with macro11_appcontrol do begin
-      starttime := GetTickCount ;
-      StartApplication(macro11_path, args,workdir) ;
-      sleep(500) ;
-//      if not ApplicationContact then
-//        raise Exception.Create('MACRO11 does not start!') ;
-      // warte, bis timeout, oder macro11 fertig
-      repeat
-        Application.ProcessMessages ;
-        sleep(500) ;
-        timeout :=  GetTickCount > (starttime+timeout_millis) ;
-      until timeout or not ApplicationContact ;
-      if timeout then
-        raise Exception.CreateFmt('MACRO11 timeout: running longer then %d secs', [timeout_millis div 1000]) ;
-    end{ "with macro11_appcontrol" } ;
+    // wie macro11.bat: zusaetzlicher Lauf, Listing mit Code in Hex statt
+    // Oktal (fuer Logic-Analyzer-Auswertung). Ein Fehlschlagen hiervon soll
+    // den Compile-Vorgang nicht abbrechen, macro11.bat prueft das genauso
+    // wenig.
+    try
+      RunMacro11(['-e', 'listhex', SourceFilename, '-l', listfilename + '.hex']) ;
+    except
+      on E: Exception do
+        Log('MACRO11 hex listing failed: %s', [E.Message]) ;
+    end;
 
     ///// Mögliche Fehlermeldungen erkennen
     ///   in der Source und im Listing rot markieren,

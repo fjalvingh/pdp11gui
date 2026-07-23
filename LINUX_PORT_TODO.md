@@ -499,3 +499,63 @@ and the `org.gnome.Shell.Screenshot` D-Bus API from this context). Worth
 an eyeball check on real hardware that fonts/icons/dialogs all scale
 consistently across the less-common windows (Terminal, MACRO-11 editor,
 memory views, etc.), not just the main window.
+
+## MACRO-11 assembler invocation: real Linux port, 2026-07-23
+
+`FormMacro11SourceU.pas`'s `Compile()` used to shell out to `macro11.bat`
+(a Windows batch file, looked up next to `Application.ExeName`, itself
+wrapping `macro11.exe` via `%PDP11GUIEXEDIR%`) — flagged as not-yet-ported
+above. There is now a real Linux MACRO-11 assembler binary available
+(`~/bin/macro11`, a portable C port — see its `--help`/usage banner:
+"macro11 - portable MACRO11 assembler for DEC PDP-11", based on Richard
+Krehbiel's original with Joerg Hoppe/github-`shattered` modifications).
+`Compile()` was rewritten to invoke it directly instead of going through a
+`.bat` wrapper:
+
+- **Finding the binary**: `FileUtil.FindDefaultExecutablePath('macro11')`
+  (LazUtils, already an implicit dependency via the `LCL` package) searches
+  `$PATH` — this works cross-platform (it has a Windows-specific `.exe`
+  fallback built in too), so the assumption "assume `macro11` is on the
+  PATH" now holds on both platforms, not just Linux. Raises a clear error
+  if not found instead of the old "`MACRO11.bat` not found, must be ..."
+  message tied to the app's install directory.
+- **Arguments replicate `macro11.bat`'s two invocations** (see that file
+  for the original Windows reference): first a normal run
+  (`macro11 <source> -l <source>.lst`) producing the octal listing used by
+  `FormMacro11ListingU` for error-line parsing, then a second run adding
+  `-e listhex` and a `.lst.hex` output (binary code in hex instead of
+  octal, "support for logic analyzer evaluation" per the original
+  comment). Like the `.bat` file, the second (hex) run's failure doesn't
+  abort the compile — only logged, not raised, since it's a secondary
+  artifact.
+  `-e AMA` (absolute vs. PC-relative addressing) stays unused, matching
+  `macro11.bat`, where that line was already commented out.
+- **`PDP11GUIEXEDIR`/`PDP11GUIAPPDATADIR` env vars and the
+  `FormMain.DefaultDataDirectory` writability check dropped**: both were
+  only there to make the `.bat` wrapper resolvable/usable
+  (`PDP11GUIAPPDATADIR` is actually consumed by `m4.bat`, not
+  `macro11.bat` — the two `Compile()`-style functions in
+  `FormMacro11SourceU.pas` and `MemoryCellU.pas` shared this boilerplate
+  even though `macro11.bat` itself never reads either variable). Neither
+  has any purpose once invoking the real binary directly by path.
+  `MemoryCellU.pas`'s `m4.bat` invocation (M4 preprocessing of `.ini`
+  machine descriptions) is untouched and still Windows-`.bat`-only — out
+  of scope for this pass, still needs the same treatment if/when a Linux
+  M4 wrapper is decided on.
+- **`AppControlU.TAppControl.StartApplication` gained an `array of string`
+  overload.** The original single-`string` overload
+  (`StartApplication(imagefilename, args, workingdir: string)`) added the
+  whole `args` string as **one** `TProcess.Parameters` entry — a leftover
+  from the Windows-`CreateProcess` single-command-line-string convention,
+  harmless there since `cmd.exe`/the batch file re-split it, but wrong for
+  directly `exec`ing a real ELF binary with multiple arguments (no shell
+  in between to split on spaces, and a quoted-string entry like
+  `"foo" "bar"` would be passed to `execve` as one literal argv element,
+  quote characters included). The new overload takes `args: array of
+  string` and adds each element as its own `Parameters` entry — the
+  correct way to pass argv when not going through a shell. Verified via a
+  standalone `fpc`-compiled test harness that this actually round-trips
+  through `TProcess`/`execve` correctly (ran `~/bin/macro11 <source> -l
+  <listing>` through the new overload, diffed the resulting `.lst` against
+  a manual CLI run — byte-identical). The old string-arg overload is left
+  as-is for `MemoryCellU.pas`'s still-unported `m4.bat` caller.
