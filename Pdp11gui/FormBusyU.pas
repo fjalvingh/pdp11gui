@@ -113,8 +113,16 @@ procedure TBusyForm.StepIt(n: integer) ;
       // show erst nach Anfangswartepause, wenn Vorgang länger dauern wird
       if (getRunningTime_ms > sampletime_ms)
 //      and ( getExpectedEndTime_ms > (fStartticks + displayThreshold_ms)) then
-        then
+        then begin
           inherited Show ;
+          // Force the initial paint/map to complete before returning control.
+          // sampletime_ms and SIMH_CMD_TIMEOUT are both 1000ms, so a stalled
+          // connection can hit this Show and the caller's own timeout on the
+          // same loop iteration; without this, Close() can run right behind
+          // Show() with no intervening event-loop turn, leaving an X11 window
+          // that got mapped but never painted and no longer responds to input.
+          Application.ProcessMessages ;
+        end ;
     end ;
 
   end{ "procedure TBusyForm.StepIt" } ;
@@ -134,6 +142,7 @@ procedure TBusyForm.AbortButtonClick(Sender: TObject);
 procedure TBusyForm.Close ;
   begin
     inherited Close ;
+    Application.ProcessMessages ; // flush the hide/unmap request
   end;
 
 

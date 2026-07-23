@@ -149,6 +149,9 @@ function getControlNamePath(ctl: TControl) : string ;
 function GetEnv(varname: string ; var varval: string):boolean ;
 { Abfrage einer Environment-Variablen. True, wenn OK }
 
+// TMPDIR environment variable if set, otherwise the hardcoded fallback '/tmp'.
+function GetTempDirWithFallback: string ;
+
 // Windows.SetEnvironmentVariableA() gibt es nicht im FPC RTL.
 // Setzt die Variable fuer diesen Prozess (und damit auch fuer per
 // TProcess/AppControlU gestartete Kindprozesse wie macro11.bat/m4.bat).
@@ -269,6 +272,21 @@ function FindIntegerInText(line: string): integer ;
 
 procedure StringToFont(sFont : string; Font : TFont );
 function FontToString( Font : TFont) : string;
+
+// True if every glyph in FontName has the same advance width when rendered
+// at PixelHeight. Fontconfig on Linux can silently substitute a
+// *proportional* font for a name it doesn't recognize (observed: "Lucida
+// Console" -> "Noto Sans") - invisible until text is actually drawn, but
+// fatal for SynEdit, which positions characters on a fixed-width grid and
+// shows visibly uneven letter spacing once that grid assumption breaks.
+function IsFontMonospace(const FontName: string; PixelHeight: integer): boolean;
+
+// Returns FontName unchanged if it is genuinely monospace (see
+// IsFontMonospace); otherwise substitutes the first well-known monospace
+// font that is actually installed and fixed-pitch. Used instead of
+// hardcoding a single font name that may not exist - or may silently
+// resolve to a proportional substitute - on every target platform.
+function EnsureMonospaceFontName(const FontName: string; PixelHeight: integer): string;
 
 function RGB2TColor(R, G, b: integer): integer;
 procedure TColor2RGB(Color: TColor; var R, G, b: integer);
@@ -493,6 +511,12 @@ function GetEnv(varname: string ; var varval: string):boolean ;
   begin
     varval := SysUtils.GetEnvironmentVariable(varname) ;
     result := varval <> '' ;
+  end ;
+
+function GetTempDirWithFallback: string ;
+  begin
+    if not GetEnv('TMPDIR', result) then
+      result := '/tmp' ;
   end ;
 
 function libc_setenv(name, value: PAnsiChar; overwrite: cint): cint; cdecl; external 'c' name 'setenv';
@@ -2015,12 +2039,12 @@ function GetUniqueFilename(dir: string; prefix, ext: string): string ;
   begin
     Count := 0 ;
     // versuche erst den Namen ohne Zähler
-    result := CorrectPath(dir + '\'
+    result := CorrectPath(IncludeTrailingPathDelimiter(dir)
             + prefix
             + '.' + ext) ;
     while FileExists(result) do begin
       inc(Count) ;
-      result := CorrectPath(dir + '\'
+      result := CorrectPath(IncludeTrailingPathDelimiter(dir)
               + prefix + '_' + IntToStr(Count)
               + '.' + ext) ;
     end ;
@@ -2344,6 +2368,45 @@ function FontToString( Font : TFont ) : string;
               ColorToString( Color ) ] );
     end{ "with Font" } ;
   end{ "function FontToString" } ;
+
+
+function IsFontMonospace(const FontName: string; PixelHeight: integer): boolean;
+  var
+    bmp: TBitmap ;
+  begin
+    bmp := TBitmap.Create ;
+    try
+      bmp.Canvas.Font.Name := FontName ;
+      bmp.Canvas.Font.Height := PixelHeight ;
+      result := (bmp.Canvas.TextWidth('i') = bmp.Canvas.TextWidth('M'))
+            and (bmp.Canvas.TextWidth('.') = bmp.Canvas.TextWidth('W')) ;
+    finally
+      bmp.Free ;
+    end ;
+  end{ "function IsFontMonospace" } ;
+
+
+function EnsureMonospaceFontName(const FontName: string; PixelHeight: integer): string;
+  const
+    // well-known monospace fonts, roughly in order of visual similarity
+    // to "Lucida Console"/"Consolas" (the Windows fonts this app was
+    // originally authored against)
+    fallbacks: array[0..3] of string = (
+      'DejaVu Sans Mono', 'Liberation Mono', 'Noto Sans Mono', 'Consolas') ;
+  var
+    i: integer ;
+  begin
+    if IsFontMonospace(FontName, PixelHeight) then begin
+      result := FontName ;
+      exit ;
+    end ;
+    for i := low(fallbacks) to high(fallbacks) do
+      if IsFontMonospace(fallbacks[i], PixelHeight) then begin
+        result := fallbacks[i] ;
+        exit ;
+      end ;
+    result := FontName ; // nothing better found, keep the caller's choice
+  end{ "function EnsureMonospaceFontName" } ;
 
 
 procedure SyncPoint ;

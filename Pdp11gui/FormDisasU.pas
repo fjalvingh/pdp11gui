@@ -151,6 +151,7 @@ destructor TFormDisas.Destroy ;
 
 procedure TFormDisas.FormShow(Sender: TObject);
   begin
+    DisasSourceEditor.Font.Name := EnsureMonospaceFontName(DisasSourceEditor.Font.Name, DisasSourceEditor.Font.Height) ;
     // beim aufpoppen: update
     ExamineAll(UseCacheCheckBox.Checked) ; // immer mit optimierung
     UpdateDisplay ;

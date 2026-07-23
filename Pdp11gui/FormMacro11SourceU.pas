@@ -192,6 +192,7 @@ procedure TFormMacro11Source.FormBeforeHide(Sender: TObject);
 
 procedure TFormMacro11Source.FormShow(Sender: TObject);
   begin
+    Editor.Font.Name := EnsureMonospaceFontName(Editor.Font.Name, Editor.Font.Height) ;
     UpdateDisplay ;
   end;
 

@@ -224,9 +224,7 @@ procedure TFormLog.FormCreate(Sender: TObject);
     LogFileLineCount := 0 ;
     if Connection_LogIoStream then begin
       try
-        if not GetEnv('TEMP', tmpdir) then
-          tmpdir := 'C:\' ; // panic, does  not work on win7/vista
-        // Ungültig unter Vista !!!
+        tmpdir := GetTempDirWithFallback ;
         AssignFile(LogFile, tmpdir + '\' + Connection_LogIoStream_Filename) ;
         Rewrite(LogFile) ;
       except

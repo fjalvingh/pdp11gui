@@ -98,6 +98,8 @@ procedure TFormExecuteBlinkenlight.CurPCEditKeyPress(Sender: TObject; var Key: c
 
 procedure TFormExecuteBlinkenlight.FormShow(Sender: TObject);
   begin
+    BlinkenLightInstructionMemo.Font.Name :=
+      EnsureMonospaceFontName(BlinkenLightInstructionMemo.Font.Name, BlinkenLightInstructionMemo.Font.Height) ;
     UpdateDisplay ;
   end;
 

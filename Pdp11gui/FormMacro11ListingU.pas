@@ -120,6 +120,8 @@ constructor TFormMacro11Listing.Create(aOwner: TComponent) ;
   begin
     inherited Create(aOwner) ;
 
+    Editor.Font.Name := EnsureMonospaceFontName(Editor.Font.Name, Editor.Font.Height) ;
+
     // private events
     // die MDI-Show/Hide logik in TFormChild verursacht Windowsgehler,
     // wenn JVEditor eine lange Source geladen hat.

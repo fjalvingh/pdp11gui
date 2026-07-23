@@ -541,8 +541,7 @@ procedure TConsolePDP11SimH.Deposit(mcg: TMemoryCellGroup ; optimize:boolean; ab
     end ;
 
 
-    if not GetEnv('TEMP', tmpdir) then
-      raise Exception.Create('Environment variable TEMP not set!') ;
+    tmpdir := GetTempDirWithFallback ;
     foutname := GetUniqueFilename(tmpdir, 'pdp11gui_deposit', 'sim') ;
     try
       try

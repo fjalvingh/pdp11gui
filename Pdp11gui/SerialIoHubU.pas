@@ -626,8 +626,7 @@ procedure TSerialIoHub.Physical_InitForSimhProcess(userIniFilename: string) ;
     if simhExePath = '' then
       raise Exception.Create('"pdp11" (open-simh) not found on PATH. Install it and make sure it is on the PATH.') ;
 
-    if not GetEnv('TEMP', tmpdir) then
-      raise Exception.Create('Environment variable TEMP not set!') ;
+    tmpdir := GetTempDirWithFallback ;
     SimhTempIniFilename := GenerateSimhIniFile(userIniFilename, tmpdir) ;
 
     Log('Starting SimH: %s %s', [simhExePath, SimhTempIniFilename]) ;
