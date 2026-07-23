@@ -978,12 +978,30 @@ function TFormMain.ChildFormMenuItemByCaption(aCaption: string): TMenuItem;
 
 // Steuert Visible, und FormStyle
 procedure TFormMain.setChildFormVisibility(childform: TFormChild; isVisible: boolean) ;
+  var
+    needRecreate: boolean ;
   begin
     if (childform.visible = isVisible) and (childform.FormStyle = fsMDIChild) then
       Exit ; // MDIForm ist schon so, wie gewünscht
 
     if isVisible then begin
+      // Linux/Qt5 widgetset bug workaround: TQtWSCustomForm.SetFormStyle only
+      // recreates the underlying Qt widget when "AForm.Parent <> nil" - which
+      // is never true for a top-level TForm (that check is meant for embedded
+      // controls). So switching an already-handle-allocated form's FormStyle
+      // to fsMDIChild in place leaves the Qt widget as whatever it was
+      // originally created as (a plain top-level window, since TFormChild.Hide
+      // forces fsNormal at startup before the handle exists) instead of a real
+      // QMdiSubWindow, and it never gets registered via QMdiArea_addSubWindow.
+      // The first Show afterwards then segfaults deep in Qt
+      // (QMdiArea::setActiveSubWindow) because TQtMainWindow.Activate treats
+      // the widget as a QMdiSubWindow it never was. Forcing a handle recreate
+      // here makes CreateHandle run again with FormStyle already fsMDIChild,
+      // which creates and registers it correctly.
+      needRecreate := childform.HandleAllocated and (childform.FormStyle <> fsMDIChild) ;
       childform.FormStyle := fsMDIChild ;
+      if needRecreate then
+        RecreateWnd(childform) ;
       childform.Show ;
       childform.BringToFront ;
     end else begin
