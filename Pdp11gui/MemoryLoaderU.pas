@@ -68,6 +68,7 @@ type
       StartAddrDefined: boolean ; // true, wenn das Fileformat die Adressen fix definiert
       Files: TCollection ; // of TMemoryloaderFile
       function getFile(idx: integer): TMemoryloaderFile ;
+      function hasEmptyFilename: boolean ; // true, wenn noch kein file ausgewählt wurde
       procedure Load(memorycellgroup: TMemoryCellgroup; startaddr:dword) ; virtual ; abstract ;
       procedure Save(memorycellgroup: TMemoryCellgroup) ; virtual ; abstract ;
 //    function getWordCount: integer ; abstract ; virtual ;
@@ -157,6 +158,17 @@ function TMemoryLoader.getFile(idx: integer): TMemoryloaderFile ;
     assert(Files <> nil) ;
     assert(idx < Files.Count) ;
     result := Files.items[idx] as TMemoryloaderFile ;
+  end;
+
+function TMemoryLoader.hasEmptyFilename: boolean ;
+  var i: integer ;
+  begin
+    result := false ;
+    for i := 0 to Files.Count - 1 do
+      if Trim(getFile(i).filename) = '' then begin
+        result := true ;
+        Exit ;
+      end;
   end;
 
 

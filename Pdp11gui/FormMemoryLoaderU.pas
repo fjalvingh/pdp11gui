@@ -148,6 +148,12 @@ constructor TFormMemoryLoader.Create(AOwner: TComponent) ;
 
     MemoryGrid.OnUpdate := UpdateDisplay ; // wenn sich das grid ändert, muss diese Form reagieren
     TheRegistry.Load(LoaderFileFormatComboBox) ;
+    // beim allerersten Start ist nichts in der Registry gesichert: ohne
+    // Auswahl bleibt curLoader nil und die Filecontrols zeigen ihre
+    // uninitialisierten Design-Werte (zB "File1Label") an, statt fuer
+    // ein Format zu stehen. Also ein Format vorwaehlen.
+    if LoaderFileFormatComboBox.ItemIndex < 0 then
+      LoaderFileFormatComboBox.ItemIndex := 0 ;
 
   end{ "constructor TFormMemoryLoader.Create" } ;
 
@@ -330,6 +336,10 @@ procedure TFormMemoryLoader.LoadFileButtonClick(Sender: TObject);
   begin
     startaddr := OctalStr2Dword(StartAddrEdit.Text, 0) ;
     if curLoader = nil then Exit ;
+    if curLoader.hasEmptyFilename then begin
+      MessageDlg('Please select a file first (use "Browse ...").', mtError, [mbOk], 0) ;
+      Exit ;
+    end;
     // grid-memory neu laden
     curLoader.Load(MemoryGrid.memorycellgroup, startaddr) ;
 //    if MemoryGrid.memorycellgroup.Count = 0 then

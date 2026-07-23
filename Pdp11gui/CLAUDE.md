@@ -23,6 +23,8 @@ The app must be built with the Qt5 widgetset (`lazbuild --ws=qt5 pdp11GUI.lpi`) 
 
 For headless UI testing (screenshots, driving menus) on a box without `xdotool`/`wmctrl`/`xte` and no network access to install them, use `tools/x11_click.c` (move + click via XTest) and `tools/x11_raise.c` (raise/focus a window by ID from `xwininfo -root -tree`). Build with `gcc -o x11_click tools/x11_click.c -lX11 -lXtst` (needs `libxtst-dev`, usually already present).
 
+**Do not drive the UI yourself on the user's live desktop** (mouse clicks via `x11_click`, key sends, etc.) — the display is shared with the user's other windows, and a misclick can land on an unrelated app. It's fine to start/stop the program (`run.sh`) and watch its stdout/logs. If you need a UI action performed or a bug reproduced interactively, ask the user to do it and describe what to click.
+
 ## Architecture
 
 The application is a Lazarus MDI (Multi-Document Interface) application. `FormMainU.pas` is the MDI parent that manages all tool windows.

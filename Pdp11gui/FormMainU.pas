@@ -698,8 +698,20 @@ procedure TFormMain.About1Click(Sender: TObject);
 
 
 procedure TFormMain.AppException(Sender: TObject; E: Exception);
+  var
+    i: integer ;
+    frames: PPointer ;
   begin
     FormLog.Log(E.Message) ;
+
+    // Exception+Stacktrace auf stdout, damit man sie auch ohne Dialog sieht
+    writeln('Unhandled exception: ', E.ClassName, ': ', E.Message) ;
+    writeln(BackTraceStrFunc(ExceptAddr)) ;
+    frames := ExceptFrames ;
+    for i := 0 to ExceptFrameCount - 1 do
+      writeln(BackTraceStrFunc(frames[i])) ;
+    Flush(Output) ;
+
     Application.ShowException(E);
   end;
 

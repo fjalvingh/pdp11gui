@@ -342,11 +342,17 @@ procedure TFrameMemoryCellGroupGrid.AnyControlMouseDown(
       PopupMenu1.Popup(p.x,p.y) ;
   end;
 
-// nur Werte in Spalte 2 editierbar
+// nur die Wertespalten (1..MemoryColumns) sind editierbar,
+// die Adressspalte (0) und die Kopfzeile nicht.
 procedure TFrameMemoryCellGroupGrid.MemoryCellsStringGridSelectCell(Sender: TObject;
         aCol, aRow: integer; var CanSelect: Boolean);
   begin
     with MemoryCellsStringGrid do begin
+      if (aRow < 1) or (aCol < 1) then
+        options := options - [goEditing]
+      else
+        options := options + [goEditing] ;
+
       // falls eine neue Zelle gewählt wird,
       // wird eine editierte verlassen: alles neu malen!
       UpdateDisplay ;

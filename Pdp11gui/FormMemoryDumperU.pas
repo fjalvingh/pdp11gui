@@ -151,6 +151,12 @@ constructor TFormMemoryDumper.Create(AOwner: TComponent) ;
 
     MemoryGrid.OnUpdate := UpdateDisplay ; // wenn sich das grid ändert, muss diese Form reagieren
     TheRegistry.Load(DumperFileFormatComboBox) ;
+    // beim allerersten Start ist nichts in der Registry gesichert: ohne
+    // Auswahl bleibt curLoader nil und die Filecontrols zeigen ihre
+    // uninitialisierten Design-Werte (zB "File1Label") an, statt fuer
+    // ein Format zu stehen. Also ein Format vorwaehlen.
+    if DumperFileFormatComboBox.ItemIndex < 0 then
+      DumperFileFormatComboBox.ItemIndex := 0 ;
 
   end{ "constructor TFormMemoryDumper.Create" } ;
 
@@ -294,6 +300,7 @@ procedure TFormMemoryDumper.BrowseFile1ButtonClick(Sender: TObject);
     // VB: 'Loader" schon instanziiert.
     // finde den file, für den das browsen gilt
     // Sender als browsebutton eingetragen
+    if curLoader = nil then Exit ; // nur bei erstem Start nach Installation
     for i := 0 to curLoader.Files.Count - 1 do begin
       dumperfile := curLoader.getFile(i) ;
       if dumperfile.control_filenamebrowse = Sender then begin
@@ -317,6 +324,10 @@ procedure TFormMemoryDumper.DumpFileButtonClick(Sender: TObject);
   var entryaddr: dword ;
   begin
     if curLoader = nil then Exit ;
+    if curLoader.hasEmptyFilename then begin
+      MessageDlg('Please select a file first (use "Browse ...").', mtError, [mbOk], 0) ;
+      Exit ;
+    end;
     // grid-memory neu laden
     if curLoader.hasEntryAddress then begin
       if Trim(EntryAddrEdit.Text) <> '' then

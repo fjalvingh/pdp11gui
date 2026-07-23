@@ -138,7 +138,10 @@ procedure TFormIopageScanner.StartScanButtonClick(Sender: TObject);
   var
 //    mat: TMemoryAddressType ;
     iopagebase: dword ;
-    i, j: dword ;
+    // integer, nicht dword: diese zaehlen bis "mcg.Count - 1", was -1 werden
+    // kann (leere Gruppe); als dword wuerde -1 zu einem riesigen unsigned
+    // Wert und die eigentlich leere Schleife wuerde trotzdem laufen.
+    i, j: integer ;
     n: dword ;
     mc: TMemoryCell ;
     symbol_mc: TMemoryCell ;
@@ -166,6 +169,12 @@ procedure TFormIopageScanner.StartScanButtonClick(Sender: TObject);
 
     // 1) memory cells für alle io-adressen anlegen
     n := iopageSize div 2; // nur gerade adressen
+
+    // Grid von mcg lösen, bevor die alten Zellen weggeworfen werden:
+    // sonst zeigt Objects[] im Grid auf schon freigegebene TMemoryCell's,
+    // und ein Repaint waehrend des Scans (ausgelöst durch die vielen
+    // ProcessMessages weiter unten) greift auf freigegebenen Speicher zu.
+    MemoryList.Disconnect ;
 
     mcg.Clear ; // alle adressen löschen
     for i := 0 to n-1 do

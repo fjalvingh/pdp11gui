@@ -60,6 +60,7 @@ type
       procedure ClipboardPaste;
 
       procedure ConnectToMemoryCellGroup(mcg: TMemoryCellGroup) ;
+      procedure Disconnect ;
       procedure ShowMemoryCell(mc: TMemoryCell) ;
 
       procedure ExamineCurrentButtonClick(Sender: TObject);
@@ -301,6 +302,23 @@ end;
     // OptimizeAnyGridColWidths(MemoryCellsStringGrid) ;
 
   end{ "procedure TFrameMemoryCellGroupList.ConnectToMemoryCellGroup" } ;
+
+
+// Grid von der memorycellgroup lösen, bevor deren Zellen neu aufgebaut
+// werden (zB Clear+Add beim Rescan). Ohne das behält das Grid in
+// Objects[] Zeiger auf die alten, bereits freigegebenen TMemoryCell-Objekte;
+// ein Repaint waehrend des Neuaufbaus (durch die vielen ProcessMessages
+// im Scan) würde dann auf freigegebenen Speicher zugreifen.
+// RowCount:=1 lässt das Grid nur die Kopfzeile malen, die alten Objects[]
+// werden also nicht mehr angefasst. ConnectToMemoryCellGroup baut am Ende
+// alles neu auf.
+procedure TFrameMemoryCellGroupList.Disconnect ;
+  begin
+    if memorycellgroup <> nil then
+      memorycellgroup.OnMemoryCellChange := nil ;
+    memorycellgroup := nil ;
+    MemoryCellsStringGrid.RowCount := 1 ;
+  end;
 
 
 // wird von der memorycellgroup aufgerufen, wenn sich eine zelle spontan ändert
