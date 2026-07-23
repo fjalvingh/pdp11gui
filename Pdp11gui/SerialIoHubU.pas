@@ -64,7 +64,9 @@ uses
   //IdTelnet, IdBaseComponent, IdComponent, IdTCPConnection, IdTCPClient,
   OverbyteIcsTnCnx,
   AddressU,
-  FormLogU
+  FormLogU,
+  AppControlU,
+  FormSimhConsoleU
   ;
 
 
@@ -111,7 +113,7 @@ TConnectionSettingsSerial = class(TConnectionSettings)
 
 
   // und über welches Medium?
-  TSerialIoHubPhysicalConnectionType = (connectionNone, connectionInternal, connectionSerial, connectionTelnet) ; 
+  TSerialIoHubPhysicalConnectionType = (connectionNone, connectionInternal, connectionSerial, connectionTelnet, connectionSimhProcess) ;
 
 
   TSerialIoHub = class(TObject) 
@@ -125,21 +127,34 @@ TConnectionSettingsSerial = class(TConnectionSettings)
       Transmission_TotalChars: longint ; // soviele Zeichen wurden insgesamt übertragen
       Transmission_TotalWait_us: int64 ; // soviele microsecs wurde insgesamt gewartet
 
-      Telnet_connected : boolean ; 
-      Telnet_InputBuffer: string ; 
+      Telnet_connected : boolean ;
+      Telnet_InputBuffer: string ;
       // Telnet Daten da: sammle sie im InputBuffer
+
+      // "SimH direct": pdp11gui spawns SimH itself and talks to its
+      // "remote master" console over the same TelnetConnection/
+      // Telnet_InputBuffer machinery as connectionTelnet - see
+      // Physical_InitForSimhProcess.
+      SimhAppControl: TAppControl ; // owns the spawned "pdp11" child process
+      SimhTempIniFilename: string ; // generated temp .ini actually passed to simh (kept for Physical_getInfoString/debugging, never auto-deleted - same convention as ConsolePDP11SimHU's Deposit() .sim temp files)
 
       //procedure TelnetDataAvailable(Sender: TIdTelnet; const Buffer: TBytes) ;
       // = TTnDataAvailable
-      procedure TelnetDataAvailable(Sender: TTnCnx; Buffer : Pointer; Len : integer) ; 
-      procedure TelnetDisplay(Sender: TTnCnx; Str : string) ; 
+      procedure TelnetDataAvailable(Sender: TTnCnx; Buffer : Pointer; Len : integer) ;
+      procedure TelnetDisplay(Sender: TTnCnx; Str : string) ;
 
       // procedure TelnetConnect(Sender: TObject) ;
       // = TTnSessionConnected
-      procedure TelnetConnect(Sender: TTnCnx; Error: word) ; 
-      procedure Physical_Poll(Sender:TObject) ; 
+      procedure TelnetConnect(Sender: TTnCnx; Error: word) ;
+      procedure Physical_Poll(Sender:TObject) ;
 
-    public 
+      function SimhProcessAlive: boolean ; // passed as aliveCheck to TnCnxConnectWithRetry
+      function GenerateSimhIniFile(userIniFilename, tmpdir: string): string ;
+      procedure TerminateSimhProcess ; // kills the spawned child (if any) and disconnects SimhConsole
+
+    public
+      SimhConsole: TFormSimhConsole ; // 2nd MDI window for the emulated PDP-11's own console; assigned once from FormMainU.FormCreate, like "Terminal" below
+
       connectionType: TSerialIoHubPhysicalConnectionType ; // Mit was verbinden?
       // wenn intern: IMMER gefakte PDP-11/44!
 
@@ -187,7 +202,8 @@ TConnectionSettingsSerial = class(TConnectionSettings)
       procedure Physical_InitForFakePDP1144v340c(baud:integer) ; 
       procedure Physical_InitForFakePDP11ODT(baud: integer; physicaladdresswidth: TMemoryAddressType) ; 
       procedure Physical_InitForFakePDP11ODTK1630(baud: integer) ; 
-      procedure Physical_InitForTelnet(aHost:string ; aPort: integer) ; 
+      procedure Physical_InitForTelnet(aHost:string ; aPort: integer) ;
+      procedure Physical_InitForSimhProcess(userIniFilename: string) ; // pdp11gui launches SimH itself
 
       // für Anzeigen: "/dev/ttyUSB0 @ 9600 baud" oder "localhost:9922"
       function Physical_getInfoString: string ; 
@@ -210,23 +226,35 @@ TConnectionSettingsSerial = class(TConnectionSettings)
 
 implementation 
 
-uses 
-  JH_Utilities, 
-  AuxU, 
-  Forms, 
-  ConsoleGenericU, 
-  FakePDP11M9312U, 
-  FakePDP11M9301U, 
-  FakePDP1144U, 
-  FakePDP1144v340cU, 
-  FakePDP11ODTU, 
-  FakePDP11ODTK1630U, 
-  FormSettingsU, 
-  FormMainU ; 
+uses
+  JH_Utilities,
+  AuxU,
+  Forms,
+  FileUtil, // FindDefaultExecutablePath
+  ConsoleGenericU,
+  FakePDP11M9312U,
+  FakePDP11M9301U,
+  FakePDP1144U,
+  FakePDP1144v340cU,
+  FakePDP11ODTU,
+  FakePDP11ODTK1630U,
+  FormSettingsU,
+  FormMainU ;
 
 //  var dbgsim : TPDP1144Sim ;
-var 
-  loglastlocation:string ; 
+var
+  loglastlocation:string ;
+
+const
+  // "SimH direct" (Physical_InitForSimhProcess): ports for the temp .ini's
+  // generated "set remote telnet=" / "set console telnet=" lines. Fixed
+  // ports are a simplification - running multiple simultaneous SimH-direct
+  // instances would need dynamic port probing, which is out of scope.
+  // Matches the convention used by simh/pdp11_70-1.ini.
+  SIMH_REMOTE_PORT = 4000 ;   // admin "sim>" channel - same machinery as connectionTelnet
+  SIMH_CONSOLE_PORT = 4001 ;  // emulated PDP-11's own console, shown in SimhConsole
+  SIMH_CONNECT_TIMEOUT_MS = 5000 ;
+
 
 
 procedure LogChar(colidx: TLogColumnIndex ; c:char ; location:string) ; 
@@ -269,14 +297,17 @@ constructor TSerialIoHub.Create ;
     //IdTelnet.ThreadedEvent := false ;
     // IdTelnet.Host := ;
     // IdTelnet.Port := ;
-    TelnetConnection := TTnCnx.Create(nil); 
-    TelnetConnection.Name := 'TnCnxn' ; 
+    TelnetConnection := TTnCnx.Create(nil);
+    TelnetConnection.Name := 'TnCnxn' ;
     TelnetConnection.TermType := 'dumb' ; // später VT100
     //TelnetConnection.Host :=
     //TelnetConnection.Port :=
-    isLocalTelnet := false ; 
+    isLocalTelnet := false ;
 
-    Physical_PollTimer := TTimer.Create(nil) ; 
+    SimhAppControl := TAppControl.Create ;
+    SimhConsole := nil ; // assigned later from FormMainU.FormCreate
+
+    Physical_PollTimer := TTimer.Create(nil) ;
     Physical_PollTimer.Interval := 10 ; 
     Physical_Poll_Disable := 1 ; // callback abschalten, wird nach Physical_Init...() aktiv
 
@@ -285,20 +316,23 @@ constructor TSerialIoHub.Create ;
 
   end{ "constructor TSerialIoHub.Create" } ; 
 
-destructor TSerialIoHub.Destroy ; 
-  begin 
-    Physical_PollTimer.Free ; 
-    Comm.Free ; 
-    if FakePDP11 <> nil then FakePDP11.Free ; 
-    FakePDP11 := nil ; 
+destructor TSerialIoHub.Destroy ;
+  begin
+    Physical_PollTimer.Free ;
+    Comm.Free ;
+    if FakePDP11 <> nil then FakePDP11.Free ;
+    FakePDP11 := nil ;
     //IdTelnet.Free ;
-    TelnetConnection.Free ; 
-    inherited ; 
+    TerminateSimhProcess ; // kill any still-running spawned SimH child
+    SimhAppControl.Free ;
+    TelnetConnection.Free ;
+    inherited ;
   end; 
 
 procedure TSerialIoHub.Physical_InitForCOM(device: string ; aBaudrate: integer ; aSerialFormat: TSerialFormat) ;
   begin
     Physical_Poll_Disable := 1 ;
+    TerminateSimhProcess ; // switching away from SimH direct: kill any spawned child
     connectionType := connectionSerial ;
 
     Comm.Close ;
@@ -343,12 +377,13 @@ procedure TSerialIoHub.Physical_InitForCOM(device: string ; aBaudrate: integer ;
 
 
 // instanziere eine der "FakePDP11" Simulatoren
-procedure TSerialIoHub.Physical_InitForFakePDP11( 
+procedure TSerialIoHub.Physical_InitForFakePDP11(
         newFakePDP11: TFakePDP11Generic ; // link to instantiated object
-        baud: integer) ; 
-  begin 
-    Physical_Poll_Disable := 1 ; 
-    connectionType := connectionInternal ; 
+        baud: integer) ;
+  begin
+    Physical_Poll_Disable := 1 ;
+    TerminateSimhProcess ; // switching away from SimH direct: kill any spawned child
+    connectionType := connectionInternal ;
     RcvBaudrate := baud ; 
     XmtBaudrate := baud ; 
     // nur freigeben, wenn Änderung, damit die Maschine ihren Zustand möglichst behält
@@ -363,10 +398,11 @@ procedure TSerialIoHub.Physical_InitForFakePDP11(
   end{ "procedure TSerialIoHub.Physical_InitForFakePDP11" } ; 
 
 // baudrate für simuliertes Warten
-procedure TSerialIoHub.Physical_InitForFakePDP11M9312(baud: integer) ; 
-  begin 
-    Physical_Poll_Disable := 1 ; 
-    connectionType := connectionInternal ; 
+procedure TSerialIoHub.Physical_InitForFakePDP11M9312(baud: integer) ;
+  begin
+    Physical_Poll_Disable := 1 ;
+    TerminateSimhProcess ; // switching away from SimH direct: kill any spawned child
+    connectionType := connectionInternal ;
     RcvBaudrate := baud ; 
     XmtBaudrate := baud ; 
     // nur freigeben, wenn Änderung, damit die Maschine ihren Zustand möglichst behält
@@ -381,10 +417,11 @@ procedure TSerialIoHub.Physical_InitForFakePDP11M9312(baud: integer) ;
 
 
 // baudrate für simuliertes Warten
-procedure TSerialIoHub.Physical_InitForFakePDP11M9301(baud: integer) ; 
-  begin 
-    Physical_Poll_Disable := 1 ; 
-    connectionType := connectionInternal ; 
+procedure TSerialIoHub.Physical_InitForFakePDP11M9301(baud: integer) ;
+  begin
+    Physical_Poll_Disable := 1 ;
+    TerminateSimhProcess ; // switching away from SimH direct: kill any spawned child
+    connectionType := connectionInternal ;
     RcvBaudrate := baud ; 
     XmtBaudrate := baud ; 
     // nur freigeben, wenn Änderung, damit die Maschine ihren Zustand möglichst behält
@@ -399,10 +436,11 @@ procedure TSerialIoHub.Physical_InitForFakePDP11M9301(baud: integer) ;
 
 
 // baudrate für simuliertes Warten
-procedure TSerialIoHub.Physical_InitForFakePDP1144(baud: integer) ; 
-  begin 
-    Physical_Poll_Disable := 1 ; 
-    connectionType := connectionInternal ; 
+procedure TSerialIoHub.Physical_InitForFakePDP1144(baud: integer) ;
+  begin
+    Physical_Poll_Disable := 1 ;
+    TerminateSimhProcess ; // switching away from SimH direct: kill any spawned child
+    connectionType := connectionInternal ;
     RcvBaudrate := baud ; 
     XmtBaudrate := baud ; 
     // nur freigeben, wenn Änderng, damit die Maschine ihren Zustand möglichst behält
@@ -415,10 +453,11 @@ procedure TSerialIoHub.Physical_InitForFakePDP1144(baud: integer) ;
     Physical_Poll_Disable := 0 ; 
   end{ "procedure TSerialIoHub.Physical_InitForFakePDP1144" } ; 
 
-procedure TSerialIoHub.Physical_InitForFakePDP1144v340c(baud: integer) ; 
-  begin 
-    Physical_Poll_Disable := 1 ; 
-    connectionType := connectionInternal ; 
+procedure TSerialIoHub.Physical_InitForFakePDP1144v340c(baud: integer) ;
+  begin
+    Physical_Poll_Disable := 1 ;
+    TerminateSimhProcess ; // switching away from SimH direct: kill any spawned child
+    connectionType := connectionInternal ;
     RcvBaudrate := baud ; 
     XmtBaudrate := baud ; 
     // nur freigeben, wenn Änderng, damit die Maschine ihren Zustand möglichst behält
@@ -433,10 +472,11 @@ procedure TSerialIoHub.Physical_InitForFakePDP1144v340c(baud: integer) ;
 
 
 // baudrate für simuliertes Warten
-procedure TSerialIoHub.Physical_InitForFakePDP11ODT(baud: integer; physicaladdresswidth: TMemoryAddressType) ; 
-  begin 
-    Physical_Poll_Disable := 1 ; 
-    connectionType := connectionInternal ; 
+procedure TSerialIoHub.Physical_InitForFakePDP11ODT(baud: integer; physicaladdresswidth: TMemoryAddressType) ;
+  begin
+    Physical_Poll_Disable := 1 ;
+    TerminateSimhProcess ; // switching away from SimH direct: kill any spawned child
+    connectionType := connectionInternal ;
     RcvBaudrate := baud ; 
     XmtBaudrate := baud ; 
     // nur freigeben, wenn Änderung, damit die Maschine ihren Zustand möglichst behält
@@ -453,10 +493,11 @@ procedure TSerialIoHub.Physical_InitForFakePDP11ODT(baud: integer; physicaladdre
     Physical_Poll_Disable := 0 ; 
   end{ "procedure TSerialIoHub.Physical_InitForFakePDP11ODT" } ; 
 
-procedure TSerialIoHub.Physical_InitForFakePDP11ODTK1630(baud: integer) ; 
-  begin 
-    Physical_Poll_Disable := 1 ; 
-    connectionType := connectionInternal ; 
+procedure TSerialIoHub.Physical_InitForFakePDP11ODTK1630(baud: integer) ;
+  begin
+    Physical_Poll_Disable := 1 ;
+    TerminateSimhProcess ; // switching away from SimH direct: kill any spawned child
+    connectionType := connectionInternal ;
     RcvBaudrate := baud ; 
     XmtBaudrate := baud ; 
     // nur freigeben, wenn Änderng, damit die Maschine ihren Zustand möglichst behält
@@ -471,10 +512,11 @@ procedure TSerialIoHub.Physical_InitForFakePDP11ODTK1630(baud: integer) ;
 
 
 // verbinde über Telnet .. damit automatisch SimH ... nicht gerade logisch
-procedure TSerialIoHub.Physical_InitForTelnet(aHost:string ; aPort: integer) ; 
-  begin 
-    Physical_Poll_Disable := 1 ; 
-    connectionType := connectionTelnet ; 
+procedure TSerialIoHub.Physical_InitForTelnet(aHost:string ; aPort: integer) ;
+  begin
+    Physical_Poll_Disable := 1 ;
+    TerminateSimhProcess ; // switching away from SimH direct: kill any spawned child
+    connectionType := connectionTelnet ;
 
     RcvBaudrate := 9600 ; // das ist minimale Speed von telnet
     XmtBaudrate := 9600 ; 
@@ -507,8 +549,118 @@ procedure TSerialIoHub.Physical_InitForTelnet(aHost:string ; aPort: integer) ;
       Log('Telnet to "%s" over port %d FAILED!', [aHost, aPort]) ; 
     end; 
 
-    Physical_Poll_Disable := 0 ; 
-  end{ "procedure TSerialIoHub.Physical_InitForTelnet" } ; 
+    Physical_Poll_Disable := 0 ;
+  end{ "procedure TSerialIoHub.Physical_InitForTelnet" } ;
+
+// kills a spawned SimH child (if any, safe no-op otherwise) and
+// disconnects the SimH Console window - called both when tearing down an
+// active "SimH direct" connection and when switching away from it into
+// any other Physical_InitForXxx().
+procedure TSerialIoHub.TerminateSimhProcess ;
+  begin
+    SimhAppControl.ApplicationTerminate ; // safe no-op if nothing running
+    if SimhConsole <> nil then SimhConsole.Disconnect ;
+  end;
+
+// passed as the aliveCheck callback to TnCnxConnectWithRetry, so a
+// crashed SimH doesn't make pdp11gui wait out the full connect timeout.
+function TSerialIoHub.SimhProcessAlive: boolean ;
+  begin
+    result := SimhAppControl.ApplicationContact ;
+  end;
+
+// loads the user-selected .ini, strips any pre-existing "set remote"/
+// "set console" lines (so pdp11gui's own directives always win,
+// regardless of what the source file already contains), appends
+// pdp11gui's fixed remote/console telnet block, and saves the result to a
+// new temp file. Not auto-deleted afterwards - mirrors ConsolePDP11SimHU's
+// never-cleaned-up "pdp11gui_deposit*.sim" temp files, left for debugging.
+function TSerialIoHub.GenerateSimhIniFile(userIniFilename, tmpdir: string): string ;
+  var
+    src, dst: TStringList ;
+    i: integer ;
+    line, trimmedLower: string ;
+  begin
+    result := GetUniqueFilename(tmpdir, 'pdp11gui_simh', 'ini') ;
+    src := TStringList.Create ;
+    dst := TStringList.Create ;
+    try
+      src.LoadFromFile(userIniFilename) ;
+      for i := 0 to src.Count - 1 do begin
+        line := src[i] ;
+        trimmedLower := LowerCase(Trim(line)) ;
+        if (Pos('set remote', trimmedLower) = 1) or (Pos('set console', trimmedLower) = 1) then
+          continue ; // strip: pdp11gui supplies its own below
+        dst.Add(line) ;
+      end;
+      dst.Add('set remote connections=1') ;
+      dst.Add(Format('set remote telnet=%d', [SIMH_REMOTE_PORT])) ;
+      dst.Add(Format('set console telnet=%d', [SIMH_CONSOLE_PORT])) ;
+      dst.Add('set remote master') ;
+      dst.SaveToFile(result) ;
+    finally
+      src.Free ;
+      dst.Free ;
+    end;
+  end{ "function TSerialIoHub.GenerateSimhIniFile" } ;
+
+// "SimH direct": pdp11gui itself launches SimH (as a child process, found
+// on PATH) against a generated temp copy of userIniFilename, then
+// connects to its "remote master" console over the same
+// TelnetConnection/Telnet_InputBuffer machinery Physical_InitForTelnet
+// uses - see the combined "connectionTelnet, connectionSimhProcess:" case
+// labels in Physical_ReadByte/Physical_WriteByte below. A second, fully
+// independent connection to SimH's own "console telnet" channel (the
+// emulated PDP-11's own terminal) is made via SimhConsole, if assigned.
+procedure TSerialIoHub.Physical_InitForSimhProcess(userIniFilename: string) ;
+  var
+    simhExePath, tmpdir: string ;
+  begin
+    Physical_Poll_Disable := 1 ;
+    connectionType := connectionSimhProcess ;
+
+    RcvBaudrate := 9600 ;
+    XmtBaudrate := 9600 ;
+
+    simhExePath := FindDefaultExecutablePath('pdp11') ;
+    if simhExePath = '' then
+      raise Exception.Create('"pdp11" (open-simh) not found on PATH. Install it and make sure it is on the PATH.') ;
+
+    if not GetEnv('TEMP', tmpdir) then
+      raise Exception.Create('Environment variable TEMP not set!') ;
+    SimhTempIniFilename := GenerateSimhIniFile(userIniFilename, tmpdir) ;
+
+    Log('Starting SimH: %s %s', [simhExePath, SimhTempIniFilename]) ;
+    SimhAppControl.StartApplication(simhExePath, [SimhTempIniFilename], ExtractFileDir(SimhTempIniFilename)) ;
+
+    Telnet_InputBuffer := '' ;
+    try
+      TelnetConnection.Close ;
+    except
+      on e: Exception do
+    end;
+    Telnet_connected := false ;
+    TelnetConnection.OnDataAvailable := TelnetDataAvailable ;
+    TelnetConnection.OnSessionConnected := TelnetConnect ;
+    TelnetConnection.OnDisplay := TelnetDisplay ;
+
+    if not TnCnxConnectWithRetry(TelnetConnection, 'localhost', SIMH_REMOTE_PORT,
+            SIMH_CONNECT_TIMEOUT_MS, SimhProcessAlive) then begin
+      TerminateSimhProcess ;
+      raise Exception.CreateFmt('SimH did not open the remote console on localhost:%d within %d ms',
+              [SIMH_REMOTE_PORT, SIMH_CONNECT_TIMEOUT_MS]) ;
+    end ;
+    // SimH direct is always local - unlike Physical_InitForTelnet, no
+    // GetIPAddress check is needed. This matters because
+    // ConsolePDP11SimHU.Deposit() checks isLocalTelnet to decide whether
+    // it may use its faster local-file "DO script" optimization.
+    isLocalTelnet := true ;
+
+    if SimhConsole <> nil then
+      SimhConsole.ConnectTo('localhost', SIMH_CONSOLE_PORT, SimhProcessAlive) ;
+
+    Physical_Poll_Disable := 0 ;
+  end{ "procedure TSerialIoHub.Physical_InitForSimhProcess" } ;
 
 
 // Zeit im Millisekunden, die die angegebene Zeichenzahl in Abh
@@ -602,7 +754,11 @@ function TSerialIoHub.Physical_ReadByte(var curbyte: byte ; dbglocation: string)
           if serialFormat <> serformat8N1 then 
             curbyte := curbyte and $7f ; // mask off MSB
         end; 
-        connectionTelnet: begin 
+        connectionTelnet, connectionSimhProcess: begin
+          // "SimH direct"'s admin channel is byte-identical to a plain
+          // Telnet connection at this level - both flow through
+          // TelnetConnection/Telnet_InputBuffer (see
+          // Physical_InitForSimhProcess).
           Application.ProcessMessages ; // bediene den Empfangs-Event
 //      if not Telnet_Connected then raise Exception.Create('Telnet not connected') ;
 
@@ -646,13 +802,13 @@ function TSerialIoHub.Physical_WriteByte(curbyte: byte; dbglocation:string): boo
         connectionSerial: begin 
           result := Comm.WriteByte(curbyte) ; 
         end; 
-        connectionTelnet: begin 
+        connectionTelnet, connectionSimhProcess: begin
           // if not Telnet_Connected then  raise Exception.Create('Telnet not connected') ;
           //IdTelnet.SendCh(char(curbyte)) ;
-          s := char(curbyte) ; 
+          s := char(curbyte) ;
           TelnetConnection.SendStr(s) ; // 1 char as string
-          result := true ; 
-        end; 
+          result := true ;
+        end;
       end{ "case connectionType" } ; 
     finally 
       dec(Physical_Poll_Disable) ; 
@@ -690,10 +846,13 @@ function TSerialIoHub.Physical_getInfoString: string ;
         result := 'internal connection' ;
       connectionSerial:
         result := Format('%s @ %d baud', [Comm.Device, Comm.baud]) ;
-      connectionTelnet: 
+      connectionTelnet:
 //        result := Format('%s:%d', [IdTelnet.host, IdTelnet.port]) ;
-        result := Format('%s:%s', [TelnetConnection.host, TelnetConnection.port]) ; 
-    end; 
+        result := Format('%s:%s', [TelnetConnection.host, TelnetConnection.port]) ;
+      connectionSimhProcess:
+        result := Format('SimH direct: %s (localhost:%d/%d)',
+                [SimhTempIniFilename, SIMH_REMOTE_PORT, SIMH_CONSOLE_PORT]) ;
+    end;
   end; 
 
 

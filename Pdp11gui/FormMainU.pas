@@ -111,6 +111,7 @@ uses
   SerialIoHubU,
   FormSettingsU,
   FormTerminalU,
+  FormSimhConsoleU,
   FormMacro11SourceU,
   FormMacro11ListingU,
   FormMacro11CodeU,
@@ -142,6 +143,7 @@ type
       Exit1: TMenuItem;
       View1: TMenuItem;
       Terminal1: TMenuItem;
+      SimhConsole1: TMenuItem;
       Macro11Source1: TMenuItem;
       Macro11Listing1: TMenuItem;
       Log1: TMenuItem;
@@ -200,6 +202,7 @@ type
       procedure Exit1Click(Sender: TObject);
       procedure FormCreate(Sender: TObject);
       procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
+      procedure FormDestroy(Sender: TObject);
       procedure Cascade1Click(Sender: TObject);
       procedure Settings1Click(Sender: TObject);
       procedure Arangeicons1Click(Sender: TObject);
@@ -235,6 +238,7 @@ type
       // alle Forms werden der MainForm untergeordnet.
       // FormSettings : TFormSettings ; // nein! ist modal
       FormTerminal: TFormTerminal ;
+      FormSimhConsole: TFormSimhConsole ; // emulated PDP-11's own console, for "SimH direct"
       FormMem1, FormMem2,FormMem3, FormMem4 : TFormMemoryTable ;
       FormMemoryLoader : TFormMemoryLoader ;
       FormMemoryDumper : TFormMemoryDumper ;
@@ -391,6 +395,9 @@ procedure TFormMain.FormCreate(Sender: TObject);
     // alle dynamischen Forms anlegen. siehe "isChildForm()"
     FormTerminal := TFormTerminal.Create(self) ; // wird in Componetes[] gespeiehrt
     SerialIoHub.Terminal := FormTerminal ; // connect Terminal an Datenstrom
+
+    FormSimhConsole := TFormSimhConsole.Create(self) ;
+    SerialIoHub.SimhConsole := FormSimhConsole ; // 2nd MDI window, only used by "SimH direct"
 
     FormMem1 := TFormMemoryTable.Create(self) ;
     FormMem1.Caption := 'Mem1' ;
@@ -790,6 +797,8 @@ procedure TFormMain.RenewPDP11ConsoleAndConnection(settings: TFormSettingsConfig
         SerialIoHub.Physical_InitForCOM(settings.serialDevice, settings.serialBaudrate, settings.serialFormat) ;
       connectionTelnet:
         SerialIoHub.Physical_InitForTelnet(settings.telnetHostname, settings.telnetPort) ; // SimH nur über telnet
+      connectionSimhProcess:
+        SerialIoHub.Physical_InitForSimhProcess(settings.simhIniFilename) ; // pdp11gui launches SimH itself
       else
         raise Exception.CreateFmt('Can not generate PDP-11 connection of type %d', [ord(settings.ConnectionType )]) ;
     end{ "case settings.ConnectionType" } ;
@@ -883,6 +892,15 @@ procedure TFormMain.FormCloseQuery(Sender: TObject; var CanClose: boolean);
   begin
     RegistrySaveControls ;
     CanClose := true ;
+  end;
+
+// Makes sure a spawned "SimH direct" child process gets killed on app
+// exit: without freeing SerialIoHub here, TSerialIoHub.Destroy (where
+// TerminateSimhProcess lives) would never run, since nothing else owns or
+// frees it.
+procedure TFormMain.FormDestroy(Sender: TObject);
+  begin
+    FreeAndNil(SerialIoHub) ;
   end;
 
 

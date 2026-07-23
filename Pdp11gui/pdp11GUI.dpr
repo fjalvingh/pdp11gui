@@ -8,6 +8,7 @@ uses
   FormSettingsU in 'FormSettingsU.pas' {FormSettings},
   ConsolePDP1144U in 'ConsolePDP1144U.pas',
   FormTerminalU in 'FormTerminalU.pas' {FormTerminal},
+  FormSimhConsoleU in 'FormSimhConsoleU.pas' {FormSimhConsole},
   FormMacro11SourceU in 'FormMacro11SourceU.pas' {FormMacro11Source},
   FormMacro11ListingU in 'FormMacro11ListingU.pas' {FormMacro11Listing},
   FormLogU in 'FormLogU.pas' {FormLog},

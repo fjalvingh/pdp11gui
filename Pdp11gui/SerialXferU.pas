@@ -689,8 +689,8 @@ procedure TSerialTransfer.Execute (
       // D.h., senden läuft in high-speed, die PDP-11 empfängt es viel langsamer.
       // => die PDP-11 ist JETZT noch nicht mit dem Empfangen fertig!
       // Die Wartepause für ReceiveCharBuffer berücksichtigt das.
-      if FormMain.SerialIoHub.connectionType = connectionTelnet then 
-        timeout_ms := (XmitBufferLen * FormMain.SerialIoHub.getXmtCharTransmissionMicros) div 1000 
+      if FormMain.SerialIoHub.connectionType in [connectionTelnet, connectionSimhProcess] then
+        timeout_ms := (XmitBufferLen * FormMain.SerialIoHub.getXmtCharTransmissionMicros) div 1000
       else timeout_ms := 0 ; 
       timeout_ms := timeout_ms + 1000 ; // 1 Sek reserve
       // Zeit für die Abarbeitung des Codes mit einplanen

@@ -16,6 +16,7 @@ object FormMain: TFormMain
   Scaled = False
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
@@ -56,6 +57,10 @@ object FormMain: TFormMain
       Caption = 'Connection'
       object Terminal1: TMenuItem
         Caption = 'Terminal'
+        OnClick = FormEnableMenuItemClick
+      end
+      object SimhConsole1: TMenuItem
+        Caption = 'SimH Console'
         OnClick = FormEnableMenuItemClick
       end
       object N8: TMenuItem

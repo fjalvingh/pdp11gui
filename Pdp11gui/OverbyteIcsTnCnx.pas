@@ -26,7 +26,7 @@ unit OverbyteIcsTnCnx;
 interface
 
 uses
-  Classes, SysUtils, ExtCtrls, ctypes;
+  Classes, SysUtils, ExtCtrls, ctypes, Forms;
 
 type
   TTnCnx = class;
@@ -68,6 +68,20 @@ type
       property OnSessionConnected: TTnCnxSessionConnected read fOnSessionConnected write fOnSessionConnected;
       property OnDisplay: TTnCnxDisplay read fOnDisplay write fOnDisplay;
     end;
+
+  // used by TnCnxConnectWithRetry to bail out early if a spawned process
+  // (e.g. SimH) has already died, instead of waiting out the full timeout
+  TTnCnxAliveCheck = function: boolean of object;
+
+// (Re)points cnx at aHost:aPort and retries cnx.Connect until it succeeds,
+// timeout_ms elapses, or aliveCheck (if given) reports the peer process is
+// no longer alive. Pumps Application.ProcessMessages between attempts so
+// timers (this unit's own fPollTimer, and any others) keep running. Used
+// to wait for a just-spawned child process's listening socket to come up -
+// an inherently racy startup, since Connect fails immediately if nothing
+// is listening yet.
+function TnCnxConnectWithRetry(cnx: TTnCnx; const aHost: string; aPort: integer;
+        timeout_ms: dword; aliveCheck: TTnCnxAliveCheck = nil): boolean;
 
 implementation
 
@@ -248,5 +262,28 @@ procedure TTnCnx.SendStr(const s: string);
     if escaped <> '' then
       fpSend(fSocket, @escaped[1], length(escaped), 0);
   end;
+
+function TnCnxConnectWithRetry(cnx: TTnCnx; const aHost: string; aPort: integer;
+        timeout_ms: dword; aliveCheck: TTnCnxAliveCheck = nil): boolean;
+  var starttime: dword;
+  begin
+    cnx.host := aHost;
+    cnx.port := IntToStr(aPort);
+    starttime := GetTickCount64;
+    result := false;
+    repeat
+      try
+        cnx.Connect;
+        result := true;
+      except
+        on E: Exception do begin
+          Application.ProcessMessages;
+          Sleep(100);
+        end;
+      end;
+    until result
+       or (GetTickCount64 - starttime > timeout_ms)
+       or (Assigned(aliveCheck) and not aliveCheck());
+  end{ "function TnCnxConnectWithRetry" };
 
 end.

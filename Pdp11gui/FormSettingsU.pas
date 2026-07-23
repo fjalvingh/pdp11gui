@@ -83,6 +83,7 @@ type
       hasSerialComPort: boolean ; // COM port?
       hasSerialBaudrate: boolean ; // Baudrate eingabe?
       hasTelnet: boolean ; // telnet parameter?
+      hasSimhIniFile: boolean ; // "SimH direct": pdp11gui launches SimH itself from this .ini
       hasMonitorEntryAddress: boolean ; // M9312 hat eine Einsprungadresse
       defaultMonitorEntryAddress: string ;
     public
@@ -95,6 +96,7 @@ type
       serialFormat: TSerialFormat ;
       telnetHostname : string ;
       telnetPort : integer ;
+      simhIniFilename: string ; // "SimH direct": user-selected SimH .ini script file
 
       // manche consolen (M9312) brauchen eine Einsprungadresse zurück in
       // den console emulator.
@@ -147,6 +149,10 @@ TSelectedTargetParams = record
       ShowFakeConsolesCheckBox: TCheckBox;
       SerialFormatLabel: TLabel;
       SerialFormatComboBox: TComboBox;
+      SimhIniFileLabel: TLabel;
+      SimhIniFileEdit: TEdit;
+      SimhIniFileButton: TButton;
+      SimhIniFileOpenDialog: TOpenDialog;
       procedure FormCreate(Sender: TObject);
       procedure ComportComboBoxChange(Sender: TObject);
       procedure BaudrateComboBoxChange(Sender: TObject);
@@ -158,6 +164,8 @@ TSelectedTargetParams = record
       procedure FormDestroy(Sender: TObject);
       procedure ShowFakeConsolesCheckBoxClick(Sender: TObject);
       procedure SerialFormatComboBoxChange(Sender: TObject);
+      procedure SimhIniFileEditChange(Sender: TObject);
+      procedure SimhIniFileButtonClick(Sender: TObject);
     private
       { Private-Deklarationen }
       loadingConfigurationEditControlsFromRegistry: boolean ;
@@ -525,6 +533,20 @@ procedure TFormSettings.createConfigurations(showFakes: boolean);
     cfg.hasSerialComPort := false ;
     cfg.hasSerialBaudrate := false ;
     cfg.hasTelnet := true ;
+    cfg.hasSimhIniFile := false ;
+    cfg.hasMonitorEntryAddress := false ;
+    cfg.defaultMonitorEntryAddress := '' ;
+
+    // SimH direct: pdp11gui launches SimH itself from a user-selected .ini
+    cfg := Configurations.Add as TFormSettingsConfiguration ;
+    cfg.comboboxItemText := 'SimH direct (pdp11gui launches SimH)' ;
+    cfg.registryPrefix := 'SimhDirect' ;
+    cfg.consoleType := consoleSimH ;
+    cfg.connectionType := connectionSimhProcess ;
+    cfg.hasSerialComPort := false ;
+    cfg.hasSerialBaudrate := false ;
+    cfg.hasTelnet := false ;
+    cfg.hasSimhIniFile := true ;
     cfg.hasMonitorEntryAddress := false ;
     cfg.defaultMonitorEntryAddress := '' ;
 
@@ -585,6 +607,9 @@ procedure TFormSettings.loadConfigurationEditControlsFromRegistry ;
       s := 'FormSettings.' + selectedConfiguration.registryPrefix+'.MonitorEntryAddressEdit' ;
       MonitorEntryAddressEdit.text := TheRegistry.Load(s,
               selectedConfiguration.defaultMonitorEntryAddress) ;
+
+      s := 'FormSettings.' + selectedConfiguration.registryPrefix+'.SimhIniFileEdit' ;
+      SimhIniFileEdit.text := TheRegistry.Load(s, '') ;
     finally
       loadingConfigurationEditControlsFromRegistry := false ;
     end { "try" } ;
@@ -609,6 +634,9 @@ procedure TFormSettings.saveConfigurationEditControlsToRegistry ;
 
     s := 'FormSettings.' + selectedConfiguration.registryPrefix+'.MonitorEntryAddressEdit' ;
     TheRegistry.Save(s, MonitorEntryAddressEdit.text) ;
+
+    s := 'FormSettings.' + selectedConfiguration.registryPrefix+'.SimhIniFileEdit' ;
+    TheRegistry.Save(s, SimhIniFileEdit.text) ;
   end{ "procedure TFormSettings.saveConfigurationEditControlsToRegistry" } ;
 
 
@@ -655,6 +683,12 @@ procedure TFormSettings.UpdateProperties ;
     showhidecontrol(MonitorEntryAddressLabel, MonitorEntryAddressEdit,
             selectedConfiguration.hasMonitorEntryAddress) ;
 
+    showhidecontrol(SimhIniFileLabel, SimhIniFileEdit, selectedConfiguration.hasSimhIniFile) ;
+    // SimhIniFileButton isn't a label+control pair, so it can't go through
+    // showhidecontrol - just keep it pinned at a fixed offset from the edit box.
+    SimhIniFileButton.Top := SimhIniFileEdit.Top ;
+    SimhIniFileButton.visible := SimhIniFileEdit.visible ;
+
     // stack OK button below all with double space
     OKButton.Top := curTop + 2 * vdist ;
 
@@ -686,6 +720,8 @@ procedure TFormSettings.UpdateProperties ;
       s := MonitorEntryAddressEdit.text ;
 
     selectedConfiguration.monitorentryaddress := OctalStr2Addr(s, matPhysical16) ;
+
+    selectedConfiguration.simhIniFilename := Trim(SimhIniFileEdit.text) ;
 
 (*
     // 2) Controls auswerten, Ergbnis in 'SelectedTargetParams'
@@ -797,5 +833,24 @@ procedure TFormSettings.MonitorEntryAddressEditChange(Sender: TObject);
     UpdateProperties ;
     saveConfigurationEditControlsToRegistry ;
   end;
+
+procedure TFormSettings.SimhIniFileEditChange(Sender: TObject);
+  begin
+    if loadingConfigurationEditControlsFromRegistry then Exit ;
+    UpdateProperties ;
+    saveConfigurationEditControlsToRegistry ;
+  end;
+
+procedure TFormSettings.SimhIniFileButtonClick(Sender: TObject);
+  begin
+    if Trim(SimhIniFileEdit.text) <> '' then
+      SimhIniFileOpenDialog.InitialDir := ExtractFilePath(SimhIniFileEdit.text) ;
+    SimhIniFileOpenDialog.Title := 'Choose a SimH .ini script file' ;
+    if SimhIniFileOpenDialog.Execute then begin
+      SimhIniFileEdit.text := SimhIniFileOpenDialog.Filename ;
+      UpdateProperties ;
+      saveConfigurationEditControlsToRegistry ;
+    end;
+  end{ "procedure TFormSettings.SimhIniFileButtonClick" } ;
 
 end{ "unit FormSettingsU" } .

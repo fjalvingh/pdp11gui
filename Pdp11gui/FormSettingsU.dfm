@@ -66,6 +66,13 @@ object FormSettings: TFormSettings
     Height = 13
     Caption = 'Format:'
   end
+  object SimhIniFileLabel: TLabel
+    Left = 40
+    Top = 61
+    Width = 70
+    Height = 13
+    Caption = 'SimH .ini file:'
+  end
   object ComportComboBox: TComboBox
     Left = 122
     Top = 118
@@ -164,5 +171,28 @@ object FormSettings: TFormSettings
       '38400'
       '57600'
       '115200')
+  end
+  object SimhIniFileEdit: TEdit
+    Left = 122
+    Top = 58
+    Width = 300
+    Height = 21
+    TabOrder = 9
+    OnChange = SimhIniFileEditChange
+  end
+  object SimhIniFileButton: TButton
+    Left = 428
+    Top = 58
+    Width = 83
+    Height = 21
+    Caption = 'Browse...'
+    TabOrder = 10
+    OnClick = SimhIniFileButtonClick
+  end
+  object SimhIniFileOpenDialog: TOpenDialog
+    Filter = 'SimH ini files|*.ini|All files|*.*'
+    Title = 'Choose a SimH .ini script file'
+    Left = 96
+    Top = 208
   end
 end
