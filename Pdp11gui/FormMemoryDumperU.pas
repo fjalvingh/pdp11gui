@@ -100,6 +100,7 @@ implementation
 
 uses
   AuxU,
+  FileDialogsU,
   RegistryU,
   FormMainU;
 
@@ -296,20 +297,16 @@ procedure TFormMemoryDumper.BrowseFile1ButtonClick(Sender: TObject);
     i: integer ;
     dumperfile : TMemoryloaderFile ;
   begin
-    // wird für alle Browsebuttons aufgerufen
-    // VB: 'Loader" schon instanziiert.
-    // finde den file, für den das browsen gilt
-    // Sender als browsebutton eingetragen
-    if curLoader = nil then Exit ; // nur bei erstem Start nach Installation
+    // called for all browse buttons
+    // precondition: 'Loader' already instantiated.
+    // find the file the browsing is meant for:
+    // Sender is the browse button
+    if curLoader = nil then Exit ; // only on the first start after installation
     for i := 0 to curLoader.Files.Count - 1 do begin
       dumperfile := curLoader.getFile(i) ;
       if dumperfile.control_filenamebrowse = Sender then begin
         SaveDialog1.Title := 'Select a ' + dumperfile.prompt ;
-        SaveDialog1.InitialDir := ExtractFilePath(dumperfile.filename) ;
-        if not DirectoryExists(SaveDialog1.InitialDir) then
-          SaveDialog1.InitialDir := FormMain.DefaultDataDirectory ;
-
-        if SaveDialog1.Execute then begin
+        if ExecuteFileDialog(SaveDialog1, dumperfile.filename) then begin
           dumperfile.filename := SaveDialog1.filename ;
           TheRegistry.Save(dumperfile.regkey, dumperfile.filename) ;
         end;

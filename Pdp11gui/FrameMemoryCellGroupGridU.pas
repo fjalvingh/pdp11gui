@@ -120,6 +120,7 @@ implementation
 uses
   AuxU,
   ClipBrd,
+  FileDialogsU,
   ConsoleGenericU, FormMainU;
 
 constructor TFrameMemoryCellGroupGrid.Create(AOwner: TComponent) ;
@@ -550,7 +551,7 @@ procedure TFrameMemoryCellGroupGrid.WriteCodeAsSimHScript(fname:string);
 procedure TFrameMemoryCellGroupGrid.ExportasSimHDOscript1Click(Sender: TObject);
   begin
     ExportSaveDialog.DefaultExt := 'sim' ;
-    if ExportSaveDialog.Execute then
+    if ExecuteFileDialog(ExportSaveDialog) then
       WriteCodeAsSimHScript(ExportSaveDialog.FileName) ;
   end ;
 

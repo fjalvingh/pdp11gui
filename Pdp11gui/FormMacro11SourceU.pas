@@ -89,6 +89,7 @@ implementation
 uses
   RegistryU,
   AuxU,
+  FileDialogsU,
   FormMainU // wg. zugriff auf Listing Window
           , FormMacro11ListingU;
 
@@ -457,10 +458,7 @@ procedure TFormMacro11Source.NewButtonClick(Sender: TObject);
 
 procedure TFormMacro11Source.LoadButtonClick(Sender: TObject);
   begin
-    if SourceFilename = '' then
-      OpenDialog1.InitialDir := FormMain.DefaultDataDirectory
-    else OpenDialog1.InitialDir := ExtractFilePath(SourceFilename) ;
-    if OpenDialog1.Execute then begin
+    if ExecuteFileDialog(OpenDialog1) then begin
       LoadFile(OpenDialog1.FileName) ;
     end;
   end;
@@ -468,10 +466,7 @@ procedure TFormMacro11Source.LoadButtonClick(Sender: TObject);
 
 procedure TFormMacro11Source.SaveAsButtonClick(Sender: TObject);
   begin
-    if SaveDialog1.InitialDir = '' then
-      SaveDialog1.InitialDir := FormMain.DefaultDataDirectory ;
-    SaveDialog1.FileName := SourceFilename ;
-    if SaveDialog1.Execute then begin
+    if ExecuteFileDialog(SaveDialog1, SourceFilename) then begin
       SourceFilename := SaveDialog1.FileName ;
       SaveFile(SourceFilename);
     end;

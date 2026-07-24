@@ -138,6 +138,10 @@ TConnectionSettingsSerial = class(TConnectionSettings)
       // Physical_InitForSimhProcess.
       SimhAppControl: TAppControl ; // owns the spawned "pdp11" child process
       SimhTempIniFilename: string ; // generated temp .ini actually passed to simh (kept for Physical_getInfoString/debugging, never auto-deleted - same convention as ConsolePDP11SimHU's Deposit() .sim temp files)
+      // telnet ports of the running SimH child, picked per launch by
+      // FindFreeSimhPorts(); 0 while no SimH-direct connection was made
+      SimhRemotePort: word ;
+      SimhConsolePort: word ;
 
       //procedure TelnetDataAvailable(Sender: TIdTelnet; const Buffer: TBytes) ;
       // = TTnDataAvailable
@@ -150,6 +154,7 @@ TConnectionSettingsSerial = class(TConnectionSettings)
       procedure Physical_Poll(Sender:TObject) ;
 
       function SimhProcessAlive: boolean ; // passed as aliveCheck to TnCnxConnectWithRetry
+      procedure FindFreeSimhPorts ; // sets SimhRemotePort/SimhConsolePort
       function GenerateSimhIniFile(userIniFilename, tmpdir: string): string ;
       procedure TerminateSimhProcess ; // kills the spawned child (if any) and disconnects SimhConsole
 
@@ -232,6 +237,7 @@ uses
   JH_Utilities,
   AuxU,
   Forms,
+  Sockets, // FindFreeSimhPorts
   FileUtil, // FindDefaultExecutablePath
   ConsoleGenericU,
   FakePDP11M9312U,
@@ -248,13 +254,21 @@ var
   loglastlocation:string ;
 
 const
-  // "SimH direct" (Physical_InitForSimhProcess): ports for the temp .ini's
-  // generated "set remote telnet=" / "set console telnet=" lines. Fixed
-  // ports are a simplification - running multiple simultaneous SimH-direct
-  // instances would need dynamic port probing, which is out of scope.
-  // Matches the convention used by simh/pdp11_70-1.ini.
-  SIMH_REMOTE_PORT = 4000 ;   // admin "sim>" channel - same machinery as connectionTelnet
-  SIMH_CONSOLE_PORT = 4001 ;  // emulated PDP-11's own console, shown in SimhConsole
+  // "SimH direct" (Physical_InitForSimhProcess): base ports for the temp
+  // .ini's generated "set remote telnet=" / "set console telnet=" lines.
+  // These are only where the search starts: the actual pair is picked per
+  // launch by FindFreeSimhPorts() and kept in SimhRemotePort /
+  // SimhConsolePort. Probing is needed because these ports are not reliably
+  // free at launch: SimH does not set SO_REUSEADDR, so a port that carried
+  // an established remote-console connection stays unbindable for the
+  // duration of its TIME_WAIT after pdp11gui exits - restarting within
+  // about a minute used to leave SimH running with its remote console
+  // disabled ("Can't open network port: 4000"), i.e. an emulator the GUI
+  // cannot drive. Probing also lets several SimH-direct instances coexist.
+  // The base values match the convention used by simh/pdp11_70-1.ini.
+  SIMH_REMOTE_PORT_BASE = 4000 ;  // admin "sim>" channel - same machinery as connectionTelnet
+  SIMH_CONSOLE_PORT_BASE = 4001 ; // emulated PDP-11's own console, shown in SimhConsole
+  SIMH_PORT_PROBE_TRIES = 50 ;    // how far above the base to search
   SIMH_CONNECT_TIMEOUT_MS = 5000 ;
 
 
@@ -307,6 +321,8 @@ constructor TSerialIoHub.Create ;
     isLocalTelnet := false ;
 
     SimhAppControl := TAppControl.Create ;
+    SimhRemotePort := 0 ; // set per launch by FindFreeSimhPorts
+    SimhConsolePort := 0 ;
     SimhConsole := nil ; // assigned later from FormMainU.FormCreate
     SimhRemoteLog := nil ; // assigned later from FormMainU.FormCreate
 
@@ -572,6 +588,56 @@ function TSerialIoHub.SimhProcessAlive: boolean ;
     result := SimhAppControl.ApplicationContact ;
   end;
 
+// can a listening socket be bound to this TCP port right now?
+// Deliberately without SO_REUSEADDR: the question is not whether *we* could
+// listen, but whether SimH - which does not set that option - will be able
+// to, so a port still held by a TIME_WAIT connection must count as busy.
+// Binding INADDR_ANY, again to match what SimH does.
+function TcpPortIsBindable(port: word): boolean ;
+  var
+    sock: longint ;
+    addr: TInetSockAddr ;
+  begin
+    result := false ;
+    sock := fpSocket(AF_INET, SOCK_STREAM, 0) ;
+    if sock < 0 then Exit ;
+    try
+      FillChar(addr, sizeof(addr), 0) ;
+      addr.sin_family := AF_INET ;
+      addr.sin_port := htons(port) ;
+      addr.sin_addr.s_addr := 0 ; // INADDR_ANY
+      result := fpBind(sock, @addr, sizeof(addr)) = 0 ;
+    finally
+      CloseSocket(sock) ;
+    end;
+  end{ "function TcpPortIsBindable" } ;
+
+// Pick the remote/console port pair for the SimH child about to be started.
+// Searches upwards from the base pair in steps of 2 so the two ports stay
+// adjacent and the familiar 4000/4001 is used whenever it is free.
+// There is an unavoidable race here - the ports are released again before
+// SimH binds them - but nothing else on the machine is expected to be
+// grabbing ports in this range, and a loss is not silent: SimH's bind
+// failure surfaces as the connect timeout in Physical_InitForSimhProcess.
+procedure TSerialIoHub.FindFreeSimhPorts ;
+  var i: integer ;
+  begin
+    for i := 0 to SIMH_PORT_PROBE_TRIES - 1 do begin
+      SimhRemotePort := SIMH_REMOTE_PORT_BASE + 2*i ;
+      SimhConsolePort := SIMH_CONSOLE_PORT_BASE + 2*i ;
+      if TcpPortIsBindable(SimhRemotePort) and TcpPortIsBindable(SimhConsolePort) then begin
+        if i > 0 then
+          Log('SimH ports %d/%d busy, using %d/%d instead',
+                  [SIMH_REMOTE_PORT_BASE, SIMH_CONSOLE_PORT_BASE,
+                   SimhRemotePort, SimhConsolePort]) ;
+        Exit ;
+      end;
+    end;
+    raise Exception.CreateFmt('No free TCP port pair for SimH found in %d..%d',
+            [SIMH_REMOTE_PORT_BASE,
+             SIMH_CONSOLE_PORT_BASE + 2*(SIMH_PORT_PROBE_TRIES-1)]) ;
+  end{ "procedure TSerialIoHub.FindFreeSimhPorts" } ;
+
 // loads the user-selected .ini, strips any pre-existing "set remote"/
 // "set console" lines (so pdp11gui's own directives always win,
 // regardless of what the source file already contains), appends
@@ -597,8 +663,8 @@ function TSerialIoHub.GenerateSimhIniFile(userIniFilename, tmpdir: string): stri
         dst.Add(line) ;
       end;
       dst.Add('set remote connections=1') ;
-      dst.Add(Format('set remote telnet=%d', [SIMH_REMOTE_PORT])) ;
-      dst.Add(Format('set console telnet=%d', [SIMH_CONSOLE_PORT])) ;
+      dst.Add(Format('set remote telnet=%d', [SimhRemotePort])) ;
+      dst.Add(Format('set console telnet=%d', [SimhConsolePort])) ;
       dst.Add('set remote master') ;
       dst.SaveToFile(result) ;
     finally
@@ -630,6 +696,7 @@ procedure TSerialIoHub.Physical_InitForSimhProcess(userIniFilename: string) ;
       raise Exception.Create('"pdp11" (open-simh) not found on PATH. Install it and make sure it is on the PATH.') ;
 
     tmpdir := GetTempDirWithFallback ;
+    FindFreeSimhPorts ; // must run before the .ini is generated from them
     SimhTempIniFilename := GenerateSimhIniFile(userIniFilename, tmpdir) ;
 
     Log('Starting SimH: %s %s', [simhExePath, SimhTempIniFilename]) ;
@@ -646,18 +713,18 @@ procedure TSerialIoHub.Physical_InitForSimhProcess(userIniFilename: string) ;
     TelnetConnection.OnSessionConnected := TelnetConnect ;
     TelnetConnection.OnDisplay := TelnetDisplay ;
 
-    if not TnCnxConnectWithRetry(TelnetConnection, 'localhost', SIMH_REMOTE_PORT,
+    if not TnCnxConnectWithRetry(TelnetConnection, 'localhost', SimhRemotePort,
             SIMH_CONNECT_TIMEOUT_MS, SimhProcessAlive) then begin
       TerminateSimhProcess ;
       raise Exception.CreateFmt('SimH did not open the remote console on localhost:%d within %d ms',
-              [SIMH_REMOTE_PORT, SIMH_CONNECT_TIMEOUT_MS]) ;
+              [SimhRemotePort, SIMH_CONNECT_TIMEOUT_MS]) ;
     end ;
     // SimH direct is always local - unlike Physical_InitForTelnet, no
     // GetIPAddress check is needed.
     isLocalTelnet := true ;
 
     if SimhConsole <> nil then
-      SimhConsole.ConnectTo('localhost', SIMH_CONSOLE_PORT, SimhProcessAlive) ;
+      SimhConsole.ConnectTo('localhost', SimhConsolePort, SimhProcessAlive) ;
 
     Physical_Poll_Disable := 0 ;
   end{ "procedure TSerialIoHub.Physical_InitForSimhProcess" } ;
@@ -851,7 +918,7 @@ function TSerialIoHub.Physical_getInfoString: string ;
         result := Format('%s:%s', [TelnetConnection.host, TelnetConnection.port]) ;
       connectionSimhProcess:
         result := Format('SimH direct: %s (localhost:%d/%d)',
-                [SimhTempIniFilename, SIMH_REMOTE_PORT, SIMH_CONSOLE_PORT]) ;
+                [SimhTempIniFilename, SimhRemotePort, SimhConsolePort]) ;
     end;
   end; 
 

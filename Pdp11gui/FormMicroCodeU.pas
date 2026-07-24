@@ -77,6 +77,7 @@ implementation
 
 uses
   AuxU,
+  FileDialogsU,
   RegistryU,
   FormMainU ;
 
@@ -124,9 +125,8 @@ procedure TFormMicroCode.MicroCodeLoadButtonClick(Sender: TObject);
   var curpc: dword ;
     fpath, fname, fext: string ;
   begin
-    OpenDialog1.InitialDir := ExtractFilePath(Pdp1144MicroCode.listingfilenamepattern) ;
-    if OpenDialog1.Execute then begin
-      // Zahlen hinten am Dateinamen durch Wildcard ersetzen
+    if ExecuteFileDialog(OpenDialog1) then begin
+      // replace the digits at the end of the file name with a wildcard
       fpath := ExtractFilePath(OpenDialog1.Filename) ;
       fname := ExtractFileName(OpenDialog1.Filename) ;
       fext := ExtractFileExt(OpenDialog1.Filename) ;
@@ -136,7 +136,7 @@ procedure TFormMicroCode.MicroCodeLoadButtonClick(Sender: TObject);
       fname := fpath + '\' + fname + '*' + fext ;
       Load(fname) ;
     end;
-    // Files (neu) einlesen, aber position erhalten
+    // read the files (again), but keep the position
     if CurMicroInstruction <> nil then
       curpc := CurMicroInstruction.addr
     else curpc := 0 ;

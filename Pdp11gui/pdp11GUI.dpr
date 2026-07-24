@@ -74,12 +74,14 @@ uses
   ConsolePDP1144v340cU in 'ConsolePDP1144v340cU.pas',
   ConsolePDP11ODTK1630U in 'ConsolePDP11ODTK1630U.pas',
   ConsolePDP11ODTK1630FakeU in 'ConsolePDP11ODTK1630FakeU.pas',
-  FakePDP11ODTK1630U in 'FakePDP11ODTK1630U.pas';
+  FakePDP11ODTK1630U in 'FakePDP11ODTK1630U.pas',
+  FileDialogsU in 'FileDialogsU.pas';
 
 {$R *.res}
 
 begin
   Randomize ;
+  InitFileDialogs ; // must happen before the widgetset is created
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
   Application.CreateForm(TFormMain, FormMain);

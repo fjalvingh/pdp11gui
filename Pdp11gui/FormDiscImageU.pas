@@ -285,9 +285,10 @@ implementation
 
 {$R *.dfm}
 
-uses 
-  JH_Utilities, 
-  RegistryU, 
+uses
+  JH_Utilities,
+  FileDialogsU,
+  RegistryU,
   OctalConst, 
   FormMainU, 
   FormExecuteU, 
@@ -1889,13 +1890,11 @@ procedure TFormDiscImage.LoadImageBuffer(filename: string; overlay: boolean = fa
 procedure TFormDiscImage.LoadImageFileButtonClick(Sender: TObject); 
   var fname: string ; 
   begin 
-    // definiert den Filenamen
-    fname := TheRegistry.Load(RegistryKeyDiskImageFilename, '') ; 
-    OpenDiskImageDialog.filename := fname ; 
-    OpenDiskImageDialog.InitialDir := ExtractFileDir(fname) ; 
-    if OpenDiskImageDialog.Execute then begin 
+    // defines the file name
+    fname := TheRegistry.Load(RegistryKeyDiskImageFilename, '') ;
+    if ExecuteFileDialog(OpenDiskImageDialog, fname) then begin
       if not FileExists(OpenDiskImageDialog.filename) then begin 
-        // erzeugen durch schreiben
+        // create it by writing
         ClearImageBuffer ; 
         // extension: BMP -> save as Bitmap
         SaveImageBuffer(OpenDiskImageDialog.filename) 
@@ -1920,12 +1919,10 @@ procedure TFormDiscImage.MediaSerialNumberEditExit(Sender: TObject);
 procedure TFormDiscImage.OverlayFileButtonClick(Sender: TObject); 
   var fname: string ; 
   begin 
-    // overlay übernimmt path und extension vom image file
-    fname := TheRegistry.Load(RegistryKeyDiskImageFilename, '') ; 
-    OpenDiskImageOverlayDialog.InitialDir := ExtractFileDir(fname) ; 
-    OpenDiskImageOverlayDialog.filename := '' ; 
-    OpenDiskImageOverlayDialog.DefaultExt := ExtractFileExt(fname) ; 
-    if OpenDiskImageOverlayDialog.Execute then begin 
+    // the overlay takes the extension from the image file
+    fname := TheRegistry.Load(RegistryKeyDiskImageFilename, '') ;
+    OpenDiskImageOverlayDialog.DefaultExt := ExtractFileExt(fname) ;
+    if ExecuteFileDialog(OpenDiskImageOverlayDialog) then begin
       LoadImageBuffer(OpenDiskImageOverlayDialog.filename, {overlay=} true) ; 
     end; 
   end; 
@@ -1940,11 +1937,8 @@ procedure TFormDiscImage.ProtectVendorAreaCheckBoxClick(Sender: TObject);
 procedure TFormDiscImage.SaveImageButtonClick(Sender: TObject); 
   var fname: string ; 
   begin 
-    fname := TheRegistry.Load(RegistryKeyDiskImageFilename, '') ; 
-    SaveDiskImageDialog.InitialDir := ExtractFileDir(fname) ; 
-    SaveDiskImageDialog.filename := fname ; 
-
-    if SaveDiskImageDialog.Execute then begin 
+    fname := TheRegistry.Load(RegistryKeyDiskImageFilename, '') ;
+    if ExecuteFileDialog(SaveDiskImageDialog, fname) then begin
       SaveImageBuffer(SaveDiskImageDialog.filename) ; 
       TheRegistry.Save(RegistryKeyDiskImageFilename, SaveDiskImageDialog.filename) ; 
     end; 
@@ -1954,11 +1948,8 @@ procedure TFormDiscImage.SaveImageButtonClick(Sender: TObject);
 procedure TFormDiscImage.SaveMetaInfoButtonClick(Sender: TObject); 
   var fname: string ; 
   begin 
-    fname := TheRegistry.Load(RegistryKeyDiskMetaInfoFilename, '') ; 
-    SaveDiskMetaInfoDialog.InitialDir := ExtractFilePath(fname) ; 
-    SaveDiskMetaInfoDialog.filename := fname ; 
-
-    if SaveDiskMetaInfoDialog.Execute then begin
+    fname := TheRegistry.Load(RegistryKeyDiskMetaInfoFilename, '') ;
+    if ExecuteFileDialog(SaveDiskMetaInfoDialog, fname) then begin
       BadBlockList.NextBlockToProcess := StrToInt(BlockNrEdit.Text) ;
       BadBlockList.SaveToFile(SaveDiskMetaInfoDialog.filename) ;
       TheRegistry.Save(RegistryKeyDiskMetaInfoFilename, SaveDiskMetaInfoDialog.filename) ; 

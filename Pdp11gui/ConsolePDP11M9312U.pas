@@ -315,10 +315,12 @@ procedure TConsolePDP11M9312.Resync ;
         if WaitForAnswer(phPrompt, CommandTimeoutMillis) = nil then begin
           // 2tes CR muss Anzeige bringen
           WriteToPDP(CHAR_CR) ;
-          CheckPrompt('Could not wake up PDP-11 M9312 console emulator') ;
+          // use getName, not a literal: TConsolePDP11M9301 (and the fakes)
+          // inherit this Resync and must not report themselves as M9312
+          CheckPrompt('Could not wake up ' + getName) ;
         end;
       end;
-      Log('PDP-11 M9301/M9312 console emulator ready and prompting "%s"', [Prompt]) ;
+      Log('%s ready and prompting "%s"', [getName, Prompt]) ;
     finally
       EndCriticalSection('Resync') ;
     end{ "try" } ;

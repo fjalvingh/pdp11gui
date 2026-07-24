@@ -103,6 +103,7 @@ implementation
 
 uses
   AuxU,
+  FileDialogsU,
   RegistryU,
   FormMainU;
 
@@ -306,19 +307,15 @@ procedure TFormMemoryLoader.BrowseFile1ButtonClick(Sender: TObject);
     i: integer ;
     loaderfile : TMemoryloaderFile ;
   begin
-    // wird für alle Browsebuttons aufgerufen
-    // VB: 'Loader" schon instanziiert.
-    // finde den file, für den das browsen gilt
-    // Sender als browsebutton eingetragen
+    // called for all browse buttons
+    // precondition: 'Loader' already instantiated.
+    // find the file the browsing is meant for:
+    // Sender is the browse button
     for i := 0 to curLoader.Files.Count - 1 do begin
       loaderfile := curLoader.getFile(i) ;
       if loaderfile.control_filenamebrowse = Sender then begin
         OpenDialog1.Title := 'Select a ' + loaderfile.prompt ;
-        OpenDialog1.InitialDir := ExtractFilePath(loaderfile.filename) ;
-        if not DirectoryExists(OpenDialog1.InitialDir) then
-          OpenDialog1.InitialDir := FormMain.DefaultDataDirectory ;
-
-        if OpenDialog1.Execute then begin
+        if ExecuteFileDialog(OpenDialog1) then begin
           loaderfile.filename := OpenDialog1.filename ;
           TheRegistry.Save(loaderfile.regkey, loaderfile.filename) ;
         end;

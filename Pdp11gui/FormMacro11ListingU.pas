@@ -113,6 +113,7 @@ implementation
 {$R *.dfm}
 uses
   AuxU,
+  FileDialogsU,
   RegistryU,
   FormMainU ; // wg. FormMacro11Code
 
@@ -566,11 +567,7 @@ procedure TFormMacro11Listing.ShowCodeMemFormButtonClick(Sender: TObject);
 
 procedure TFormMacro11Listing.LoadButtonClick(Sender: TObject);
   begin
-    if ListingFilename = '' then
-      OpenDialog1.InitialDir := FormMain.DefaultDataDirectory
-    else OpenDialog1.InitialDir := ExtractFilePath(ListingFilename) ;
-
-    if OpenDialog1.Execute then begin
+    if ExecuteFileDialog(OpenDialog1) then begin
       ListingFilename := OpenDialog1.FileName ;
 
       //Editor.BeginUpdate ; // supress events while loading

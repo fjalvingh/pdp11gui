@@ -75,6 +75,7 @@ implementation
 
 uses
   AuxU,
+  FileDialogsU,
   OctalConst,
   FormLogU, FormMainU;//, SerialIoHubU;
 
@@ -143,7 +144,7 @@ procedure TFormExecuteBlinkenlight.NewPgmButtonClick(Sender: TObject);
 
 procedure TFormExecuteBlinkenlight.SaveButtonClick(Sender: TObject);
 begin
- if SaveDialog1.Execute then
+ if ExecuteFileDialog(SaveDialog1) then
     BlinkenLightInstructionMemo.Lines.SaveToFile(SaveDialog1.FileName);
 end;
 

@@ -169,6 +169,7 @@ TSelectedTargetParams = record
     private
       { Private-Deklarationen }
       loadingConfigurationEditControlsFromRegistry: boolean ;
+      fHasStoredSelection: boolean ;
 
 
       procedure createConfigurations(showFakes: boolean) ;
@@ -187,6 +188,10 @@ TSelectedTargetParams = record
       function getConfiguration(idx: integer): TFormSettingsConfiguration ;
       function selectedConfiguration: TFormSettingsConfiguration ;
 
+      // false: the user never picked a PDP-11 configuration, selectedConfiguration
+      // is only an arbitrary fallback and must not be connected to automatically
+      property hasStoredSelection: boolean read fHasStoredSelection ;
+
 
     end{ "TYPE TFormSettings = class(TFormChild)" } ;
 
@@ -198,6 +203,7 @@ implementation
 {$R *.dfm}
 
 uses
+  FileDialogsU,
   RegistryU ;
 
 procedure TFormSettings.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -558,6 +564,11 @@ procedure TFormSettings.createConfigurations(showFakes: boolean);
 
     TheRegistry.Load(Pdp11SelectComboBox) ;
     Pdp11SelectComboBox.DropDownCount := Pdp11SelectComboBox.Items.Count ;
+    // Remember whether this is a real, stored choice: only then may the
+    // application connect to it on startup without asking. A forced index 0
+    // is just "the first entry in the list" and connecting to it produces a
+    // confusing console error for a machine the user never selected.
+    fHasStoredSelection := TheRegistry.wasFound and (Pdp11SelectComboBox.ItemIndex >= 0) ;
     if Pdp11SelectComboBox.ItemIndex < 0 then Pdp11SelectComboBox.ItemIndex := 0 ;
 
   end { "procedure TFormSettings.createConfigurations" } ;
@@ -783,6 +794,7 @@ procedure TFormSettings.Pdp11SelectComboBoxChange(Sender: TObject);
     loadConfigurationEditControlsFromRegistry ;
     UpdateProperties ;
     TheRegistry.Save(Pdp11SelectComboBox) ;
+    fHasStoredSelection := true ; // now it is the user's own choice
 (*
     if loadingConfigurationEditControlsFromRegistry then Exit ;
 //    loadConfigurationEditControlsFromRegistry ;
@@ -843,10 +855,8 @@ procedure TFormSettings.SimhIniFileEditChange(Sender: TObject);
 
 procedure TFormSettings.SimhIniFileButtonClick(Sender: TObject);
   begin
-    if Trim(SimhIniFileEdit.text) <> '' then
-      SimhIniFileOpenDialog.InitialDir := ExtractFilePath(SimhIniFileEdit.text) ;
     SimhIniFileOpenDialog.Title := 'Choose a SimH .ini script file' ;
-    if SimhIniFileOpenDialog.Execute then begin
+    if ExecuteFileDialog(SimhIniFileOpenDialog) then begin
       SimhIniFileEdit.text := SimhIniFileOpenDialog.Filename ;
       UpdateProperties ;
       saveConfigurationEditControlsToRegistry ;

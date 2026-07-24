@@ -67,6 +67,8 @@ type
       procedure SaveToFile ;
       procedure LoadFromFile ;
 
+      procedure Flush ; // write pending changes to the backing store
+
       procedure Save(parmname:string ; parmval:string) ; overload ;
       function Load(parmname:string; defaultval: string = '') : string ; overload ;
 
@@ -1306,12 +1308,32 @@ destructor TJH_Registry.Destroy ;
     inherited ;
   end ;
 
+// Write pending changes through to the backing store.
+// On non-Windows platforms TRegistry is backed by an XML file with
+// AutoFlush disabled, so every Save() so far has only updated an in-memory
+// tree: without this the settings are silently lost on exit. CloseKey() is
+// what triggers TXMLRegistry.Flush; the next Save()/Load() re-opens the key
+// anyway, so closing here costs nothing.
+procedure TJH_Registry.Flush ;
+  begin
+    if fReadOnly then Exit ;
+    try
+      CloseKey ;
+    except
+      // a failed flush must never take the application down
+    end ;
+  end { "procedure TJH_Registry.Flush" } ;
+
 // periodisch speichern, wenn Filename gesetzt
 procedure TJH_Registry.autoSaveToFile(Sender: TObject) ;
   begin
-    if fChanged and (fFilename <> '') then begin
+    if not fChanged then Exit ;
+    fChanged := false ; // selbst wenn schief geht: nicht nochmal probieren
+    // always persist to the platform's backing store...
+    Flush ;
+    // ...and additionally to an explicit export file, if one was configured
+    if fFilename <> '' then begin
       try
-        fChanged := false ; // selbst wenn schief geht: nicht nochmal probieren
         SaveToFile ;
       except
       end ;

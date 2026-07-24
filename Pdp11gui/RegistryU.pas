@@ -24,7 +24,7 @@ unit RegistryU;
 
 interface
 
-uses JH_Utilities ;
+uses SysUtils, JH_Utilities ;
 
 var
   TheRegistry : TJH_Registry ;
@@ -35,5 +35,10 @@ implementation
 initialization
   TheRegistry := TJH_Registry.Create ;
   TheRegistry.Key := '\Software\Joerg Hoppe\PDP11GUI\'
+
+finalization
+  // Without this the registry object is never destroyed, so its backing
+  // store is never flushed and no setting ever survives a restart.
+  FreeAndNil(TheRegistry) ;
 
 end{ "unit RegistryU" } .

@@ -290,6 +290,7 @@ implementation
 
 uses
   AuxU,
+  FileDialogsU,
   OCtalConst,
   LCLIntf, // fuer URL-Start (OpenURL)
   JH_Utilities,
@@ -557,11 +558,27 @@ procedure TFormMain.StartupTimerTimer(Sender: TObject);
       TheRegistry.Save(self) ;
 
       FormTerminal.Hello ;
-      // Settings übernehmen. Vielleicht ist in settings noch keine
-      // ausgewählt: zwinge user dazu!
-      try
-        RenewPDP11ConsoleAndConnection(FormSettings.SelectedConfiguration) ;
-      except
+      // Apply the settings. If none were ever selected, force the user to
+      // choose: connecting to the fallback configuration would try to talk to
+      // an arbitrary machine on an unconfigured port and fail with a console
+      // error about hardware the user never asked for.
+      if FormSettings.hasStoredSelection then
+        try
+          RenewPDP11ConsoleAndConnection(FormSettings.SelectedConfiguration) ;
+        except
+          // Report why before offering the settings: the cause is often not a
+          // wrong setting at all (SimH not on PATH, a port still in TIME_WAIT,
+          // hardware not powered up), and silently showing the settings
+          // dialog makes every such failure look like a configuration error.
+          on e: Exception do begin
+            FormLog.Log(e.Message) ;
+            MessageDlg('Could not connect to the configured PDP-11:' + LineEnding
+                    + LineEnding + e.Message, mtError, [mbOk], 0) ;
+            FormSettings.ShowModal ;
+            ApplySettings ;
+          end ;
+        end
+      else begin
         FormSettings.ShowModal ;
         ApplySettings ;
       end ;
@@ -672,12 +689,9 @@ function  TFormMain.isMDIChildForm(childform: TFormChild): boolean ;
 
 
 procedure TFormMain.Loadmachinedescription1Click(Sender: TObject);
-  var fname:string ;
   begin
-    fname := TheRegistry.Load('MachineDescriptionFile', DefaultDataDirectory+'\pdp11.ini') ;
-    OpenDialog1.InitialDir := ExtractFilePath(fname) ;
     OpenDialog1.Title := 'Choose a machine description file' ;
-    if OpenDialog1.Execute then begin
+    if ExecuteFileDialog(OpenDialog1) then begin
       UnloadMachineDescription ;
       LoadMachineDescription(OpenDialog1.Filename);
       TheRegistry.Save('MachineDescriptionFile', OpenDialog1.Filename) ;
@@ -1050,6 +1064,10 @@ procedure TFormMain.setChildFormVisibility(childform: TFormChild; isVisible: boo
 procedure TFormMain.ApplySettings ;
   begin
 //    with FormSettings do begin
+    // Nothing to apply while the user has not picked a configuration - the
+    // fallback selection is not a choice, and connecting to it only produces
+    // a misleading console error.
+    if not FormSettings.hasStoredSelection then Exit ;
     // ggf. geändertes consolobject neu erzeugen
     RenewPDP11ConsoleAndConnection(FormSettings.SelectedConfiguration);
 //    end;

@@ -42,6 +42,7 @@ type
     public
       constructor Create(memorycellgroups: TMemoryCellGroups;
               aMonitor_entryaddress: TMemoryAddress) ;
+      function getName: string ; override ;
     end;
 
 implementation
@@ -54,6 +55,11 @@ constructor TConsolePDP11M9301.Create(memorycellgroups: TMemoryCellGroups;
   begin
     inherited Create(memorycellgroups, aMonitor_entryaddress) ;
     Prompt := '$' ; // M9312 default is '@'
+  end;
+
+function TConsolePDP11M9301.getName: string ;
+  begin
+    result := 'PDP-11 M9301 console' ;
   end;
 
 end{ "unit ConsolePDP11M9301U" } .
