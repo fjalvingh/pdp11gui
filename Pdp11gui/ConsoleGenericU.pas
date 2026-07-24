@@ -473,7 +473,7 @@ function TConsoleGeneric.WaitForAnswer(phrasetype: TConsoleAnswerPhraseType; wai
 // warte sonst.
 procedure TConsoleGeneric.CheckPrompt(errinfo: string) ;
   var s: string ;
-    i: integer ;
+    i, tailstart: integer ;
     answerline: TConsoleAnswerPhrase ;
   begin
     if WaitForAnswer(phPrompt, CommandTimeoutMillis) = nil then begin
@@ -489,7 +489,14 @@ procedure TConsoleGeneric.CheckPrompt(errinfo: string) ;
       // "something arrived but wasn't recognized as the prompt" (a parsing
       // bug) - temporary, pending root-causing the "No console prompt on
       // the first Deposit of a freshly opened window" report.
-      OutputDebugString('  unconsumed raw input: "%s"', [String2PrintableText(RcvScanner.CurInputLine, true)]) ;
+      // String2PrintableText() concatenates one substring per input
+      // character (O(n^2)) - cap what we feed it, an unconsumed buffer
+      // large enough for that to matter is itself the interesting fact.
+      tailstart := length(RcvScanner.CurInputLine) - 499 ;
+      if tailstart < 1 then tailstart := 1 ;
+      OutputDebugString('  unconsumed raw input (%d bytes, last 500 shown): "%s"',
+              [length(RcvScanner.CurInputLine),
+              String2PrintableText(Copy(RcvScanner.CurInputLine, tailstart, 500), true)]) ;
       OutputDebugString('  %d answerline(s) since last Clear:', [AnswerLines.Count]) ;
       for i := 0 to AnswerLines.Count - 1 do begin
         answerline := AnswerLines.Items[i] as TConsoleAnswerPhrase ;

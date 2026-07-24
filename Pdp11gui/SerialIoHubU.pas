@@ -66,7 +66,8 @@ uses
   AddressU,
   FormLogU,
   AppControlU,
-  FormSimhConsoleU
+  FormSimhConsoleU,
+  FormSimhRemoteLogU
   ;
 
 
@@ -154,6 +155,7 @@ TConnectionSettingsSerial = class(TConnectionSettings)
 
     public
       SimhConsole: TFormSimhConsole ; // 2nd MDI window for the emulated PDP-11's own console; assigned once from FormMainU.FormCreate, like "Terminal" below
+      SimhRemoteLog: TFormSimhRemoteLog ; // optional transcript of SimH remote-console traffic; assigned once from FormMainU.FormCreate, same pattern. Nil-safe: ConsolePDP11SimHU only logs to it when assigned.
 
       connectionType: TSerialIoHubPhysicalConnectionType ; // Mit was verbinden?
       // wenn intern: IMMER gefakte PDP-11/44!
@@ -306,6 +308,7 @@ constructor TSerialIoHub.Create ;
 
     SimhAppControl := TAppControl.Create ;
     SimhConsole := nil ; // assigned later from FormMainU.FormCreate
+    SimhRemoteLog := nil ; // assigned later from FormMainU.FormCreate
 
     Physical_PollTimer := TTimer.Create(nil) ;
     Physical_PollTimer.Interval := 10 ; 

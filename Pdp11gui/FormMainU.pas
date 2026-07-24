@@ -112,6 +112,7 @@ uses
   FormSettingsU,
   FormTerminalU,
   FormSimhConsoleU,
+  FormSimhRemoteLogU,
   FormMacro11SourceU,
   FormMacro11ListingU,
   FormMacro11CodeU,
@@ -144,6 +145,7 @@ type
       View1: TMenuItem;
       Terminal1: TMenuItem;
       SimhConsole1: TMenuItem;
+      SimhRemoteConsoleLog1: TMenuItem;
       Macro11Source1: TMenuItem;
       Macro11Listing1: TMenuItem;
       Log1: TMenuItem;
@@ -239,6 +241,7 @@ type
       // FormSettings : TFormSettings ; // nein! ist modal
       FormTerminal: TFormTerminal ;
       FormSimhConsole: TFormSimhConsole ; // emulated PDP-11's own console, for "SimH direct"
+      FormSimhRemoteLog: TFormSimhRemoteLog ; // transcript of SimH remote-console traffic (optional, always capturing)
       FormMem1, FormMem2,FormMem3, FormMem4 : TFormMemoryTable ;
       FormMemoryLoader : TFormMemoryLoader ;
       FormMemoryDumper : TFormMemoryDumper ;
@@ -398,6 +401,9 @@ procedure TFormMain.FormCreate(Sender: TObject);
 
     FormSimhConsole := TFormSimhConsole.Create(self) ;
     SerialIoHub.SimhConsole := FormSimhConsole ; // 2nd MDI window, only used by "SimH direct"
+
+    FormSimhRemoteLog := TFormSimhRemoteLog.Create(self) ;
+    SerialIoHub.SimhRemoteLog := FormSimhRemoteLog ; // optional transcript of the "sim>" remote-console protocol
 
     FormMem1 := TFormMemoryTable.Create(self) ;
     FormMem1.Caption := 'Mem1' ;

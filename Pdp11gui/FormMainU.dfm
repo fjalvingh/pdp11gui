@@ -63,6 +63,10 @@ object FormMain: TFormMain
         Caption = 'SimH Console'
         OnClick = FormEnableMenuItemClick
       end
+      object SimhRemoteConsoleLog1: TMenuItem
+        Caption = 'SimH Remote Console Log'
+        OnClick = FormEnableMenuItemClick
+      end
       object N8: TMenuItem
         Caption = '-'
       end

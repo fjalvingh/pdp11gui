@@ -39,6 +39,7 @@ interface
 
 uses
   Classes, SysUtils,
+  ExtCtrls,
   ConsoleGenericU,
   FormSettingsU,
   FormTerminalU,
@@ -70,6 +71,13 @@ const
   // past 3000ms. Later clicks on the same window, with nothing left to
   // render, don't hit this. 3000ms wasn't quite enough margin; give it more.
   SIMH_CMD_TIMEOUT = 8000 ; // telnet verbindung ist lahm: warte lange!
+  // HaltCpu() waits for this after sending ^E - but doHalt() (FormExecuteU)
+  // calls HaltCpu() unconditionally, even when the CPU is already stopped
+  // (its own comment calls this "improvising"), in which case ^E gets no
+  // reply at all, ever. Waiting the full SIMH_CMD_TIMEOUT for that common,
+  // expected case would freeze the UI for 8s before the "already halted"
+  // message below even appears - keep this one short.
+  SIMH_HALT_TIMEOUT = 1000 ;
   SIMH_PROMPT = 'sim> ' ;
 
 type
@@ -82,13 +90,32 @@ type
       function NxtSym(raiseIncompleteOnEof: boolean = true): string ; override ;
     end;
 
-
+  // Explicit CPU run-state, derived only from confirmed events seen on the
+  // remote console (see the transition rules in DecodeNextAnswerPhrase) -
+  // not assumed from whatever a button click was supposed to cause. Local
+  // to this unit: SimH is the only console type where the remote protocol
+  // itself can tell us this.
+  TSimhCpuState = (scsUnknown, scsHalted, scsRunning) ;
 
   TConsolePDP11SimH = class(TConsoleGeneric)
     private
 
       examine_lastaddr: TMemoryAddress ; //
       deposit_lastaddr: TMemoryAddress ; //
+
+      CpuState: TSimhCpuState ;
+      // Set by DecodeNextAnswerPhrase when it confirms the CPU stopped
+      // without an explicit halt message (see the comment there).
+      // Consumed and cleared by SilentHaltTimerTimer.
+      SilentHaltPending: boolean ;
+      // Resolves SilentHaltPending asynchronously, entirely outside of
+      // whatever command triggered the run (ResetMachineAndStartCpu is
+      // fire-and-forget and must stay that way - blocking it on a
+      // synchronous wait here previously froze the UI for however long
+      // confirmation took, sometimes several seconds). Own timer, not a
+      // hook into the base class's private, non-virtual MonitorTimer.
+      SilentHaltTimer: TTimer ;
+      procedure SilentHaltTimerTimer(Sender: TObject) ;
 
       // Like CheckPrompt(), but also detects commands SimH's remote console
       // silently rejects (see comment on the implementation below).
@@ -112,6 +139,14 @@ type
       procedure Deposit(addr: TMemoryAddress ; val: dword) ; overload ; override ;
       function Examine(addr: TMemoryAddress): dword ; overload ;override ;
       procedure Examine(mcg: TMemoryCellGroup ; unknown_only: boolean; abortable:boolean) ;overload ;override ;
+
+      // Not "override" - the base TConsoleGeneric.WriteToPDP is a plain
+      // (non-virtual) method. This same-named declaration hides it for all
+      // of THIS class's own (always unqualified) calls to WriteToPDP(...),
+      // logging to Connection.SimhRemoteLog (if assigned) before calling
+      // "inherited" to actually send. No other console type declares this,
+      // so nothing else is affected.
+      procedure WriteToPDP(buff: string) ;
 
       function DecodeNextAnswerPhrase: boolean ; override ;
       procedure ResetMachine(newpc_v: TMemoryAddress) ; override ; // Maschine reset
@@ -229,19 +264,59 @@ function regname2addr(regname:string): TMemoryAddress ;
 
 
 
+function SimhCpuStateName(s: TSimhCpuState): string ;
+  begin
+    case s of
+      scsUnknown: result := 'Unknown' ;
+      scsHalted: result := 'Halted' ;
+      scsRunning: result := 'Running' ;
+    end;
+  end;
+
 constructor TConsolePDP11SimH.Create(memorycellgroups: TMemoryCellGroups) ;
   begin
     inherited Create ;
     CommandTimeoutMillis := SIMH_CMD_TIMEOUT ;
     MMU := TPdp11MMu.Create(memorycellgroups) ;
     RcvScanner := TConsoleSimHScanner.Create ;
+    CpuState := scsUnknown ;
+    SilentHaltPending := false ;
+    SilentHaltTimer := TTimer.Create(nil) ;
+    SilentHaltTimer.Interval := 200 ;
+    SilentHaltTimer.OnTimer := SilentHaltTimerTimer ;
+    SilentHaltTimer.Enabled := true ;
   end;
 
 destructor TConsolePDP11SimH.Destroy ;
   begin
+    SilentHaltTimer.Free ;
     RcvScanner.Free ;
     inherited ;
   end;
+
+// Runs independently of whatever triggered the run - see the comment on
+// SilentHaltTimer. Skips while some other console operation is already
+// mid-flight (same guard MonitorTimerCallback uses), so it never competes
+// with, eg. an in-progress Deposit/Examine/HaltCpu.
+procedure TConsolePDP11SimH.SilentHaltTimerTimer(Sender: TObject) ;
+  var pcaddr: TMemoryAddress ;
+  begin
+    if not SilentHaltPending then Exit ;
+    if InCriticalSection then Exit ;
+    try
+      BeginCriticalSection ;
+      if not SilentHaltPending then Exit ; // re-check now that we hold the section
+      SilentHaltPending := false ;
+      Log('SilentHaltTimerTimer: CPU halted with no explicit stop message (eg. no program loaded) - resolving PC') ;
+      pcaddr.mat := matPhysical22 ;
+      pcaddr.val := _17777707 ;
+      onExecutionStopPcVal.mat := matVirtual ;
+      onExecutionStopPcVal.val := Examine(pcaddr) ;
+      onExecutionStopDetected := true ;
+    finally
+      EndCriticalSection ;
+    end;
+  end{ "procedure TConsolePDP11SimH.SilentHaltTimerTimer" } ;
 
 
 function TConsolePDP11SimH.getName: string ;
@@ -283,15 +358,25 @@ function TConsolePDP11SimH.getPhysicalMemoryAddressType: TMemoryAddressType ;
   end;
 
 
+// Logs to the optional "SimH Remote Console Log" window (see comment on
+// the interface declaration), then sends exactly as the base class would.
+procedure TConsolePDP11SimH.WriteToPDP(buff: string) ;
+  begin
+    if Connection.SimhRemoteLog <> nil then
+      Connection.SimhRemoteLog.AppendLine('> ' + String2PrintableText(buff, true)) ;
+    inherited WriteToPDP(buff) ;
+  end;
+
+
 // Aus SerialRcvDataBuffer die Antworten extrahieren
 // und in die Colection AnswerLines schreiben
 // erkennt im output von SimH die nächste Antwort phrase
 // wird vom "onRcv"-Even aufgerufen - letztlich von SerialIoHub-PollTimer
 function TConsolePDP11SimH.DecodeNextAnswerPhrase: boolean ;
   var
-    curline: string ;
+    curline, leadingtext: string ;
     i: integer ;
-    eoln: boolean ;
+    eoln, promptfound: boolean ;
     s: string ;
     haltanswerline, curanswerline: TConsoleAnswerPhrase ;
   begin
@@ -307,20 +392,41 @@ function TConsolePDP11SimH.DecodeNextAnswerPhrase: boolean ;
     end;
     RcvScanner.CurInputLine := Copy(RcvScanner.CurInputLine, i, maxint) ;
 
-    // Scanne bis Zeilenende oder Prompt
+    // Scanne bis Zeilenende oder Prompt. SimH sometimes sends text with no
+    // trailing CRLF before the next "sim> " (eg. "Simulator Running..." -
+    // see _sim_rem_message()/scp.c), so the prompt can arrive glued onto
+    // the end of an otherwise-unterminated line instead of starting one.
+    // Stop as soon as curline ENDS WITH the prompt (not just equals it),
+    // so that glued-on case is still recognized instead of being scanned
+    // past forever (the loop would otherwise never see a CR/LF to stop on).
     i := 1 ;
     curline := '' ;
+    promptfound := false ;
     while (i <= length(RcvScanner.CurInputLine))
-            and (curline <> SIMH_PROMPT)
+            and not promptfound
             and not CharInSet(RcvScanner.CurInputLine[i],[CHAR_SIMH_CR, CHAR_SIMH_LF])  do begin
       curline := curline + RcvScanner.CurInputLine[i] ;
       inc(i) ;
+      promptfound := (length(curline) >= length(SIMH_PROMPT))
+              and (Copy(curline, length(curline)-length(SIMH_PROMPT)+1, length(SIMH_PROMPT)) = SIMH_PROMPT) ;
     end ;
     eoln := (i <= length(RcvScanner.CurInputLine)) and CharInSet(RcvScanner.CurInputLine[i], [CHAR_SIMH_CR, CHAR_SIMH_LF]) ; // vorzeitiger Stop, weil eoln getroffen
 
 
     curanswerline := nil ;
     // in curline steht jetzt die erste unverarbeitete Ausgabezeile von SimH
+    if promptfound and (curline <> SIMH_PROMPT) then begin
+      // Prompt glued onto preceding text with no CRLF between them - split
+      // off the leading text as its own otherline phrase now, and leave
+      // the prompt itself in CurInputLine so the next call sees it as a
+      // clean, standalone "curline = SIMH_PROMPT" match below.
+      leadingtext := Copy(curline, 1, length(curline) - length(SIMH_PROMPT)) ;
+      curanswerline := Answerlines.Add as TConsoleAnswerPhrase ;
+      curanswerline.phrasetype := phOtherLine ;
+      curanswerline.rawtext := leadingtext ;
+      curanswerline.otherline := leadingtext ;
+      curline := leadingtext ; // so only the leading part gets consumed below
+    end else
     if curline = SIMH_PROMPT then begin
       // merke die Zeile vor der Prompt
       if Answerlines.Count > 0 then
@@ -341,6 +447,19 @@ function TConsolePDP11SimH.DecodeNextAnswerPhrase: boolean ;
       end else begin
         onExecutionStopPcVal.val := MEMORYCELL_ILLEGALVAL ;
         onExecutionStopDetected := false ;
+        // No explicit halt message preceded this prompt. If we were
+        // confirmed Running right up until now, this prompt is the ONLY
+        // sign we'll ever get that the CPU silently stopped (eg. it
+        // started on effectively empty/zeroed memory, executed the
+        // implicit HALT at address 0, and nothing else). Flag it for
+        // ResetMachineAndStartCpu to resolve the real PC and notify the
+        // UI - but only based on this confirmed event, never by guessing
+        // from a timeout (a genuinely still-running program never sends a
+        // prompt at all, so this flag simply never gets set for it -
+        // sending anything ourselves to check would incorrectly interrupt
+        // it, which is exactly the bug this replaces).
+        if CpuState = scsRunning then
+          SilentHaltPending := true ;
       end;
     end { "if curline = SIMH_PROMPT" } ;
 
@@ -420,6 +539,19 @@ function TConsolePDP11SimH.DecodeNextAnswerPhrase: boolean ;
     end{ "if (curanswerline = nil) and eoln" } ;
 
     if curanswerline <> nil then begin
+      // CPU run-state tracking (TSimhCpuState) - updated right here so it
+      // stays correct continuously, not just right after a command was
+      // sent: a running program can also stop on its own (HALT instruction,
+      // breakpoint, UNIBUS timeout) at any later time, and this scanner
+      // keeps running via the background poll regardless of which method
+      // call (if any) is currently waiting on something.
+      case curanswerline.phrasetype of
+        phHalt: CpuState := scsHalted ;
+        phPrompt: CpuState := scsHalted ; // a prompt is only ever sent when SimH isn't actively running
+        phOtherLine: if curanswerline.otherline = 'Simulator Running...' then CpuState := scsRunning ;
+      end ;
+      if Connection.SimhRemoteLog <> nil then
+        Connection.SimhRemoteLog.AppendLine('< ' + String2PrintableText(curanswerline.rawtext, true)) ;
       //curline ist verarbeitet, entferne es aus SerialRcvDataBuffer
       RcvScanner.CurInputLine := Copy(RcvScanner.CurInputLine, length(curline)+1, maxint) ;
       Log(curanswerline.AsText) ;
@@ -439,6 +571,8 @@ procedure TConsolePDP11SimH.Resync ;
 
       examine_lastaddr.val := MEMORYCELL_ILLEGALVAL ; // ungültig, da 32 bit
       deposit_lastaddr.val := MEMORYCELL_ILLEGALVAL ;
+      CpuState := scsUnknown ; // wir wissen nach einem (Re-)Connect nichts über den Laufzustand
+      SilentHaltPending := false ;
 
       // Irgendwas eingeben, es muss die Prompt "sim>" kommen.
       // Ein einzelnes "RETURN" wiederholt das letzte Kommando ...
@@ -564,6 +698,13 @@ procedure TConsolePDP11SimH.Deposit(addr: TMemoryAddress ; val: dword) ;
         s := Format('D %s %s'+CHAR_SIMH_CR, [Dword2OctalStr(addr.val), Dword2OctalStr(val)]) ;
         deposit_lastaddr := addr ;
       end;
+
+      // SimH refuses to deposit into a live PC while the CPU is actually
+      // running (confirmed: it replies "Invalid argument") - CpuState lets
+      // that be reported clearly and immediately instead of round-tripping
+      // to SimH just to find out.
+      if (regname = 'PC') and (CpuState = scsRunning) then
+        raise Exception.Create('DEPOSIT failed: cannot set PC while the CPU is running') ;
 
       Answerlines.Clear ;
       WriteToPDP(s) ;
@@ -883,6 +1024,8 @@ procedure TConsolePDP11SimH.ClearState ;
     inherited ;
     examine_lastaddr.val := MEMORYCELL_ILLEGALVAL ; // erzwinge explizite Adressausgabe
     deposit_lastaddr.val := MEMORYCELL_ILLEGALVAL ; // erzwinge explizite Adressausgabe
+    CpuState := scsUnknown ;
+    SilentHaltPending := false ;
   end;
 
 
@@ -903,6 +1046,7 @@ procedure TConsolePDP11SimH.ResetMachine ; // Maschine CPU reset
       // Der PC wird nicht gesetzt => kein cfFlagResetCpuSetsPC
       WriteToPDP('reset all'+ CHAR_SIMH_CR) ;
       CheckPromptNoOutput('Reset failed, no prompt', 'reset all') ;
+      CpuState := scsHalted ; // reset always halts
     finally
       EndCriticalSection ;
     end;
@@ -931,9 +1075,28 @@ procedure TConsolePDP11SimH.ResetMachineAndStartCpu(newpc_v: TMemoryAddress) ;  
       assert(newpc_v.mat = matVirtual) ;
 
       Answerlines.Clear ;
+      SilentHaltPending := false ;
+      onExecutionStopDetected := false ; // clear any stale flag from an earlier, unrelated action
       s  := Format('run -q %s'+ CHAR_SIMH_CR, [Dword2OctalStr(newpc_v.val, 16)]) ;
       WriteToPDP(s) ;
-      // keine Prompt, CPU läuft jetzt
+      // keine Prompt, CPU läuft jetzt - stays fire-and-forget, does not
+      // wait for/block on confirmation (that used to freeze the UI for
+      // however long confirmation took - observed to occasionally run into
+      // several seconds).
+      //
+      // Set CpuState optimistically, right now, synchronously - same
+      // pattern ContinueCpu already uses. Without this there is a real
+      // race: HaltCpu decides purely from CpuState, and if it's clicked
+      // before the scanner has processed "Simulator Running..." (easy to
+      // do now that this method returns instantly), CpuState is still
+      // stale and HaltCpu wrongly concludes there is nothing to halt while
+      // the CPU is, in fact, genuinely running. If the CPU turns out to
+      // have silently self-halted instead (eg. no program loaded, PC
+      // pointing at zeroed memory that decodes as HALT), the scanner
+      // corrects CpuState back to Halted and flags SilentHaltPending
+      // within one poll cycle, and SilentHaltTimerTimer resolves the real
+      // PC and notifies the UI shortly after - see its comment.
+      CpuState := scsRunning ;
     finally
       EndCriticalSection ;
     end{ "try" } ;
@@ -944,29 +1107,48 @@ procedure TConsolePDP11SimH.ContinueCpu ; // Maschine CPU reset
   begin
     Answerlines.Clear ;
     WriteToPDP('cont'+ CHAR_SIMH_CR) ;
+    CpuState := scsRunning ; // optimistic; the scanner corrects it if this turns out to be wrong
 //      CheckPrompt('Continue failed, no prompt') ;
 
   end;
 
 // PC ist virtuelle 16 bit Adresse
+// ^E only makes SimH's remote console do anything special ("Simulation
+// stopped, PC: ...") while it considers itself mid-RUN - verified live
+// against a real running loop. Outside that state it is just an inert
+// stray byte that eventually surfaces as "Unknown command". doHalt()
+// (FormExecuteU) calls this unconditionally regardless of believed UI
+// state ("improvised" halt, always available) - CpuState is tracked
+// continuously (see DecodeNextAnswerPhrase) precisely so this can check
+// the real, protocol-confirmed state instead of guessing from a timeout.
 procedure TConsolePDP11SimH.HaltCpu(var newpc_v: TMemoryAddress) ; // CPU anhalten
   var answerline: TConsoleAnswerPhrase ;
   begin
     try
       BeginCriticalSection ; // User sperren
-      Answerlines.Clear ;
 
+      if CpuState <> scsRunning then begin
+        Log('HaltCpu: CpuState=%s, nothing to halt', [SimhCpuStateName(CpuState)]) ;
+        newpc_v.mat := matUnknown ;
+        newpc_v.val := MEMORYCELL_ILLEGALVAL ;
+        Exit ;
+      end;
+
+      Answerlines.Clear ;
       // ^E hauen. Dann muss die CPU ihren PC auspucken und anhalten
       WriteToPDP(CHAR_SIMH_HALT) ; // ^E
 
-      answerline := WaitForAnswer(phHalt, SIMH_CMD_TIMEOUT) ;
+      answerline := WaitForAnswer(phHalt, SIMH_HALT_TIMEOUT) ;
       WriteToPDP(CHAR_SIMH_CR) ; // Störungen beseitigen
-      // if answerline = nil then begin
-      //   WriteToPDP(CHAR_SIMH_CR) ;
-      //   answerline := WaitForAnswer(phHalt, SIMH_CMD_TIMEOUT) ;
-      //  end;
-      if answerline = nil then
-        raise Exception.Create('Stopping CPU failed, no answer') ;
+      if answerline = nil then begin
+        // CpuState said Running, so this is a genuine unexpected failure
+        // (unlike the "already halted" case above, filtered out before we
+        // ever sent anything).
+        Log('HaltCpu: CpuState was Running but ^E got no reply') ;
+        newpc_v.mat := matUnknown ;
+        newpc_v.val := MEMORYCELL_ILLEGALVAL ;
+        Exit ;
+      end;
 
       CheckPrompt('Stopping CPU failed, no prompt') ;
       // jetzt wurde der Output mit ReadFromPdp() gelesen,
@@ -1002,6 +1184,7 @@ procedure TConsolePDP11SimH.SingleStep;
       if answerline = nil then raise Exception.Create('Single Step failed, no answer') ;
 
       CheckPrompt('Single Step failed, no prompt') ;
+      CpuState := scsHalted ;
       // jetzt wurde der Output mit ReadFromPdp() gelesen,
       // und MonitorPdpOutput() hat den CpuStop-Event erkannt
 //        newpc_v := onExecutionStopPcVal ;

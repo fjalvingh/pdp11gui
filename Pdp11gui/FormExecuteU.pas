@@ -362,6 +362,12 @@ procedure TFormExecute.UpdateDisplay ;
       end{ "case TheState of esRunning:" } ;
     end{ "case TheState" } ;
 
+    // SimH (and presumably real hardware) refuses to deposit into a live
+    // PC while the CPU is actually running - it only silently rejects the
+    // command, so without this the button just produces a confusing error
+    // instead of anything happening.
+    ShowPCButton.Enabled := (TheState <> esRunning) ;
+
     // Runmode aktualisieren:
     // Wurde über "Connection settings" der Console typ gewechselt, ist der neue
     // Console runmode = unknown.
