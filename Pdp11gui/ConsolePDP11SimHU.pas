@@ -75,6 +75,10 @@ type
       examine_lastaddr: TMemoryAddress ; //
       deposit_lastaddr: TMemoryAddress ; //
 
+      // Like CheckPrompt(), but also detects commands SimH's remote console
+      // silently rejects (see comment on the implementation below).
+      procedure CheckPromptNoOutput(errinfo: string) ;
+
     public
       constructor Create(memorycellgroups: TMemoryCellGroups) ;// die MMU legt eigene mmeorycells an
       destructor Destroy ; override ;
@@ -91,7 +95,6 @@ type
       function getPhysicalMemoryAddressType: TMemoryAddressType ; override ;
 
       procedure Deposit(addr: TMemoryAddress ; val: dword) ; overload ; override ;
-      procedure Deposit(mcg: TMemoryCellGroup ; optimize:boolean; abortable:boolean) ; overload ; override ;
       function Examine(addr: TMemoryAddress): dword ; overload ;override ;
       procedure Examine(mcg: TMemoryCellGroup ; unknown_only: boolean; abortable:boolean) ;overload ;override ;
 
@@ -484,6 +487,32 @@ procedure TConsolePDP11SimH.Init(aConnection: TSerialIoHub) ;
 
 
 
+// SimH's remote console only accepts a fixed whitelist of commands
+// (see "allowed_remote_cmds"/"allowed_master_remote_cmds" in SimH's
+// sim_console.c). A rejected command (eg. the DO-script batching this unit
+// used to send) still returns to the "sim>" prompt, so plain CheckPrompt()
+// does not notice the failure - it only sees the error text SimH sends
+// back as an unrecognized extra line. DEPOSIT and RESET produce no output
+// at all on success, so any such line here means the command was rejected.
+procedure TConsolePDP11SimH.CheckPromptNoOutput(errinfo: string) ;
+  var
+    i: integer ;
+    answerline: TConsoleAnswerPhrase ;
+    errtext: string ;
+  begin
+    CheckPrompt(errinfo) ;
+    errtext := '' ;
+    for i := 0 to Answerlines.Count - 1 do begin
+      answerline := Answerlines.Items[i] as TConsoleAnswerPhrase ;
+      if answerline.phrasetype = phOtherLine then
+        errtext := errtext + answerline.otherline + ' ' ;
+    end;
+    errtext := Trim(errtext) ;
+    if errtext <> '' then
+      raise Exception.CreateFmt('%s: SimH rejected the command: "%s"', [errinfo, errtext]) ;
+  end{ "procedure TConsolePDP11SimH.CheckPromptNoOutput" } ;
+
+
 procedure TConsolePDP11SimH.Deposit(addr: TMemoryAddress ; val: dword) ;
   var s, regname: string ;
   begin
@@ -515,93 +544,11 @@ procedure TConsolePDP11SimH.Deposit(addr: TMemoryAddress ; val: dword) ;
 
       Answerlines.Clear ;
       WriteToPDP(s) ;
-      CheckPrompt('DEPOSIT failed, no prompt') ;
+      CheckPromptNoOutput('DEPOSIT failed, no prompt') ;
     finally
       OutputDebugString('Deposit ends') ;
       EndCriticalSection ;
     end { "try" } ;
-  end{ "procedure TConsolePDP11SimH.Deposit" } ;
-
-
-procedure TConsolePDP11SimH.Deposit(mcg: TMemoryCellGroup ; optimize:boolean; abortable:boolean) ;
-  var
-    i: integer ;
-    mc: TMemoryCell ;
-    s, regname: string ;
-    addr: TMemoryAddress ;
-    tmpdir: string ;
-    foutname: string ; // temporärer file
-    fout: System.Text ;
-  begin
-    // simh muss auf der lokalen Machine laufen, sonst gibts keinen Zugriff auf den
-    // script-file
-    if not Connection.isLocalTelnet then begin
-      inherited Deposit(mcg, optimize, abortable) ;
-      Exit ;
-    end ;
-
-
-    tmpdir := GetTempDirWithFallback ;
-    foutname := GetUniqueFilename(tmpdir, 'pdp11gui_deposit', 'sim') ;
-    try
-      try
-        Log('TConsolePDP11SimH.Deposit(): writing file %s', [foutname]) ;
-        AssignFile(fout, foutname) ; Rewrite(fout) ;
-        for i := 0 to mcg.Count - 1 do begin
-          mc := mcg.Cell(i) ;
-          if not optimize or (mc.pdp_value <> mc.edit_value) then begin
-            addr := mc.addr ;
-            // derselbe Code wie in "Deposit()
-            regname := '' ;
-            if addr.mat = matSpecialRegister then begin
-              regname := addr2regname(addr) ;
-            end else begin
-              // addr kann auch Virtual sein! SimH kann das! bis auf weiters aber
-              // nicht benutzen, bis verhalten klar!
-              assert(MMU.getPhysicalAddressType = matPhysical22) ;
-              if addr.mat = matVirtual then
-                addr := MMU.Virtual2PhysicalData(addr) ;
-              assert(addr.mat = matPhysical22) ;
-              assert(addr.val <> MEMORYCELL_ILLEGALVAL) ;
-
-              regname := addr2regname(addr) ;
-            end;
-            if regname <> '' then begin // es ist ein CPU-Register
-              s := Format('D %s %s', [regname, Dword2OctalStr(mc.edit_value)]) ;
-            end else begin
-              s := Format('D %s %s', [Dword2OctalStr(addr.val), Dword2OctalStr(mc.edit_value)]) ;
-            end;
-            writeln(fout, s) ;
-          end { "if not optimize or (mc.pdp_value <> mc.edit_value)" } ;
-        end { "for i" } ;
-      finally
-        // file schliessen
-        try CloseFile(fout) ;except ;end ;
-      end { "try" } ;
-
-
-      // execeute "DO" command
-      s := Format('DO "%s"'+CHAR_SIMH_CR, [foutname]) ;
-      Answerlines.Clear ;
-      WriteToPDP(s) ;
-      CheckPrompt('DEPOSIT-DO failed, no prompt') ;
-
-    finally
-      // file wieder löschen
-      try Erase(fout) ;except ;end ;
-    end { "try" } ;
-
-    // sync: same loop as above
-    for i := 0 to mcg.Count - 1 do begin
-      mc := mcg.Cell(i) ;
-      if not optimize or (mc.pdp_value <> mc.edit_value) then begin
-        mc.pdp_value := mc.edit_value ;
-        // dieselbe Zelle in NachbarGroups aktualisieren,
-        // dort werden die OnMemoryCellChange-Callbacks aufgerufen
-        if mcg.Collection <> nil then // nil bei code window
-          (mcg.Collection as TMemoryCellGroups).SyncMemoryCells(mc) ;
-      end;
-    end;
   end{ "procedure TConsolePDP11SimH.Deposit" } ;
 
 
@@ -916,6 +863,15 @@ procedure TConsolePDP11SimH.ClearState ;
   end;
 
 
+// "RESET" is not in SimH's remote console command whitelist (see comment
+// on CheckPromptNoOutput). Unlike ResetMachineAndStartCpu, there is no
+// whitelisted command that resets the machine WITHOUT also starting the
+// CPU - "RUN" resets, but immediately starts execution from the current
+// PC, which would run an unknown number of instructions before pdp11gui
+// could stop it again. Rather than silently doing nothing (the previous
+// behaviour, since CheckPrompt alone doesn't notice the rejected command)
+// or risking that unsafe RUN-then-halt approach, this now fails loudly so
+// the caller/user knows the reset did not happen.
 procedure TConsolePDP11SimH.ResetMachine ; // Maschine CPU reset
   begin
     try
@@ -923,7 +879,7 @@ procedure TConsolePDP11SimH.ResetMachine ; // Maschine CPU reset
       Answerlines.Clear ;
       // Der PC wird nicht gesetzt => kein cfFlagResetCpuSetsPC
       WriteToPDP('reset all'+ CHAR_SIMH_CR) ;
-      CheckPrompt('Reset failed, no prompt') ;
+      CheckPromptNoOutput('Reset failed, no prompt') ;
     finally
       EndCriticalSection ;
     end;
@@ -934,6 +890,15 @@ procedure TConsolePDP11SimH.ResetMachine ; // Maschine CPU reset
 
 // PC ist virtuelle 16 bit Adresse
 // Run mit Reset
+// "RESET" is not in SimH's remote console command whitelist (see comment on
+// CheckPromptNoOutput), so a separate "reset cpu" + "go" no longer works
+// over the "Direct simh"/telnet remote console: the reset silently gets
+// rejected and only the "go" actually runs. "RUN" *is* whitelisted, and
+// internally resets all devices before starting (see sim_run_boot_prep() in
+// SimH's scp.c) - so a single "run" replaces "reset cpu" + "go" and is the
+// only way left to get an actual reset over this channel. "-Q" suppresses
+// SimH's "Resetting all devices..." notice it would otherwise print on
+// every run after the first.
 procedure TConsolePDP11SimH.ResetMachineAndStartCpu(newpc_v: TMemoryAddress) ;  // CPU starten.
   var s: string ;
   begin
@@ -943,13 +908,7 @@ procedure TConsolePDP11SimH.ResetMachineAndStartCpu(newpc_v: TMemoryAddress) ;  
       assert(newpc_v.mat = matVirtual) ;
 
       Answerlines.Clear ;
-      WriteToPDP('reset cpu'+ CHAR_SIMH_CR) ;
-      CheckPrompt('Reset failed, no prompt') ;
-
-
-      // 'go'
-      Answerlines.Clear ;
-      s  := Format('go %s'+ CHAR_SIMH_CR, [Dword2OctalStr(newpc_v.val, 16)]) ;
+      s  := Format('run -q %s'+ CHAR_SIMH_CR, [Dword2OctalStr(newpc_v.val, 16)]) ;
       WriteToPDP(s) ;
       // keine Prompt, CPU läuft jetzt
     finally

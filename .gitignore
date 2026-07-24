@@ -7,6 +7,8 @@ lib/
 *.rsj
 *.compiled
 link*.res
+*.lst
+*.hex
 
 # Lazarus IDE session state (window layout, breakpoints, ...)
 *.lps

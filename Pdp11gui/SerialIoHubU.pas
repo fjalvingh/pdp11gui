@@ -650,9 +650,7 @@ procedure TSerialIoHub.Physical_InitForSimhProcess(userIniFilename: string) ;
               [SIMH_REMOTE_PORT, SIMH_CONNECT_TIMEOUT_MS]) ;
     end ;
     // SimH direct is always local - unlike Physical_InitForTelnet, no
-    // GetIPAddress check is needed. This matters because
-    // ConsolePDP11SimHU.Deposit() checks isLocalTelnet to decide whether
-    // it may use its faster local-file "DO script" optimization.
+    // GetIPAddress check is needed.
     isLocalTelnet := true ;
 
     if SimhConsole <> nil then
