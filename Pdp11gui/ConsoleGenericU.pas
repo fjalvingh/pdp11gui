@@ -267,6 +267,7 @@ implementation
 uses
   Forms,
   TypInfo, // GetEnumName
+  JH_Utilities, // OutputDebugString
   AuxU,
   FormMainU,
   FormLogU,
@@ -472,11 +473,28 @@ function TConsoleGeneric.WaitForAnswer(phrasetype: TConsoleAnswerPhraseType; wai
 // warte sonst.
 procedure TConsoleGeneric.CheckPrompt(errinfo: string) ;
   var s: string ;
+    i: integer ;
+    answerline: TConsoleAnswerPhrase ;
   begin
     if WaitForAnswer(phPrompt, CommandTimeoutMillis) = nil then begin
       FormNoConsolePrompt.ShowModal ;
       s := Format('No console prompt: %s!', [errinfo]) ;
       Log(s) ;
+      // Log() only reaches the in-app Log window, not stdout/stderr - unlike
+      // an unhandled exception, this failure would otherwise be invisible
+      // to anyone (or any tooling) watching the process's own output.
+      OutputDebugString(s) ;
+      // Diagnostics: what, if anything, actually came back? Distinguishes
+      // "nothing arrived at all" (genuine network/console silence) from
+      // "something arrived but wasn't recognized as the prompt" (a parsing
+      // bug) - temporary, pending root-causing the "No console prompt on
+      // the first Deposit of a freshly opened window" report.
+      OutputDebugString('  unconsumed raw input: "%s"', [String2PrintableText(RcvScanner.CurInputLine, true)]) ;
+      OutputDebugString('  %d answerline(s) since last Clear:', [AnswerLines.Count]) ;
+      for i := 0 to AnswerLines.Count - 1 do begin
+        answerline := AnswerLines.Items[i] as TConsoleAnswerPhrase ;
+        OutputDebugString('    #%d: %s', [i, answerline.AsText]) ;
+      end;
 //      raise Exception.Create(s) ;
       Abort ;
     end;

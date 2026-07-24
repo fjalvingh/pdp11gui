@@ -54,7 +54,22 @@ const
   CHAR_SIMH_CR = #$d ;
   CHAR_SIMH_LF = #$a ;
   CHAR_SIMH_HALT = #5 ; // ^E
-  SIMH_CMD_TIMEOUT = 1000 ; // telnet verbindung ist lahm: warte lange!
+  // A bulk deposit/examine issues one command per memory cell and waits
+  // for its own reply before sending the next - hundreds of round trips
+  // for a loaded program. 1000ms was fine for a single interactive
+  // command; give repeated ones more headroom against a slow individual
+  // reply before this pops the "No console prompt" dialog.
+  //
+  // Confirmed cause of one specific case: WaitForAnswer() depends on
+  // Application.ProcessMessages to service the network poll timer, so it
+  // competes with any other pending UI work. The very first Deposit click
+  // on a freshly opened Macro11 Listing window lands right after that
+  // window's one-time (and, per FormMacro11ListingU's own comment, known
+  // to be slow/quirky) editor layout and syntax-highlight pass for the
+  // just-loaded source - that backlog was enough to starve the poll timer
+  // past 3000ms. Later clicks on the same window, with nothing left to
+  // render, don't hit this. 3000ms wasn't quite enough margin; give it more.
+  SIMH_CMD_TIMEOUT = 8000 ; // telnet verbindung ist lahm: warte lange!
   SIMH_PROMPT = 'sim> ' ;
 
 type
@@ -77,7 +92,7 @@ type
 
       // Like CheckPrompt(), but also detects commands SimH's remote console
       // silently rejects (see comment on the implementation below).
-      procedure CheckPromptNoOutput(errinfo: string) ;
+      procedure CheckPromptNoOutput(errinfo, sentcmd: string) ;
 
     public
       constructor Create(memorycellgroups: TMemoryCellGroups) ;// die MMU legt eigene mmeorycells an
@@ -494,17 +509,25 @@ procedure TConsolePDP11SimH.Init(aConnection: TSerialIoHub) ;
 // does not notice the failure - it only sees the error text SimH sends
 // back as an unrecognized extra line. DEPOSIT and RESET produce no output
 // at all on success, so any such line here means the command was rejected.
-procedure TConsolePDP11SimH.CheckPromptNoOutput(errinfo: string) ;
+//
+// SimH's remote console also echoes every command it receives back over
+// the same telnet line character-by-character before acting on it (plain
+// terminal echo), so the line we just sent (sentcmd) always shows up as
+// its own phOtherLine too - that echo must be excluded, or every command
+// (including ones SimH accepts) would look "rejected".
+procedure TConsolePDP11SimH.CheckPromptNoOutput(errinfo, sentcmd: string) ;
   var
     i: integer ;
     answerline: TConsoleAnswerPhrase ;
-    errtext: string ;
+    errtext, echoedcmd: string ;
   begin
     CheckPrompt(errinfo) ;
+    echoedcmd := Trim(sentcmd) ;
     errtext := '' ;
     for i := 0 to Answerlines.Count - 1 do begin
       answerline := Answerlines.Items[i] as TConsoleAnswerPhrase ;
-      if answerline.phrasetype = phOtherLine then
+      if (answerline.phrasetype = phOtherLine)
+              and (Trim(answerline.otherline) <> echoedcmd) then
         errtext := errtext + answerline.otherline + ' ' ;
     end;
     errtext := Trim(errtext) ;
@@ -544,7 +567,7 @@ procedure TConsolePDP11SimH.Deposit(addr: TMemoryAddress ; val: dword) ;
 
       Answerlines.Clear ;
       WriteToPDP(s) ;
-      CheckPromptNoOutput('DEPOSIT failed, no prompt') ;
+      CheckPromptNoOutput('DEPOSIT failed, no prompt', s) ;
     finally
       OutputDebugString('Deposit ends') ;
       EndCriticalSection ;
@@ -879,7 +902,7 @@ procedure TConsolePDP11SimH.ResetMachine ; // Maschine CPU reset
       Answerlines.Clear ;
       // Der PC wird nicht gesetzt => kein cfFlagResetCpuSetsPC
       WriteToPDP('reset all'+ CHAR_SIMH_CR) ;
-      CheckPromptNoOutput('Reset failed, no prompt') ;
+      CheckPromptNoOutput('Reset failed, no prompt', 'reset all') ;
     finally
       EndCriticalSection ;
     end;

@@ -868,17 +868,34 @@ procedure TSerialIoHub.DataToConsole(curdata:string) ;
 
 // wird von Console aufgerufen, wenn die Daten schreiben will
 procedure TSerialIoHub.DataFromConsole(curdata:string) ; // Event: Daten von Consoloe
-  var i: integer ; 
-  begin 
+  var i: integer ;
+  begin
     // nicht pollen, wenn Daten gerade von Console/Terminal verarbeitet werden.
     inc(Physical_Poll_Disable) ; // kein Parallellauf
-    try 
-      for i := 1 to length(curdata) do 
-        Physical_WriteByte(byte(curdata[i]), 'IoHubDataFromConsole') ; 
+    try
+      if connectionType in [connectionTelnet, connectionSimhProcess] then begin
+        // Send the whole command in one socket write instead of looping
+        // Physical_WriteByte() per character: with no TCP_NODELAY set on
+        // this socket (see OverbyteIcsTnCnx.pas), one fpSend() per byte
+        // lets Nagle's algorithm + the peer's delayed ACKs stall each byte
+        // by tens of ms. That is invisible for a single interactive
+        // keystroke, but ConsolePDP11SimHU issues one "D <addr> <val>"
+        // command per memory cell for a bulk deposit (hundreds of these in
+        // a row for a whole loaded program) and waits for a reply after
+        // each one - multiplied out, it was enough to occasionally blow
+        // SIMH_CMD_TIMEOUT and pop the "No console prompt" dialog even
+        // though SimH had, or was about to, accept the command.
+        if Connection_LogIoStream then
+          for i := 1 to length(curdata) do
+            LogChar(LogCol_PhysicalWriteByte, curdata[i], 'Write.IoHubDataFromConsole') ;
+        TelnetConnection.SendStr(curdata) ;
+      end else
+        for i := 1 to length(curdata) do
+          Physical_WriteByte(byte(curdata[i]), 'IoHubDataFromConsole') ;
 //    DataToTerminal(curdata, tosPDP) ; // daten auch auf Terminal anzeigen in adnerer Farbe
-    finally 
-      dec(Physical_Poll_Disable); 
-    end; 
+    finally
+      dec(Physical_Poll_Disable);
+    end;
   end; 
 
 
